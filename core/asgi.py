@@ -18,11 +18,12 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 django_asgi_app = get_asgi_application()
 
-from chat.routing import websocket_urlpatterns
+from chat.routing import websocket_urlpatterns_chat
+from orderApp.routing import websocket_urlpatterns_order
 
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": AllowedHostsOriginValidator(AuthMiddlewareStack(URLRouter(websocket_urlpatterns))),
+        "websocket": AllowedHostsOriginValidator(AuthMiddlewareStack(URLRouter([*websocket_urlpatterns_chat, *websocket_urlpatterns_order]))),
     }
 )

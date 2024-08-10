@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Order groups</title>
+</head>
+
+<body>
+  What group would you like to enter?<br />
+  <input id="group-name-input" type="text" size="100" /><br />
+  <input id="group-name-submit" type="button" value="Enter" />
+
+  <script>
+    document.querySelector("#group-name-input").focus();
+    document.querySelector("#group-name-input").onkeyup = function (e) {
+      if (e.key === "Enter") {
+        // enter, return
+        document.querySelector("#group-name-submit").click();
+      }
+    };
+
+    document.querySelector("#group-name-submit").onclick = function (e) {
+      var groupName = document.querySelector("#group-name-input").value;
+      window.location.pathname = "/order/" + groupName + "/";
+    };
+  </script>
+</body>
+
+</html>

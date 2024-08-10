@@ -1,0 +1,211 @@
+{% load static i18n%}
+{% load django_browser_reload %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:'en-us '}}" {% if LANGUAGE_BIDI %}dir="rtl" {% endif %}>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {% if LANGUAGE_BIDI %}
+  <link rel="stylesheet" href="{% static '/bootstrap/bootstrap.rtl.min.css' %}" />
+  {% else %}
+  <link rel="stylesheet" href="{% static '/bootstrap/bootstrap.min.css' %}" />
+  {% endif %}
+  <!-- <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css"> -->
+  <script src="{% static '/htmx_2_0_1/htmx.min.js' %}"></script>
+
+  <title>{% translate "order manager"|title %}</title>
+</head>
+
+<body>
+  <!-- <div class="container mt-3" style="height: 90vh;">
+    <div class="row rounded-top-4 border border-3 border-black p-2" style="height: 10%;">
+      <div class="col-8 bg-info">title</div>
+      <div class="col bg-success">add restaurant</div>
+    </div>
+    <div class="row border-start border-end border-3 border-black p-2 gap-2" style="height: 70%;">
+      <div class="col-8">
+        <div class="row row-cols-1 gap-2">
+          <div class="col bg-info">{% translate "order item" %} </div>
+          <div class="col bg-success">order item</div>
+          <div class="col bg-danger">order item </div>
+          <div class="col bg-warning">order item </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="row row-cols-1 gap-2">
+          <div class="col bg-danger">member order</div>
+          <div class="col bg-success">member order</div>
+          <div class="col bg-info">member order</div>
+        </div>
+      </div>
+    </div>
+    <div class="row rounded-bottom-4 border border-3 border-black p-2 gap-2" style="height: 20%;">
+      <div class="col-4 bg-info">select restaurant</div>
+      <div class="col-4 bg-success">select item</div>
+      <div class="col-2 bg-danger">count</div>
+      <div class="col bg-warning">confirm</div>
+    </div>
+  </div> -->
+  <!-- <div class=" d-flex flex-column m-3">
+    <div class="d-flex flex-row rounded-top-4 border border-3 border-black justify-content-center">
+      <div class="bg-info flex-grow-1 d-flex align-items-center justify-content-start rounded-4 rounded-bottom-0 rounded-end-0 p-2 ">
+        Title
+      </div>
+      <div class="bg-success d-flex align-items-center justify-content-end rounded-4 rounded-bottom-0 rounded-start-0 p-2">
+        Add Restaurant
+      </div>
+    </div>
+
+    <div class="d-flex flex-grow-1 border-start border-end border-3 border-black " style="height: 50vh;">
+      <div class="d-flex flex-column flex-grow-1 m-1 overflow-y-scroll">
+        <div class="bg-info flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-success flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-danger flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-warning flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+      </div>
+      <div class="border border-2 border-black"></div>
+
+      <div class="d-flex flex-column flex-grow-1 m-1 overflow-y-scroll">
+        <div class="bg-danger flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+        <div class="bg-success flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+        <div class="bg-info flex-grow-1 d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-row rounded-bottom-4 border border-3 border-black">
+      <div class="bg-info flex-grow-1 d-flex align-items-center justify-content-center rounded-4 rounded-top-0 rounded-end-0 p-2">
+        Select Restaurant
+      </div>
+      <div class="bg-success flex-grow-1 d-flex align-items-center justify-content-center p-2">
+        Select Item
+      </div>
+      <div class="bg-danger d-flex align-items-center justify-content-center p-2">
+        Count
+      </div>
+      <div class="bg-warning d-flex align-items-center justify-content-center rounded-4 rounded-top-0 rounded-start-0 p-2">
+        Confirm
+      </div>
+    </div>
+  </div> -->
+
+
+  <div class="container-fluid p-5">
+    <div class="row border border-3 border-black rounded-top-4 justify-content-center">
+      <div class="col bg-info d-flex align-items-center justify-content-start rounded-4 rounded-bottom-0 rounded-end-0 p-2">
+        Title
+      </div>
+      <div class="col-auto bg-success d-flex align-items-center justify-content-end rounded-4 rounded-bottom-0 rounded-start-0 p-2">
+        Add Restaurant
+      </div>
+    </div>
+
+    <div class="row border-start border-end border-3 border-black" style="height: 50vh;">
+      <div class="col m-1 p-1 border border-3 border-black overflow-y-scroll">
+        <div class="bg-info d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-success d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-danger d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+        <div class="bg-warning d-flex align-items-center justify-content-center p-2">
+          Order Item
+        </div>
+
+      </div>
+
+      <div class="col m-1 p-1 border border-3 border-black overflow-y-scroll">
+        <div class="bg-danger d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+        <div class="bg-success d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+        <div class="bg-info d-flex align-items-center justify-content-center p-2">
+          Member Order
+        </div>
+      </div>
+    </div>
+
+    <form class="row border border-3 border-black rounded-bottom-4">
+      <div class="col bg-info d-flex align-items-center justify-content-center rounded-4 rounded-top-0 rounded-end-0 p-2">
+        <select class="form-select" aria-label="Default select example">
+          <option selected disabled>Select Restaurant</option>
+          {% for restaurant in restaurants %}
+          <option value="{{restaurant.id}}">{{restaurant.name}}</option>
+          {% endfor %}
+          </select>
+      </div>
+      <div class="col bg-success d-flex align-items-center justify-content-center p-2">
+        <select class="form-select" aria-label="Default select example">
+          <option selected disabled>Select Item</option>
+          {% for menuItem in menuItems %}
+          <option value="{{menuItem.id}}">{{menuItem.menu_item}}</option>
+          {% endfor %}
+          </select>
+        </select>
+      </div>
+      <div class="col bg-danger d-flex align-items-center justify-content-center p-2">
+        <input type="number" class="form-control" id="inputZip" placeholder="Count" min="0">
+      </div>
+      <div class="col-auto bg-warning d-flex align-items-center justify-content-center rounded-4 rounded-top-0 rounded-start-0 p-2">
+        <button type="submit" class="btn btn-primary">Confirm</button>
+      </div>
+    </form>
+  </div>
+
+  {{ group_name|json_script:"group-name" }}
+  <script>
+    const groupName = JSON.parse(
+      document.getElementById("group-name").textContent
+    );
+
+    const groupSocket = new WebSocket(
+      "ws://" + window.location.host + "/ws/group/" + groupName + "/"
+    );
+
+    groupSocket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+      console.log(data)
+    };
+
+    groupSocket.onclose = function (e) {
+      console.error("Group socket closed unexpectedly");
+    };
+    /*
+    setInterval(() =>
+    
+    
+    groupSocket.send(
+      JSON.stringify({
+        type:"echo",
+        message: "hello",
+      })
+      )
+      , 3000)
+      */
+  </script>
+  <!-- <script src="{% static '/bootstrap/bootstrap.min.js' %}"></script> -->
+  <script type="module" src="../../assets/bootstrap/bootstrap.min.js"></script>
+  {% django_browser_reload_script %}
+</body>
+
+</html>
