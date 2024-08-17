@@ -30,10 +30,10 @@ def group(request, group_name):
     return render(request, "order/index.html", context)
 
 
-def shared_context(user):
+def shared_context(user, restaurant=None):
     order = get_or_create_order(user)
     restaurants = Restaurant.objects.all()
-    menuItems = MenuItem.objects.all()
+    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
     return order, restaurants, menuItems
 
 
@@ -58,3 +58,9 @@ def finish_order(order):
         order.finished_ordering = True
         order.save()
         return True, "", order
+
+
+def menuitems(request):
+    restaurant = request.GET.get("fk_restaurant")
+    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
+    return render(request, "order/menuItems.html", {"menuItems": menuItems})

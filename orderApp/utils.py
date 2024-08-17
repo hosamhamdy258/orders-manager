@@ -8,7 +8,7 @@ class PositiveValueValidator(BaseValidator):
     code = "positive_value"
 
     def compare(self, a, b):
-        return a > 0
+        return a <= b  # Invalid if a is less than or equal to 0
 
 
 def templates_joiner(context, templates):

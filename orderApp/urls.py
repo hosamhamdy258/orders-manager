@@ -5,5 +5,6 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("<str:group_name>/", views.group, name="group"),
+    path("group/<str:group_name>/", views.group),
+    path("menuitems/", views.menuitems),
 ]

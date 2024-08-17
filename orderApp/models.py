@@ -18,7 +18,7 @@ class Restaurant(models.Model):
 class MenuItem(models.Model):
     fk_restaurant = models.ForeignKey(Restaurant, verbose_name=_("Restaurant"), on_delete=models.CASCADE)
     menu_item = models.CharField(_("Menu Item"), max_length=50)
-    price = models.DecimalField(_("Price"), max_digits=9, decimal_places=2, validators=[PositiveValueValidator])
+    price = models.DecimalField(_("Price"), max_digits=9, decimal_places=2, validators=[PositiveValueValidator(0)])
 
     def __str__(self):
         keys = [self.fk_restaurant, self.menu_item]
@@ -42,7 +42,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     fk_order = models.ForeignKey(Order, verbose_name=_("Order"), on_delete=models.CASCADE, blank=True)
     fk_menu_item = models.ForeignKey(MenuItem, verbose_name=_("Menu Item"), on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(_("Quantity"), default=0)
+    quantity = models.PositiveIntegerField(_("Quantity"), default=0, validators=[PositiveValueValidator(0)])
 
     def __str__(self):
         keys = [self.fk_order, self.fk_menu_item, self.quantity, self.total_order_item()]

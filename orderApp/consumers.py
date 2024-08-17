@@ -50,7 +50,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             templates = []
             user = self.scope["user"]
 
-            order, restaurants, menuItems = shared_context(user)
+            order, restaurants, menuItems = shared_context(user,event[self.message]["fk_restaurant"])
 
             context = {
                 "restaurants": restaurants,
