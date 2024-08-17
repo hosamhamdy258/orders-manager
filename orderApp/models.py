@@ -1,4 +1,3 @@
-from typing import Iterable
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
@@ -29,6 +28,8 @@ class MenuItem(models.Model):
 class Order(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
     created = models.DateTimeField(_("Created"), auto_now_add=True)
+    completed = models.BooleanField(_("completed"), default=False)
+    finished_ordering = models.BooleanField(_("finished ordering"), default=False)
 
     def __str__(self):
         keys = [self.fk_user.username, self.created.date()]
@@ -39,8 +40,8 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    fk_order = models.ForeignKey(Order, verbose_name=_("Order"), on_delete=models.CASCADE)
-    fk_menu_item = models.OneToOneField(MenuItem, verbose_name=_("Menu Item"), on_delete=models.CASCADE)
+    fk_order = models.ForeignKey(Order, verbose_name=_("Order"), on_delete=models.CASCADE, blank=True)
+    fk_menu_item = models.ForeignKey(MenuItem, verbose_name=_("Menu Item"), on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(_("Quantity"), default=0)
 
     def __str__(self):

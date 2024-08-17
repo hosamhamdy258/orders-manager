@@ -1,6 +1,6 @@
 from django.core.validators import BaseValidator
 from django.utils.translation import gettext_lazy as _
-
+from django.template.loader import render_to_string
 
 
 class PositiveValueValidator(BaseValidator):
@@ -9,3 +9,8 @@ class PositiveValueValidator(BaseValidator):
 
     def compare(self, a, b):
         return a > 0
+
+
+def templates_joiner(context, templates):
+    response = "".join([render_to_string(template, context=context) for template in templates])
+    return response

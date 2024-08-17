@@ -32,12 +32,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+LOGIN_URL = "/admin/login/"
 
 # Application definition
 
 INSTALLED_APPS = [
     # Default
     "daphne",
+    "django_browser_reload",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

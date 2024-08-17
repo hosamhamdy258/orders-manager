@@ -1,16 +1,19 @@
-import json
-
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
-from django.core import serializers
 from asgiref.sync import async_to_sync
 
-from orderApp.models import Order
+
+from orderApp.models import OrderItem
+from orderApp.forms import OrderItemForm
+from orderApp.views import create_order, finish_order, shared_context
+from orderApp.utils import templates_joiner
 
 UserModel = get_user_model()
 
 
 class GroupConsumer(JsonWebsocketConsumer):
+    message_type = "message_type"
+    message = "message"
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["group_name"]
@@ -29,27 +32,85 @@ class GroupConsumer(JsonWebsocketConsumer):
 
     # Receive message from room group
     def receive_json(self, content, **kwargs):
-        event_type = content.get("type", "")
-        message = dict(message=content.get("message", ""))
+        event_type = content.get(self.message_type, "")
+        message = dict(message=content)
         handler = getattr(self, event_type, self.default_handler)
         handler(message)
 
     def default_handler(self, message):
         print(f"Unknown event type received: {message}")
 
-    def echo(self, event):
-        group = event.get("group", True)
-        if group:
-            async_to_sync(self.channel_layer.group_send)(self.room_group_name, {"type": "echo", "message": event["message"], "group": False})
+    def addOrderItem(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            )
         else:
-            # Send message to WebSocket
-            res = {"message": event["message"]}
-            self.send_json(res)
+            templates = []
+            user = self.scope["user"]
 
-    # def order(self, message, event_type):
-    #     user = UserModel.objects.get(pk=1)
-    #     order = Order.objects.create(fk_user=user)
-    #     serialized = serializers.serialize("json", Order.objects.filter(pk=order.pk))
+            order, restaurants, menuItems = shared_context(user)
 
-    #     # Send message to WebSocket
-    #     self.send_json({"type": event_type, "message": message, "result": serialized})
+            context = {
+                "restaurants": restaurants,
+                "menuItems": menuItems,
+                "order": order,
+            }
+            form = OrderItemForm(event[self.message])
+            if form.is_valid():
+                form.save(True)
+
+                form = OrderItemForm(initial={**form.cleaned_data, "fk_menu_item": None, "quantity": 0})
+                context.update({"form": form})
+
+                orderItems = OrderItem.objects.filter(fk_order=order)
+                context.update({"orderItems": orderItems})
+                templates.append("order/orderItems.html")
+                templates.append("order/finishOrder.html")
+            else:
+                context.update({"form": form})
+
+            templates.append("order/formOrderItem.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+
+    def finishOrder(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            )
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+
+            isFinished, finish_order_error, order = finish_order(event[self.message]["fk_order"])
+            if isFinished:
+                order = create_order(user)
+                context.update({"remove_errors": True})
+            else:
+                context.update({"error": finish_order_error})
+
+            context.update({"order": order})
+
+            templates.append("order/orderItems.html")
+            templates.append("order/orderID.html")
+            templates.append("order/finishOrder.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def ordersList(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            )
+        else:
+            pass

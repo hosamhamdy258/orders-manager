@@ -1,0 +1,54 @@
+{% load i18n%}
+<form id="order_item_form" ws-send hx-swap="outerHTML">
+  {% include "order/orderID.html" %}
+  <input type="hidden" name="message_type" value="addOrderItem">
+  <div class="row g-1 m-1">
+    <div class="col border border-3 rounded-4 border-black p-2">
+      <select class="form-select" name="fk_restaurant" required autocomplete="off">
+        <option selected disabled>{% translate "Select Restaurant" %}</option>
+        {% for restaurant in restaurants %}
+        <option value="{{restaurant.id}}" {% if restaurant.id == form.fk_restaurant.value|add:"0" %}selected{% endif %}>{{restaurant.name}}
+        </option>
+        {% endfor %}
+      </select>
+      {% for error in form.fk_restaurant.errors %}
+      {% include "order/error.html" %}
+      {% endfor %}
+    </div>
+
+    <div class="col border border-3 rounded-4 border-black p-2">
+      <select class="form-select" name="fk_menu_item" required>
+        <option selected disabled>{% translate "Select Item" %}</option>
+        {% for menuItem in menuItems %}
+        <option value="{{menuItem.id}}" {% if menuItem.id == form.fk_menu_item.value|add:"0" %}selected{% endif %}>{{menuItem.menu_item}}
+        </option>
+        {% endfor %}
+      </select>
+      {% for error in form.fk_menu_item.errors %}
+      {% include "order/error.html" %}
+      {% endfor %}
+    </div>
+
+    <div class="col border border-3 rounded-4 border-black p-2">
+      <input type="number" class="form-control" id="quantity" name="quantity" placeholder='{% translate "Quantity" %}' min="1" value="{{form.quantity.value}}" required>
+      {% for error in form.quantity.errors %}
+      {% include "order/error.html" %}
+      {% endfor %}
+    </div>
+
+    <div class="col border border-3 rounded-4 border-black p-2">
+      <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
+    </div>
+  </div>
+</form>
+<div class="row g-1 m-1">
+  <div class="col border border-3 rounded-4 border-black p-2">
+    <form ws-send>
+      <input type="hidden" name="message_type" value="ordersList">
+      <button type="submit" class="btn btn-success">{% translate "Orders List" %}</button>
+    </form>
+  </div>
+  <div class="col border border-3 rounded-4 border-black p-2">
+    {% include "order/finishOrder.html" %}
+  </div>
+</div>
