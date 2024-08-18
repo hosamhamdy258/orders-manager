@@ -40,9 +40,9 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    fk_order = models.ForeignKey(Order, verbose_name=_("Order"), on_delete=models.CASCADE, blank=True)
+    fk_order = models.ForeignKey(Order, verbose_name=_("Order"), on_delete=models.CASCADE)
     fk_menu_item = models.ForeignKey(MenuItem, verbose_name=_("Menu Item"), on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(_("Quantity"), default=0, validators=[PositiveValueValidator(0)])
+    quantity = models.PositiveIntegerField(_("Quantity"), validators=[PositiveValueValidator(0)])
 
     def __str__(self):
         keys = [self.fk_order, self.fk_menu_item, self.quantity, self.total_order_item()]

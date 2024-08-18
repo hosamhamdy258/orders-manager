@@ -4,7 +4,7 @@ from . import views
 
 
 urlpatterns = [
-    path("", views.index, name="index"),
-    path("group/<str:group_name>/", views.group),
+    # path("", views.index, name="index"),
+    path("group/<str:group_name>/", views.GroupView.as_view()),
     path("menuitems/", views.menuitems),
 ]
