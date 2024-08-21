@@ -5,9 +5,15 @@
         <div class="col p-1">{{orderItem.fk_menu_item.menu_item}}</div>
         <div class="col p-1">{{orderItem.fk_menu_item.price}}</div>
         <div class="col p-1">{{orderItem.total_order_item}}</div>
+        {% if orderItem.fk_order.fk_user == request.user %}
         <div class="col p-1">
-            <button type="button" class="btn-close" aria-label="Close"></button>
+            <form ws-send>
+                <input type="hidden" name="message_type" value="deleteItem">
+                <input type="hidden" name="orderItem" value="{{orderItem.id}}">
+                <button type="submit" class="btn-close" aria-label="Close"></button>
+            </form>
         </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>

@@ -88,7 +88,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
             user = self.scope["user"]
 
-            isFinished, finish_order_error, order = finish_order(event[self.message]["fk_order"], user)
+            isFinished, finish_order_error, order = finish_order(event[self.message].get("fk_order"), user)
             if isFinished:
                 created, create_error_msg, order = create_order(user)
                 if created:
@@ -146,6 +146,50 @@ class GroupConsumer(JsonWebsocketConsumer):
             context.update({"orders": orders})
 
             templates.append("order/membersOrders.html")
+            templates.append("order/orderItems.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def deleteItem(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+
+            orderItemObj = OrderItem.objects.get(pk=event[self.message].get("orderItem"))
+            if orderItemObj.fk_order.fk_user != user:
+                return
+
+            order_id = orderItemObj.fk_order
+            orderItems = OrderItem.objects.filter(fk_order=order_id)
+            context.update({"orderItems": orderItems})
+            templates.append("order/orderItems.html")
+
+            orderItemObj.delete()
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def showMemberItemOrders(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            orderItems = OrderItem.objects.filter(fk_order=event[self.message].get("fk_order"))
+            context.update({"orderItems": orderItems})
+            templates.append("order/orderItems.html")
+
             response = templates_joiner(context, templates)
 
             self.send(text_data=response)
