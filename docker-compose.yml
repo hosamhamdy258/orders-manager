@@ -4,6 +4,7 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
+      - "35729:35729"
     volumes:
       - .:/app
     container_name: order

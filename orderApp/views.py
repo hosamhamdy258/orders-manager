@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from .models import Order, OrderItem, Restaurant, MenuItem
 from .forms import OrderItemForm
 
+
 # Create your views here.
 order_limit = 2
 

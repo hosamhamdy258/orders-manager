@@ -1,5 +1,4 @@
 {% load static i18n%}
-{% load django_browser_reload %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:'en-us '}}" {% if LANGUAGE_BIDI %}dir="rtl" {% endif %}>
@@ -24,51 +23,44 @@
   <!-- main container -->
   <div class="container border border-3 rounded-4 border-black text-center p-2" hx-ext="ws" ws-connect="/ws/group/{{group_name}}/">
     <!-- split page to 3 sections [top-body-bottom] -->
-    <div class="row row-cols-1 g-1 m-1">
+    <div class="row row-cols-1 g-1 m-1 align-items-center">
 
       <!-- top section -->
       <div class="col border border-3 rounded-4 border-black p-2">
         <div class="row row-cols-auto justify-content-between align-items-center g-1 m-1">
-          <div class="col-auto p-2">{% translate "title" %}</div>
-          <div class="col-auto p-2">{% translate "add restaurant" %}</div>
+          <div class="col-auto p-2">{% translate "Orders Screen" %}</div>
+          <div class="col-auto p-2">
+            <button type="submit" class="btn btn-primary" {% if disable_form %}disabled{% endif %}>{% translate "add restaurant"|title %}</button>
+          </div>
+        </div>
+
+        <!-- body section -->
+        <div class="col border border-3 rounded-4 border-danger p-2">
+          <!-- split body to 2 sections [right-left] -->
+          <div class="row row-cols-2 g-1 m-1">
+            <!-- right section -->
+            {% include "order/orderItems.html" %}
+
+            <!-- left section -->
+            {% include "order/membersOrders.html" %}
+          </div>
+        </div>
+
+        <!-- bottom section -->
+        <div class="col border border-3 rounded-4 border-black p-2">
+          {% include "order/formOrderItem.html" %}
         </div>
       </div>
 
-      <!-- body section -->
-      <div class="col border border-3 rounded-4 border-danger p-2">
-        <!-- split body to 2 sections [right-left] -->
-        <div class="row row-cols-2 g-1 m-1 ">
-          <!-- right section -->
-          <div class="col border border-3 rounded-4 border-success p-2">
-            <div class="row justify-content-center align-items-center">
-              <div class="col p-2">{% translate "Order Items" %}</div>
-            </div>
-            <div class="row">
-              {% include "order/orderItems.html" %}
-            </div>
-          </div>
-
-          <!-- left section -->
-          <div class="col border border-3 rounded-4 border-primary p-2">
-            <div class="row justify-content-center align-items-center">
-              <div class="col p-2">{% translate "Members Orders" %}</div>
-            </div>
-            <div class="row">
-              {% include "order/membersOrders.html" %}
-            </div>
-          </div>
-        </div>
+      <!-- tables section -->
+      <div class="col">
+        {% include "order/summaryTables.html" %}
       </div>
 
-      <!-- bottom section -->
-      <div class="col border border-3 rounded-4 border-black p-2">
-        {% include "order/formOrderItem.html" %}
-      </div>
     </div>
   </div>
   <script type="module" src=""></script>
   <script src="{% static '/bootstrap/bootstrap.min.js' %}"></script>
-  {% django_browser_reload_script %}
 </body>
 
 </html>

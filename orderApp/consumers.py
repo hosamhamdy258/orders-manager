@@ -1,9 +1,13 @@
+from datetime import datetime
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
+from django.db.models import F, Sum, DecimalField
+
+from orderApp.utils import calculate_totals, group_nested_data
 
 
-from orderApp.models import OrderItem
+from orderApp.models import OrderItem, Restaurant
 from orderApp.forms import OrderItemForm
 from orderApp.views import create_order, disable_form, finish_order, get_all_orders, get_user_orders, shared_context
 from orderApp.utils import templates_joiner
@@ -58,6 +62,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 "order": order,
                 "orders": all_orders,
                 "disable_form": disable_form,
+                "user": user,
             }
             form = OrderItemForm(event[self.message])
             if form.is_valid():
@@ -161,6 +166,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             templates = []
             context = {}
             user = self.scope["user"]
+            context.update({"user": user})
 
             orderItemObj = OrderItem.objects.get(pk=event[self.message].get("orderItem"))
             if orderItemObj.fk_order.fk_user != user:
@@ -185,10 +191,108 @@ class GroupConsumer(JsonWebsocketConsumer):
         else:
             templates = []
             context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
 
             orderItems = OrderItem.objects.filter(fk_order=event[self.message].get("fk_order"))
             context.update({"orderItems": orderItems})
             templates.append("order/orderItems.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def groupOrderSummary(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+
+            UserModel = get_user_model()
+
+            orderTotalSummary = (
+                Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
+                .values(
+                    restaurant=F("name"),
+                    item=F("menuitem__menu_item"),
+                    price=F("menuitem__price"),
+                    # user=F("menuitem__orderitem__fk_order__fk_user__username"),
+                )
+                .annotate(
+                    quantity=Sum("menuitem__orderitem__quantity"),
+                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
+            orderTotalSummary2 = (
+                Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
+                .values(
+                    restaurant=F("name"),
+                    item=F("menuitem__menu_item"),
+                    price=F("menuitem__price"),
+                    user=F("menuitem__orderitem__fk_order__fk_user__username"),
+                )
+                .annotate(
+                    quantity=Sum("menuitem__orderitem__quantity"),
+                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
+
+            grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
+
+            orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
+
+            totals_orderTotalSummary = {
+                restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
+            }
+
+            orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
+
+            totals_orderUsersTotalSummaryGrouped = {
+                restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
+                for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
+            }
+
+            orderUsersSummary = (
+                UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True)
+                .values(
+                    user=F("username"),
+                    restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
+                    item=F("order__orderitem__fk_menu_item__menu_item"),
+                    price=F("order__orderitem__fk_menu_item__price"),
+                )
+                .annotate(
+                    quantity=Sum("order__orderitem__quantity"),
+                    total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
+
+            orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
+
+            orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
+
+            totals_orderUsersSummaryGrouped = {
+                user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
+            }
+
+            templates.append("order/summaryTables.html")
+
+            context = {
+                "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
+                "totals_orderTotalSummary": totals_orderTotalSummary,
+                "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
+                "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
+                "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
+                "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
+                "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
+                "showTables": True,
+            }
 
             response = templates_joiner(context, templates)
 
