@@ -3,6 +3,8 @@ from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from django.db.models import F, Sum, DecimalField
+from django.utils.translation import gettext as _
+
 
 from orderApp.utils import calculate_totals, group_nested_data
 
@@ -99,10 +101,10 @@ class GroupConsumer(JsonWebsocketConsumer):
                 if created:
                     context.update({"remove_errors": True})
                 else:
-                    context.update({"error": create_error_msg})
+                    context.update({"finish_order_error": create_error_msg})
 
             else:
-                context.update({"error": finish_order_error})
+                context.update({"finish_order_error": finish_order_error})
 
             user_orders = get_user_orders(user)
 
@@ -214,85 +216,92 @@ class GroupConsumer(JsonWebsocketConsumer):
 
             UserModel = get_user_model()
 
-            orderTotalSummary = (
-                Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
-                .values(
-                    restaurant=F("name"),
-                    item=F("menuitem__menu_item"),
-                    price=F("menuitem__price"),
-                    # user=F("menuitem__orderitem__fk_order__fk_user__username"),
+            if get_all_orders().count() == 0:
+                templates.append("order/orderSummary.html")
+                context.update({"order_summary_error": _("there's no orders today yet")})
+            else:
+
+                orderTotalSummary = (
+                    Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
+                    .values(
+                        restaurant=F("name"),
+                        item=F("menuitem__menu_item"),
+                        price=F("menuitem__price"),
+                        # user=F("menuitem__orderitem__fk_order__fk_user__username"),
+                    )
+                    .annotate(
+                        quantity=Sum("menuitem__orderitem__quantity"),
+                        total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                    )
+                    .distinct()
                 )
-                .annotate(
-                    quantity=Sum("menuitem__orderitem__quantity"),
-                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                orderTotalSummary2 = (
+                    Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
+                    .values(
+                        restaurant=F("name"),
+                        item=F("menuitem__menu_item"),
+                        price=F("menuitem__price"),
+                        user=F("menuitem__orderitem__fk_order__fk_user__username"),
+                    )
+                    .annotate(
+                        quantity=Sum("menuitem__orderitem__quantity"),
+                        total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                    )
+                    .distinct()
                 )
-                .distinct()
-            )
-            orderTotalSummary2 = (
-                Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=datetime.today())
-                .values(
-                    restaurant=F("name"),
-                    item=F("menuitem__menu_item"),
-                    price=F("menuitem__price"),
-                    user=F("menuitem__orderitem__fk_order__fk_user__username"),
+
+                grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
+
+                orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
+
+                totals_orderTotalSummary = {
+                    restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
+                }
+
+                orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
+
+                totals_orderUsersTotalSummaryGrouped = {
+                    restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
+                    for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
+                }
+
+                orderUsersSummary = (
+                    UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True)
+                    .values(
+                        user=F("username"),
+                        restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
+                        item=F("order__orderitem__fk_menu_item__menu_item"),
+                        price=F("order__orderitem__fk_menu_item__price"),
+                    )
+                    .annotate(
+                        quantity=Sum("order__orderitem__quantity"),
+                        total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
+                    )
+                    .distinct()
                 )
-                .annotate(
-                    quantity=Sum("menuitem__orderitem__quantity"),
-                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+
+                orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
+
+                orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
+
+                totals_orderUsersSummaryGrouped = {
+                    user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
+                }
+
+                templates.append("order/summaryTables.html")
+
+                context.update(
+                    {
+                        "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
+                        "totals_orderTotalSummary": totals_orderTotalSummary,
+                        "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
+                        "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
+                        "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
+                        "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
+                        "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
+                        "showTables": True,
+                    }
                 )
-                .distinct()
-            )
-
-            grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
-
-            orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
-
-            totals_orderTotalSummary = {
-                restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
-            }
-
-            orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
-
-            totals_orderUsersTotalSummaryGrouped = {
-                restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
-                for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
-            }
-
-            orderUsersSummary = (
-                UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True)
-                .values(
-                    user=F("username"),
-                    restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
-                    item=F("order__orderitem__fk_menu_item__menu_item"),
-                    price=F("order__orderitem__fk_menu_item__price"),
-                )
-                .annotate(
-                    quantity=Sum("order__orderitem__quantity"),
-                    total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
-                )
-                .distinct()
-            )
-
-            orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
-
-            orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
-
-            totals_orderUsersSummaryGrouped = {
-                user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
-            }
-
-            templates.append("order/summaryTables.html")
-
-            context = {
-                "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
-                "totals_orderTotalSummary": totals_orderTotalSummary,
-                "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
-                "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
-                "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
-                "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
-                "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
-                "showTables": True,
-            }
 
             response = templates_joiner(context, templates)
 

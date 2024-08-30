@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <div id="table1" class="container toggler">
+        <div id="table1" class="container toggler " style="display: none;">
             <!-- <h1 class="text-center">{% translate "restaurant order summary"|title %}</h1> -->
             <div class="table-responsive">
                 <table class="table table-bordered table-light text-center">
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <div id="table2" class="container toggler">
+        <div id="table2" class="container toggler " style="display: none;">
             <!-- <h1 class="text-center">{% translate "restaurant user order summary"|title %}</h1> -->
             <div class="table-responsive">
                 <table class="table table-bordered table-light text-center">
@@ -137,7 +137,7 @@
             </div>
         </div>
 
-        <div id="table3" class="container toggler">
+        <div id="table3" class="container toggler " style="display: none;">
             <!-- <h1 class="text-center">{% translate "user restaurant order summary"|title %}</h1> -->
             <div class="table-responsive">
                 <table class="table table-bordered table-light text-center">
@@ -210,6 +210,9 @@
     </div>
 
     <script>
+        setTimeout(() => {
+            toggleTables();
+        },0)
         // Function to toggle tables based on selected radio button
         function toggleTables() {
             const tables = document.querySelectorAll('.toggler'); // Get all tables
