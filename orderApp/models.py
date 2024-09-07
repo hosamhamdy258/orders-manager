@@ -52,3 +52,7 @@ class OrderItem(models.Model):
         if self.fk_menu_item.price and self.quantity:
             return self.fk_menu_item.price * self.quantity
         return 0
+
+
+class Clients(models.Model):
+    channel_name = models.CharField(_("channel name"), max_length=50)

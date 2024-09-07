@@ -9,9 +9,19 @@ from django.utils.translation import gettext as _
 from orderApp.utils import calculate_totals, group_nested_data
 
 
-from orderApp.models import OrderItem, Restaurant
+from orderApp.models import Clients, OrderItem, Restaurant
 from orderApp.forms import OrderItemForm
-from orderApp.views import create_order, disable_form, finish_order, get_all_orders, get_user_orders, shared_context
+from orderApp.views import (
+    create_order,
+    disable_form,
+    finish_order,
+    get_all_orders,
+    get_context,
+    get_user_orders,
+    order_context,
+    order_details_section,
+    restaurant_details_section,
+)
 from orderApp.utils import templates_joiner
 
 UserModel = get_user_model()
@@ -27,11 +37,13 @@ class GroupConsumer(JsonWebsocketConsumer):
         # Join room group
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
+        Clients.objects.create(channel_name=self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        Clients.objects.filter(channel_name=self.channel_name).delete()
 
     # Receive message from room group
     def receive_json(self, content, **kwargs):
@@ -56,14 +68,10 @@ class GroupConsumer(JsonWebsocketConsumer):
             templates = []
             user = self.scope["user"]
 
-            order, restaurants, menuItems, all_orders, disable_form = shared_context(user, event[self.message].get("fk_restaurant", None))
+            ctx = order_context(user=user, restaurant=event[self.message].get("fk_restaurant", None))
 
             context = {
-                "restaurants": restaurants,
-                "menuItems": menuItems,
-                "order": order,
-                "orders": all_orders,
-                "disable_form": disable_form,
+                **ctx,
                 "user": user,
             }
             form = OrderItemForm(event[self.message])
@@ -73,9 +81,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 form = OrderItemForm(initial={**form.cleaned_data, "fk_menu_item": None, "quantity": None})
                 context.update({"form": form})
 
-                orderItems = OrderItem.objects.filter(fk_order=order)
-                context.update({"orderItems": orderItems})
-                templates.append("order/orderItems.html")
+                templates.append("order/detailsSection.html")
             else:
                 context.update({"form": form})
 
@@ -115,7 +121,7 @@ class GroupConsumer(JsonWebsocketConsumer):
 
             context.update({"order": order})
 
-            templates.append("order/orderItems.html")
+            templates.append("order/detailsSection.html")
             templates.append("order/orderID.html")
             templates.append("order/finishOrder.html")
 
@@ -134,8 +140,8 @@ class GroupConsumer(JsonWebsocketConsumer):
             templates = []
             context = {}
             orders = get_all_orders()
-            context.update({"orders": orders})
-            templates.append("order/membersOrders.html")
+            context.update({"list_section_data": orders})
+            templates.append("order/listSection.html")
             response = templates_joiner(context, templates)
             self.send(text_data=response)
             pass
@@ -150,10 +156,10 @@ class GroupConsumer(JsonWebsocketConsumer):
             user = self.scope["user"]
 
             orders = get_user_orders(user)
-            context.update({"orders": orders})
+            context.update({"list_section_data": orders})
 
-            templates.append("order/membersOrders.html")
-            templates.append("order/orderItems.html")
+            templates.append("order/listSection.html")
+            templates.append("order/detailsSection.html")
 
             response = templates_joiner(context, templates)
 
@@ -170,17 +176,16 @@ class GroupConsumer(JsonWebsocketConsumer):
             user = self.scope["user"]
             context.update({"user": user})
 
-            orderItemObj = OrderItem.objects.get(pk=event[self.message].get("orderItem"))
+            orderItemObj = OrderItem.objects.get(pk=event[self.message].get("item_id"))
             if orderItemObj.fk_order.fk_user != user:
                 return
 
             order_id = orderItemObj.fk_order
-            orderItems = OrderItem.objects.filter(fk_order=order_id)
-            context.update({"orderItems": orderItems})
-            templates.append("order/orderItems.html")
+
+            context.update({**order_details_section(order=order_id, add_view=True)})
+            templates.append("order/detailsSection.html")
 
             orderItemObj.delete()
-
             response = templates_joiner(context, templates)
 
             self.send(text_data=response)
@@ -196,9 +201,8 @@ class GroupConsumer(JsonWebsocketConsumer):
             user = self.scope["user"]
             context.update({"user": user})
 
-            orderItems = OrderItem.objects.filter(fk_order=event[self.message].get("fk_order"))
-            context.update({"orderItems": orderItems})
-            templates.append("order/orderItems.html")
+            context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True)})
+            templates.append("order/detailsSection.html")
 
             response = templates_joiner(context, templates)
 
@@ -302,6 +306,47 @@ class GroupConsumer(JsonWebsocketConsumer):
                         "showTables": True,
                     }
                 )
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def switchView(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
+
+            view_context = get_context(user=user, view=event[self.message].get("next_view"))
+
+            context.update(view_context)
+            templates.append("order/body.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def showRestaurantItems(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
+
+            context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
+
+            templates.append("order/detailsSection.html")
+
+            print(context)
 
             response = templates_joiner(context, templates)
 

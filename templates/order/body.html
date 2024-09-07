@@ -1,0 +1,36 @@
+<!-- split page to 3 sections [top-body-bottom] -->
+<div id="body" class="row row-cols-1 g-1 m-1 align-items-center">
+
+    <!-- top section -->
+    <div class="col border border-3 rounded-4 border-black p-2">
+        <div class="row row-cols-auto justify-content-between align-items-center g-1 m-1">
+            <div class="col-auto p-2">{{main_title}}</div>
+            <div class="col-auto p-2">
+                {% include "order/titleAction.html" %}
+            </div>
+        </div>
+
+        <!-- body section -->
+        <div class="col border border-3 rounded-4 border-danger p-2">
+            <!-- split body to 2 sections [right-left] -->
+            <div class="row row-cols-2 g-1 m-1">
+                <!-- right section -->
+                {% include "order/detailsSection.html" %}
+
+                <!-- left section -->
+                {% include "order/listSection.html" %}
+            </div>
+        </div>
+
+        <!-- bottom section -->
+        <div class="col border border-3 rounded-4 border-black p-2">
+            {% include "order/formOrderItem.html" %}
+        </div>
+    </div>
+
+    <!-- tables section -->
+    <div class="col">
+        {% include "order/summaryTables.html" %}
+    </div>
+
+</div>

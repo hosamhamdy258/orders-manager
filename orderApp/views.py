@@ -3,7 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import datetime
 from django.shortcuts import render
 from django.utils.translation import gettext as _
-from .models import Order, OrderItem, Restaurant, MenuItem
+
+from .enums import GeneralContextKeys, OrderContextKeys, ViewContextKeys, CurrentViews
+from .models import Order, OrderItem, Restaurant, MenuItem, Clients
 from .forms import OrderItemForm
 
 
@@ -19,28 +21,40 @@ class GroupView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        group_name = kwargs.get("group_name")
-        order, restaurants, menuItems, all_orders, disable_form = shared_context(user)
-        orderItems = OrderItem.objects.filter(fk_order=order)
+        group_name = kwargs.get(GeneralContextKeys.GROUP_NAME)
+        ctx = get_context(user=user, view=CurrentViews.ORDER_VIEW)
         form = OrderItemForm()
 
         context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                "group_name": group_name,
-                "restaurants": restaurants,
-                "menuItems": menuItems,
-                "orderItems": orderItems,
-                "order": order,
-                "orders": all_orders,
-                "form": form,
-                "disable_form": disable_form,
-            }
-        )
+        context.update({GeneralContextKeys.GROUP_NAME: group_name, "form": form, **ctx})
         return context
 
 
-def shared_context(user, restaurant=None):
+def get_context(user, view=CurrentViews.ORDER_VIEW):
+    context = {
+        CurrentViews.ORDER_VIEW: order_context(user, view),
+        CurrentViews.RESTAURANT_VIEW: restaurant_context(view),
+    }
+    return context.get(view)
+
+
+def restaurant_context(view=CurrentViews.RESTAURANT_VIEW, restaurant=None):
+    return {
+        **get_current_view(view=view),
+        ViewContextKeys.MAIN_TITLE: "Restaurant Screen",
+        ViewContextKeys.TITLE_ACTION: "Add Order",
+        ViewContextKeys.NEXT_VIEW: CurrentViews.ORDER_VIEW,
+        # ==============
+        ViewContextKeys.LIST_SECTION_ID: "restaurant_list",
+        ViewContextKeys.LIST_SECTION_TITLE: "Restaurant List",
+        ViewContextKeys.LIST_MESSAGE_TYPE: "showRestaurantItems",
+        ViewContextKeys.LIST_SECTION_DATA: Restaurant.objects.all(),
+        #
+        **restaurant_details_section(restaurant),
+    }
+
+
+def order_context(user, view=CurrentViews.ORDER_VIEW, restaurant=None):
     all_orders = get_all_orders()
     orders = get_user_orders(user)
     disable = disable_form(orders)
@@ -50,9 +64,71 @@ def shared_context(user, restaurant=None):
         menuItems = MenuItem.objects.none()
     else:
         order = get_or_create_order(user)
-        restaurants = Restaurant.objects.all()
-        menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
-    return order, restaurants, menuItems, all_orders, disable
+        restaurants, menuItems = get_restaurant_with_menu_items(restaurant)
+
+    return {
+        OrderContextKeys.ORDER: order,
+        OrderContextKeys.RESTAURANTS: restaurants,
+        OrderContextKeys.MENU_ITEMS: menuItems,
+        OrderContextKeys.DISABLE_FORM: disable,
+        # OrderContextKeys.ORDER_ITEMS: get_order_items(order),
+        #
+        **get_current_view(view=view),
+        ViewContextKeys.MAIN_TITLE: "Orders Screen",
+        ViewContextKeys.TITLE_ACTION: "Add Restaurant",
+        ViewContextKeys.NEXT_VIEW: CurrentViews.RESTAURANT_VIEW,
+        #
+        ViewContextKeys.LIST_SECTION_ID: "members_orders",
+        ViewContextKeys.LIST_SECTION_TITLE: "Members Orders",
+        ViewContextKeys.LIST_MESSAGE_TYPE: "showMemberItemOrders",
+        ViewContextKeys.LIST_SECTION_DATA: all_orders,
+        #
+        **order_details_section(order),
+    }
+
+
+def get_current_view(view):
+    views = {
+        CurrentViews.ORDER_VIEW: {ViewContextKeys.CURRENT_VIEW: CurrentViews.ORDER_VIEW},
+        CurrentViews.RESTAURANT_VIEW: {ViewContextKeys.CURRENT_VIEW: CurrentViews.RESTAURANT_VIEW},
+    }
+    return views.get(view)
+
+
+def order_details_section(order, view=CurrentViews.ORDER_VIEW, add_view=False):
+    return {
+        ViewContextKeys.DETAILS_SECTION_ID: "order_items",
+        ViewContextKeys.DETAILS_SECTION_TITLE: "Order Items",
+        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteItem",
+        ViewContextKeys.DETAILS_SECTION_DATA: get_order_items(order),
+        **(get_current_view(view=view) if add_view else {}),
+    }
+
+
+def restaurant_details_section(restaurant, view=CurrentViews.RESTAURANT_VIEW, add_view=False):
+    return {
+        ViewContextKeys.DETAILS_SECTION_ID: "menu_items",
+        ViewContextKeys.DETAILS_SECTION_TITLE: "Menu Items",
+        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteItem",
+        ViewContextKeys.DETAILS_SECTION_DATA: get_restaurant_menu_items(restaurant),
+        **(get_current_view(view=view) if add_view else {}),
+    }
+
+
+def get_order_items(order):
+    orderItems = OrderItem.objects.filter(fk_order=order)
+    return orderItems
+
+
+def get_restaurant_with_menu_items(restaurant):
+    restaurants = Restaurant.objects.all()
+    menuItems = get_restaurant_menu_items(restaurant)
+    return restaurants, menuItems
+
+
+def get_restaurant_menu_items(restaurant):
+    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
+    return menuItems
 
 
 def orders_query():
@@ -117,3 +193,22 @@ def menuitems(request):
     restaurant = request.GET.get("fk_restaurant")
     menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
     return render(request, "order/menuItems.html", {"menuItems": menuItems})
+
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+
+def announcement(request):
+    channels = Clients.objects.all()
+    channel_layer = get_channel_layer()
+    # print(channel_layer, "xxxxx")
+    # async_to_sync(channel_layer.group_send)("group_hosam", {"type": "groupOrderSummary"})
+
+    for channel in channels:
+        async_to_sync(channel_layer.send)(channel.channel_name, {"type": "groupOrderSummary"})
+
+    return render(
+        request,
+        "order/menuItems.html",
+    )
