@@ -4,7 +4,7 @@ from datetime import datetime
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
-from .enums import GeneralContextKeys, OrderContextKeys, ViewContextKeys, CurrentViews
+from .enums import GeneralContextKeys, OrderContextKeys, RestaurantContextKeys, ViewContextKeys, CurrentViews
 from .models import Order, OrderItem, Restaurant, MenuItem, Clients
 from .forms import OrderItemForm
 
@@ -45,12 +45,11 @@ def restaurant_context(view=CurrentViews.RESTAURANT_VIEW, restaurant=None):
         ViewContextKeys.TITLE_ACTION: "Add Order",
         ViewContextKeys.NEXT_VIEW: CurrentViews.ORDER_VIEW,
         # ==============
-        ViewContextKeys.LIST_SECTION_ID: "restaurant_list",
-        ViewContextKeys.LIST_SECTION_TITLE: "Restaurant List",
-        ViewContextKeys.LIST_MESSAGE_TYPE: "showRestaurantItems",
-        ViewContextKeys.LIST_SECTION_DATA: Restaurant.objects.all(),
+        **restaurant_list_section(),
         #
         **restaurant_details_section(restaurant),
+        #
+        RestaurantContextKeys.FORM_MENU_ITEM_DISABLE: True,
     }
 
 
@@ -99,7 +98,7 @@ def order_details_section(order, view=CurrentViews.ORDER_VIEW, add_view=False):
     return {
         ViewContextKeys.DETAILS_SECTION_ID: "order_items",
         ViewContextKeys.DETAILS_SECTION_TITLE: "Order Items",
-        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteItem",
+        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
         ViewContextKeys.DETAILS_SECTION_DATA: get_order_items(order),
         **(get_current_view(view=view) if add_view else {}),
     }
@@ -109,8 +108,19 @@ def restaurant_details_section(restaurant, view=CurrentViews.RESTAURANT_VIEW, ad
     return {
         ViewContextKeys.DETAILS_SECTION_ID: "menu_items",
         ViewContextKeys.DETAILS_SECTION_TITLE: "Menu Items",
-        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteItem",
+        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteMenuItem",
         ViewContextKeys.DETAILS_SECTION_DATA: get_restaurant_menu_items(restaurant),
+        ViewContextKeys.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=restaurant) if restaurant else None,
+        **(get_current_view(view=view) if add_view else {}),
+    }
+
+
+def restaurant_list_section(view=CurrentViews.RESTAURANT_VIEW, add_view=False):
+    return {
+        ViewContextKeys.LIST_SECTION_ID: "restaurant_list",
+        ViewContextKeys.LIST_SECTION_TITLE: "Restaurant List",
+        ViewContextKeys.LIST_MESSAGE_TYPE: "showRestaurantItems",
+        ViewContextKeys.LIST_SECTION_DATA: Restaurant.objects.all().order_by("-id"),
         **(get_current_view(view=view) if add_view else {}),
     }
 
@@ -127,7 +137,7 @@ def get_restaurant_with_menu_items(restaurant):
 
 
 def get_restaurant_menu_items(restaurant):
-    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
+    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant).order_by("-id")
     return menuItems
 
 

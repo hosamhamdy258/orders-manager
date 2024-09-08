@@ -9,7 +9,7 @@ UserModel = get_user_model()
 
 
 class Restaurant(models.Model):
-    name = models.CharField(_("Name"), max_length=50)
+    name = models.CharField(_("Name"), max_length=50, unique=True)
 
     def __str__(self):
         return self.name

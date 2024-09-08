@@ -25,6 +25,7 @@ class ViewContextKeys(EnumMeta):
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
     DETAILS_SECTION_DATA = "details_section_data"
+    DETAILS_CURRENT_SELECTION = "details_current_selection"
 
 
 class OrderContextKeys(EnumMeta):
@@ -35,3 +36,7 @@ class OrderContextKeys(EnumMeta):
     FORM = "form"
     DISABLE_FORM = "disable_form"
     ALL_ORDERS = "all_orders"
+
+
+class RestaurantContextKeys(EnumMeta):
+    FORM_MENU_ITEM_DISABLE = "form_menu_item_disable"

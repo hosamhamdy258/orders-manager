@@ -24,7 +24,12 @@
 
         <!-- bottom section -->
         <div class="col border border-3 rounded-4 border-black p-2">
+            {% if current_view == "order_view" %}
             {% include "order/formOrderItem.html" %}
+            {% elif current_view == "restaurant_view" %}
+            {% include "order/formRestaurant.html" %}
+            {% include "order/formMenuItem.html" %}
+            {% endif %}
         </div>
     </div>
 

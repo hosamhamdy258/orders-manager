@@ -9,8 +9,8 @@ from django.utils.translation import gettext as _
 from orderApp.utils import calculate_totals, group_nested_data
 
 
-from orderApp.models import Clients, OrderItem, Restaurant
-from orderApp.forms import OrderItemForm
+from orderApp.models import Clients, MenuItem, OrderItem, Restaurant
+from orderApp.forms import MenuItemForm, OrderItemForm, RestaurantForm
 from orderApp.views import (
     create_order,
     disable_form,
@@ -20,7 +20,9 @@ from orderApp.views import (
     get_user_orders,
     order_context,
     order_details_section,
+    restaurant_context,
     restaurant_details_section,
+    restaurant_list_section,
 )
 from orderApp.utils import templates_joiner
 
@@ -166,7 +168,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             self.send(text_data=response)
             pass
 
-    def deleteItem(self, event):
+    def deleteOrderItem(self, event):
         group = event.get("group", False)
         if group:  # to recursive call dispatch method
             self.self_dispatch(event)
@@ -343,10 +345,88 @@ class GroupConsumer(JsonWebsocketConsumer):
             context.update({"user": user})
 
             context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
+            context.update({"remove_errors": True})
+
+            templates.append("order/detailsSection.html")
+            templates.append("order/formMenuItem.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def addRestaurant(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
+
+            form = RestaurantForm(event[self.message])
+            if form.is_valid():
+                instance = form.save(True)
+                context.update(**restaurant_list_section())
+                context.update(**restaurant_context(restaurant=instance.id))
+                templates.append("order/listSection.html")
+                templates.append("order/detailsSection.html")
+                templates.append("order/formMenuItem.html")
+            else:
+                context.update({"form": form})
+
+            templates.append("order/formRestaurant.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def deleteMenuItem(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
+
+            MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
+
+            restaurant_id = MenuItemObj.fk_restaurant.id
+
+            context.update({**restaurant_details_section(restaurant=restaurant_id, add_view=True)})
 
             templates.append("order/detailsSection.html")
 
-            print(context)
+            MenuItemObj.delete()
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def addMenuItem(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+            context.update({"user": user})
+
+            form = MenuItemForm(event[self.message])
+            if form.is_valid():
+                form.save(True)
+                context.update({**restaurant_details_section(restaurant=event[self.message].get("fk_restaurant"), add_view=True)})
+                templates.append("order/detailsSection.html")
+            else:
+                context.update({"form": form})
+
+            templates.append("order/formMenuItem.html")
 
             response = templates_joiner(context, templates)
 
