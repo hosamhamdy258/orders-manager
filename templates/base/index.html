@@ -1,8 +1,8 @@
-{% extends "order/base.html" %}
+{% extends "base/base.html" %}
 
 {% block body %}
 <!-- main container -->
 <div class="container border border-3 rounded-4 border-black text-center p-2" hx-ext="ws" ws-connect="/ws/group/{{group_name}}/">
-  {% include "order/body.html" %}
+  {% include "base/body.html" %}
 </div>
 {% endblock body %}

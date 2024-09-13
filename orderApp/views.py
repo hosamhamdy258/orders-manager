@@ -17,7 +17,7 @@ order_limit = 2
 
 
 class GroupView(LoginRequiredMixin, TemplateView):
-    template_name = "order/index.html"
+    template_name = "base/index.html"
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -54,8 +54,8 @@ def restaurant_context(view=CurrentViews.RESTAURANT_VIEW, restaurant=None):
 
 
 def order_context(user, view=CurrentViews.ORDER_VIEW, restaurant=None):
-    all_orders = get_all_orders()
-    orders = get_user_orders(user)
+
+    orders = get_all_orders(user)
     disable = disable_form(orders)
     if disable:
         order = Order.objects.none().first()
@@ -77,10 +77,7 @@ def order_context(user, view=CurrentViews.ORDER_VIEW, restaurant=None):
         ViewContextKeys.TITLE_ACTION: "Add Restaurant",
         ViewContextKeys.NEXT_VIEW: CurrentViews.RESTAURANT_VIEW,
         #
-        ViewContextKeys.LIST_SECTION_ID: "members_orders",
-        ViewContextKeys.LIST_SECTION_TITLE: "Members Orders",
-        ViewContextKeys.LIST_MESSAGE_TYPE: "showMemberItemOrders",
-        ViewContextKeys.LIST_SECTION_DATA: all_orders,
+        **order_list_section(),
         #
         **order_details_section(order),
     }
@@ -94,7 +91,7 @@ def get_current_view(view):
     return views.get(view)
 
 
-def order_details_section(order, view=CurrentViews.ORDER_VIEW, add_view=False):
+def order_details_section(order=None, view=CurrentViews.ORDER_VIEW, add_view=False):
     return {
         ViewContextKeys.DETAILS_SECTION_ID: "order_items",
         ViewContextKeys.DETAILS_SECTION_TITLE: "Order Items",
@@ -125,8 +122,21 @@ def restaurant_list_section(view=CurrentViews.RESTAURANT_VIEW, add_view=False):
     }
 
 
+def order_list_section(user=None, view=CurrentViews.ORDER_VIEW, add_view=False):
+    return {
+        ViewContextKeys.LIST_SECTION_ID: "members_orders",
+        ViewContextKeys.LIST_SECTION_TITLE: "Members Orders",
+        ViewContextKeys.LIST_MESSAGE_TYPE: "showMemberItemOrders",
+        ViewContextKeys.LIST_SECTION_DATA: get_all_orders(user),
+        **(get_current_view(view=view) if add_view else {}),
+    }
+
+
 def get_order_items(order):
-    orderItems = OrderItem.objects.filter(fk_order=order)
+    if order:
+        orderItems = OrderItem.objects.filter(fk_order=order)
+    else:
+        orderItems = OrderItem.objects.none()
     return orderItems
 
 
@@ -145,13 +155,11 @@ def orders_query():
     return Order.objects.filter(created__date=datetime.today())
 
 
-def get_user_orders(user):
-    orders = orders_query().filter(finished_ordering=True, fk_user=user)
-    return orders
-
-
-def get_all_orders():
-    orders = orders_query().filter(finished_ordering=True)
+def get_all_orders(user=None):
+    if user:
+        orders = orders_query().filter(finished_ordering=True, fk_user=user)
+    else:
+        orders = orders_query().filter(finished_ordering=True)
     return orders
 
 
@@ -202,7 +210,7 @@ def finish_order(order, user):
 def menuitems(request):
     restaurant = request.GET.get("fk_restaurant")
     menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
-    return render(request, "order/menuItems.html", {"menuItems": menuItems})
+    return render(request, "order/bottomSection/form/menuItems.html", {"menuItems": menuItems})
 
 
 from channels.layers import get_channel_layer
@@ -220,5 +228,5 @@ def announcement(request):
 
     return render(
         request,
-        "order/menuItems.html",
+        "order/bottomSection/form/menuItems.html",
     )

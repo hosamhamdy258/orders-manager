@@ -3,7 +3,7 @@
     <input type="hidden" name="fk_order" value="{{order.id}}">
     <input type="hidden" name="message_type" value="finishOrder">
     <button type="submit" class="btn btn-success" {% if disable_form %}disabled{% endif %}>{% translate "Finish Order" %}</button>
-    {% include "order/error.html" with error=finish_order_error %}
-    {% include "order/error_remover.html" %}
+    {% include "base/error.html" with error=finish_order_error %}
+    {% include "base/error_remover.html" %}
 
 </form>

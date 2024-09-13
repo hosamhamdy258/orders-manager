@@ -6,7 +6,7 @@
             <input type="text" class="form-control" id="restaurant" name="name" placeholder='{% translate "Restaurant Name" %}' value="{{form.name.value}}" required autocomplete="off"
                 {% if disable_form %}disabled{% endif %}>
             {% for error in form.name.errors %}
-            {% include "order/error.html" %}
+            {% include "base/error.html" %}
             {% endfor %}
         </div>
 

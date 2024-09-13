@@ -2,6 +2,6 @@
 <form id="orderSammary" ws-send hx-swap-oob="innerHTML">
     <input type="hidden" name="message_type" value="groupOrderSummary">
     <button type="submit" class="btn btn-success">{% translate "Orders Summary" %}</button>
-    {% include "order/error.html" with error=order_summary_error%}
-    {% include "order/error_remover.html" %}
+    {% include "base/error.html" with error=order_summary_error%}
+    {% include "base/error_remover.html" %}
 </form>

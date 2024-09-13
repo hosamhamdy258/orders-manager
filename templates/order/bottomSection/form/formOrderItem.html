@@ -1,6 +1,6 @@
 {% load i18n%}
 <form id="order_item_form" ws-send hx-swap="outerHTML">
-  {% include "order/orderID.html" %}
+  {% include "order/bottomSection/form/orderID.html" %}
   <input type="hidden" name="message_type" value="addOrderItem">
   <div class="row g-1 m-1 align-items-center">
     <div class="col border border-3 rounded-4 border-black p-2">
@@ -12,19 +12,19 @@
         {% endfor %}
       </select>
       {% for error in form.fk_restaurant.errors %}
-      {% include "order/error.html" %}
+      {% include "base/error.html" %}
       {% endfor %}
     </div>
 
     <div class="col border border-3 rounded-4 border-black p-2">
-      {% include "order/menuItems.html" %}
+      {% include "order/bottomSection/form/menuItems.html" %}
     </div>
 
     <div class="col border border-3 rounded-4 border-black p-2">
       <input type="number" class="form-control" id="quantity" name="quantity" placeholder='{% translate "Quantity" %}' min="1" value="{{form.quantity.value}}" required autocomplete="off"
         {% if disable_form %}disabled{% endif %}>
       {% for error in form.quantity.errors %}
-      {% include "order/error.html" %}
+      {% include "base/error.html" %}
       {% endfor %}
     </div>
 
@@ -33,17 +33,3 @@
     </div>
   </div>
 </form>
-<div class="row g-1 m-1 align-items-center">
-  <div class="col border border-3 rounded-4 border-black p-2">
-    {% include "order/orderSummary.html" %}
-  </div>
-  <div class="col border border-3 rounded-4 border-black p-2">
-    <form ws-send>
-      <input type="hidden" name="message_type" value="ordersList">
-      <button type="submit" class="btn btn-success">{% translate "My Orders List" %}</button>
-    </form>
-  </div>
-  <div class="col border border-3 rounded-4 border-black p-2">
-    {% include "order/finishOrder.html" %}
-  </div>
-</div>
