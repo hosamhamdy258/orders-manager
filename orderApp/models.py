@@ -32,11 +32,11 @@ class Order(models.Model):
     finished_ordering = models.BooleanField(_("finished ordering"), default=False)
 
     def __str__(self):
-        keys = [self.fk_user.username, self.created.date()]
+        keys = [self.fk_user.username, self.total_order()]
         return " / ".join(list(map(str, keys)))
 
     def total_order(self):
-        return self.orderitem_set.aggregate(total=Sum(F("quantity") * F("price"), output_field=models.DecimalField()))
+        return self.orderitem_set.aggregate(total=Sum(F("quantity") * F("fk_menu_item__price"), output_field=models.DecimalField()))["total"]
 
 
 class OrderItem(models.Model):

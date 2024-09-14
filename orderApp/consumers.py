@@ -11,20 +11,20 @@ from orderApp.utils import calculate_totals, group_nested_data
 
 from orderApp.models import Clients, MenuItem, OrderItem, Restaurant
 from orderApp.forms import MenuItemForm, OrderItemForm, RestaurantForm
-from orderApp.views import (
-    create_order,
-    disable_form,
+
+from orderApp.utils import templates_joiner
+from orderApp.orderContext import (
+    create_order_updated,
     finish_order,
     get_all_orders,
-    get_context,
-    order_context,
+    order_actions_section,
     order_details_section,
+    order_form_id,
+    order_form_section,
     order_list_section,
-    restaurant_context,
-    restaurant_details_section,
-    restaurant_list_section,
 )
-from orderApp.utils import templates_joiner
+from orderApp.restaurantContext import restaurant_context, restaurant_details_section, restaurant_list_section
+from orderApp.views import get_context
 
 UserModel = get_user_model()
 
@@ -69,25 +69,29 @@ class GroupConsumer(JsonWebsocketConsumer):
         else:
             templates = []
             user = self.scope["user"]
+            context = {"user": user}
 
-            ctx = order_context(user=user, restaurant=event[self.message].get("fk_restaurant", None))
+            if not event[self.message].get("fk_order"):
+                event[self.message]["fk_order"] = create_order_updated(user)
 
-            context = {
-                **ctx,
-                "user": user,
-            }
             form = OrderItemForm(event[self.message])
             if form.is_valid():
                 form.save(True)
 
                 form = OrderItemForm(initial={**form.cleaned_data, "fk_menu_item": None, "quantity": None})
                 context.update({"form": form})
+                context.update({"remove_errors": True})
 
+                context.update(**order_details_section(order=event[self.message]["fk_order"], add_view=True))
                 templates.append("base/bodySection/detailsSection.html")
+
+                context.update(**order_actions_section())
+                templates.append("order/bottomSection/actions/finish_order_id.html")
             else:
                 context.update({"form": form})
 
             templates.append("order/bottomSection/form/formOrderItem.html")
+            context.update(**order_form_section(user=user, restaurant=event[self.message].get("fk_restaurant")))
 
             response = templates_joiner(context, templates)
 
@@ -103,32 +107,25 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
             user = self.scope["user"]
 
-            isFinished, finish_order_error, order = finish_order(event[self.message].get("fk_order"), user)
+            isFinished, finish_order_error, order = finish_order(event[self.message].get("fk_order"))
             if isFinished:
-                created, create_error_msg, order = create_order(user)
-                if created:
-                    context.update({"remove_errors": True})
-                else:
-                    context.update({"finish_order_error": create_error_msg})
+                context.update({"remove_errors": True})
 
+                context.update(**order_form_id())
+                templates.append("order/bottomSection/form/form_order_id.html")
+
+                context.update(**order_details_section())
+                templates.append("base/bodySection/detailsSection.html")
+
+                context.update(**order_actions_section())
+
+                # ! to be announcements
+                self.membersOrders({"message": {"message_type": "membersOrders"}})
             else:
                 context.update({"finish_order_error": finish_order_error})
+                context.update(**order_actions_section(order=order, add_order_id=True))
 
-            user_orders = get_all_orders(user)
-
-            disable = disable_form(user_orders)
-            if disable:
-                context.update({"disable_form": disable})
-                templates.append("order/bottomSection/form/formOrderItem.html")
-
-            context.update({"order": order})
-            context.update(**order_details_section())
-
-            templates.append("base/bodySection/detailsSection.html")
-            templates.append("order/bottomSection/form/orderID.html")
             templates.append("order/bottomSection/actions/finishOrder.html")
-
-            self.membersOrders({"message": {"message_type": "membersOrders"}})
 
             response = templates_joiner(context, templates)
 
@@ -159,8 +156,9 @@ class GroupConsumer(JsonWebsocketConsumer):
             user = self.scope["user"]
 
             context.update(**order_list_section(user))
-
             templates.append("base/bodySection/listSection.html")
+
+            context.update(**order_details_section())
             templates.append("base/bodySection/detailsSection.html")
 
             response = templates_joiner(context, templates)
