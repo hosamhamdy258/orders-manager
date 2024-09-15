@@ -7,7 +7,7 @@ from orderApp.context import get_current_view
 from orderApp.enums import OrderContextKeys, ViewContextKeys, CurrentViews
 from orderApp.models import Order, OrderItem, Restaurant, MenuItem
 
-order_limit = 50
+order_limit = 1
 
 
 def order_context(user, view=CurrentViews.ORDER_VIEW, restaurant=None):
@@ -75,11 +75,13 @@ def order_form_id(order=None):
     }
 
 
-def order_actions_section(order=None, add_order_id=False):
+def order_actions_section(order=None, add_order_id=False, all_orders=False):
 
     return {
         OrderContextKeys.FINISH_ORDER_ID: OrderContextKeys.FINISH_ORDER_ID,
         **({OrderContextKeys.ORDER: order} if add_order_id else {}),
+        **({OrderContextKeys.ALL_ORDERS: OrderContextKeys.ALL_ORDERS} if all_orders else {}),
+        **({OrderContextKeys.ALL_ORDERS_BUTTON: _("All Orders")} if all_orders else {OrderContextKeys.ALL_ORDERS_BUTTON: _("My Orders")}),
     }
 
 

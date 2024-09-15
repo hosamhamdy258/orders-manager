@@ -19,7 +19,6 @@ from orderApp.orderContext import (
     get_all_orders,
     order_actions_section,
     order_details_section,
-    order_form_id,
     order_form_section,
     order_list_section,
 )
@@ -111,8 +110,8 @@ class GroupConsumer(JsonWebsocketConsumer):
             if isFinished:
                 context.update({"remove_errors": True})
 
-                context.update(**order_form_id())
-                templates.append("order/bottomSection/form/form_order_id.html")
+                context.update(**order_form_section(user=user))
+                templates.append("order/bottomSection/form/formOrderItem.html")
 
                 context.update(**order_details_section())
                 templates.append("base/bodySection/detailsSection.html")
@@ -146,7 +145,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             self.send(text_data=response)
             pass
 
-    def ordersList(self, event):
+    def OrdersList(self, event):
         group = event.get("group", False)
         if group:  # to recursive call dispatch method
             self.self_dispatch(event)
@@ -155,8 +154,17 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
             user = self.scope["user"]
 
-            context.update(**order_list_section(user))
+            all_orders = event[self.message].get("all_orders")
+            
+            if all_orders:
+                context.update(**order_list_section())
+                context.update(**order_actions_section())
+            else:
+                context.update(**order_list_section(user))
+                context.update(**order_actions_section(all_orders=True))
+
             templates.append("base/bodySection/listSection.html")
+            templates.append("order/bottomSection/actions/getOrderList.html")
 
             context.update(**order_details_section())
             templates.append("base/bodySection/detailsSection.html")

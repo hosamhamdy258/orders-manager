@@ -29,13 +29,16 @@ class ViewContextKeys(EnumMeta):
 
 
 class OrderContextKeys(EnumMeta):
+    ORDER = "order"
     RESTAURANTS = "restaurants"
     MENU_ITEMS = "menuItems"
-    ORDER = "order"
     DISABLE_FORM = "disable_form"
     DISABLE_FINISH_BUTTON = "disable_finish_button"
     FORM_ORDER_ID = "form_order_id"
     FINISH_ORDER_ID = "finish_order_id"
+    
+    ALL_ORDERS = "all_orders"
+    ALL_ORDERS_BUTTON = "all_orders_button"
 
 
 class RestaurantContextKeys(EnumMeta):

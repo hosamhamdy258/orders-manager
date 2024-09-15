@@ -1,0 +1,8 @@
+{% load i18n %}
+<form id="get_orders" ws-send hx-swap-oob="innerHTML">
+    <input type="hidden" name="message_type" value="OrdersList">
+    {% if all_orders %}
+    <input type="checkbox" name="all_orders" checked hidden>
+    {% endif %}
+    <button type="submit" class="btn btn-success">{{all_orders_button}}</button>
+</form>
