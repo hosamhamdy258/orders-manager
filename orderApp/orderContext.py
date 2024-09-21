@@ -4,84 +4,100 @@ from django.utils.translation import gettext as _
 from orderApp.context import get_current_view
 
 
-from orderApp.enums import OrderContextKeys, ViewContextKeys, CurrentViews
-from orderApp.models import Order, OrderItem, Restaurant, MenuItem
+from orderApp.enums import OrderContextKeys as OC, ViewContextKeys as VC, CurrentViews as CV
+from orderApp.models import Group, Order, OrderItem, Restaurant, MenuItem
 
 order_limit = 1
 
 
-def order_context(user, view=CurrentViews.ORDER_VIEW, restaurant=None):
-    form_section = order_form_section(user=user, restaurant=restaurant)
+def check_order_complete_status(user, group):
+    if user and group:
+        group_obj, created = Group.objects.get_or_create(name=group)
+        return group_obj.completed or user in group_obj.accepted_order_users.all()
+    else:
+        return False
 
+
+def order_context(user, group, restaurant=None):
+    order_completed = check_order_complete_status(user=user, group=group)
+
+    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=order_completed)
     return {
         **order_title_section(),
-        **order_list_section(),
-        **order_details_section(order=form_section.get(OrderContextKeys.ORDER)),
+        **order_list_section(group=group),
+        **order_details_section(order=form_section.get(OC.ORDER), disable_remove_button=order_completed, skip_check=True),
         **form_section,
-        **order_actions_section(),
+        **order_actions_section(force_disable=order_completed),
     }
 
 
 def order_title_section():
     return {
-        **get_current_view(view=CurrentViews.ORDER_VIEW),
-        ViewContextKeys.MAIN_TITLE: _("Orders Screen"),
-        ViewContextKeys.TITLE_ACTION: _("Add Restaurant"),
-        ViewContextKeys.NEXT_VIEW: CurrentViews.RESTAURANT_VIEW,
+        **get_current_view(view=CV.ORDER_VIEW),
+        VC.MAIN_TITLE: _("Orders Screen"),
+        VC.TITLE_ACTION: _("Add Restaurant"),
+        VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
     }
 
 
-def order_list_section(user=None, view=CurrentViews.ORDER_VIEW, add_view=False):
+def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False):
     return {
-        ViewContextKeys.LIST_SECTION_ID: "members_orders",
-        ViewContextKeys.LIST_SECTION_TITLE: _("Members Orders"),
-        ViewContextKeys.LIST_MESSAGE_TYPE: "showMemberItemOrders",
-        ViewContextKeys.LIST_SECTION_DATA: get_all_orders(user),
+        VC.LIST_SECTION_ID: "members_orders",
+        VC.LIST_SECTION_TITLE: _("Members Orders"),
+        VC.LIST_MESSAGE_TYPE: "showMemberItemOrders",
+        VC.LIST_SECTION_DATA: get_all_orders(user=user, group=group),
         **(get_current_view(view=view) if add_view else {}),
     }
 
 
-def order_details_section(order=None, view=CurrentViews.ORDER_VIEW, add_view=False):
+def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disable_remove_button=False, user=None, group=None, skip_check=False):
+
+    disable = True if disable_remove_button else check_order_complete_status(user=user, group=group) if not skip_check else False
+
     return {
-        ViewContextKeys.DETAILS_SECTION_ID: "order_items",
-        ViewContextKeys.DETAILS_SECTION_TITLE: _("Order Items"),
-        ViewContextKeys.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
-        ViewContextKeys.DETAILS_SECTION_DATA: get_order_items(order),
+        VC.DETAILS_SECTION_ID: "order_items",
+        VC.DETAILS_SECTION_TITLE: _("Order Items"),
+        VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
+        OC.DISABLE_REMOVE_BUTTON: disable,
+        VC.DETAILS_SECTION_DATA: get_order_items(order),
         **(get_current_view(view=view) if add_view else {}),
     }
 
 
-def order_form_section(user, restaurant=None):
-    disable = disable_form(user=user)
+def order_form_section(user=None, group=None, restaurant=None, force_disable=False):
+
+    disable = True if force_disable else disable_order_item_form(user=user, group=group)
+
     if disable:
         order = Order.objects.none().first()
         restaurants = Restaurant.objects.none()
         menuItems = MenuItem.objects.none()
     else:
-        order = get_last_order(user)
+        order = get_last_order(user=user, group=group)
         restaurants, menuItems = get_restaurant_with_menu_items(restaurant)
     return {
-        OrderContextKeys.RESTAURANTS: restaurants,
-        OrderContextKeys.MENU_ITEMS: menuItems,
-        OrderContextKeys.DISABLE_FORM: disable,
+        OC.RESTAURANTS: restaurants,
+        OC.MENU_ITEMS: menuItems,
+        OC.DISABLE_ORDER_ITEM_FORM: disable,
         **order_form_id(order),
     }
 
 
 def order_form_id(order=None):
     return {
-        OrderContextKeys.ORDER: order,
-        OrderContextKeys.FORM_ORDER_ID: OrderContextKeys.FORM_ORDER_ID,
+        OC.ORDER: order,
+        OC.FORM_ORDER_ID: OC.FORM_ORDER_ID,
     }
 
 
-def order_actions_section(order=None, add_order_id=False, all_orders=False):
+def order_actions_section(order=None, add_order_id=False, all_orders=False, force_disable=False):
 
     return {
-        OrderContextKeys.FINISH_ORDER_ID: OrderContextKeys.FINISH_ORDER_ID,
-        **({OrderContextKeys.ORDER: order} if add_order_id else {}),
-        **({OrderContextKeys.ALL_ORDERS: OrderContextKeys.ALL_ORDERS} if all_orders else {}),
-        **({OrderContextKeys.ALL_ORDERS_BUTTON: _("All Orders")} if all_orders else {OrderContextKeys.ALL_ORDERS_BUTTON: _("My Orders")}),
+        OC.FINISH_ORDER_ID: OC.FINISH_ORDER_ID,
+        OC.DISABLE_COMPLETE_BUTTON: force_disable,
+        **({OC.ORDER: order} if add_order_id else {}),
+        **({OC.ALL_ORDERS: OC.ALL_ORDERS} if all_orders else {}),
+        **({OC.ALL_ORDERS_BUTTON: _("All Orders")} if all_orders else {OC.ALL_ORDERS_BUTTON: _("My Orders")}),
     }
 
 
@@ -108,21 +124,21 @@ def orders_query():
     return Order.objects.filter(created__date=datetime.today())
 
 
-def get_all_orders(user=None):
-    if user:
-        orders = orders_query().filter(finished_ordering=True, fk_user=user)
+def get_all_orders(user=None, group=None):
+    if user and group:
+        orders = orders_query().filter(finished_ordering=True, fk_user=user, fk_group__name=group)
     else:
-        orders = orders_query().filter(finished_ordering=True)
+        orders = orders_query().filter(finished_ordering=True, fk_group__name=group)
     return orders
 
 
-def disable_form(user):
-    orders = get_all_orders(user=user)
+def disable_order_item_form(user, group):
+    orders = get_all_orders(user=user, group=group)
     return orders.count() >= order_limit
 
 
-def get_last_order(user):
-    order = orders_query().filter(fk_user=user, finished_ordering=False).last()
+def get_last_order(user, group):
+    order = orders_query().filter(fk_user=user, fk_group__name=group, finished_ordering=False).last()
     return order
 
 
@@ -139,9 +155,9 @@ def create_order(user):
     return True, "", order
 
 
-def create_order_updated(user):
+def create_order_updated(user, group):
     # !check for max allowed orders per day and use create_order function
-    order = Order.objects.create(fk_user=user)
+    order = Order.objects.create(fk_user=user, fk_group=group)
     return order
 
 

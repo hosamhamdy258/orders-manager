@@ -6,6 +6,47 @@ from django.db.models import Sum, F
 from orderApp.utils import PositiveValueValidator
 
 UserModel = get_user_model()
+# to be as == connected to channel
+minium_accepting_users = 2
+
+
+class Client(models.Model):
+    channel_name = models.CharField(_("channel name"), max_length=50)
+
+
+class Group(models.Model):
+    name = models.CharField(_("group name"), max_length=50)
+    m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Users"), blank=True)
+    accepted_order_users = models.ManyToManyField(UserModel, related_name="accepted_order_users", verbose_name=_("Accepted Order Users"), blank=True)
+    completed = models.BooleanField(_("completed"), default=False)
+
+    def __str__(self):
+        keys = [self.name, len(self.m2m_users.all())]
+        return " / ".join(list(map(str, keys)))
+
+    def add_user_to_accepted_order_users(self, user):
+        self.accepted_order_users.add(user)
+
+    def is_order_completed(self, user):
+        # ! user must be in order do complete it
+        # ! empty order issue
+        # ! check for unfinished from connected users
+        # ! timer to finish unfinished orders to don't lock orders
+        data = self.order_set.filter(finished_ordering=False).values_list("fk_user__username", flat=True)
+
+        if data.exists():
+            members = ", ".join(data)
+            error_msg = _(f"Some Members Didn't Finish Ordering Yet:\n{members}")
+            return False, error_msg
+
+        self.add_user_to_accepted_order_users(user)
+
+        if self.accepted_order_users.count() >= minium_accepting_users:
+            self.completed = True
+            self.save()
+            return True, ""
+        else:
+            return False, ""
 
 
 class Restaurant(models.Model):
@@ -27,8 +68,8 @@ class MenuItem(models.Model):
 
 class Order(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
+    fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
     created = models.DateTimeField(_("Created"), auto_now_add=True)
-    completed = models.BooleanField(_("completed"), default=False)
     finished_ordering = models.BooleanField(_("finished ordering"), default=False)
 
     def __str__(self):
@@ -52,7 +93,3 @@ class OrderItem(models.Model):
         if self.fk_menu_item.price and self.quantity:
             return self.fk_menu_item.price * self.quantity
         return 0
-
-
-class Clients(models.Model):
-    channel_name = models.CharField(_("channel name"), max_length=50)

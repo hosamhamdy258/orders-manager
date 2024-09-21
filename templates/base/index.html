@@ -2,7 +2,7 @@
 
 {% block body %}
 <!-- main container -->
-<div class="container-fluid" hx-ext="ws" ws-connect="/ws/group/{{group_name}}/">
+<div class="container-fluid" hx-ext="ws" ws-connect={{ws_url}}>
   <div class="border border-3 rounded-4 border-black text-center p-2 my-2">
     {% include "base/body.html" %}
   </div>

@@ -6,8 +6,14 @@
         <div class="row row-cols-auto justify-content-between align-items-center g-1 m-1">
             <div class="col-auto p-2">{{main_title}}</div>
             <div class="col-auto p-2">
+                {% if current_view == "group_view" %}
+                {% include "group/topSection/titleAction.html" %}
+                {% else %}
                 {% include "base/topSection/titleAction.html" %}
+                {% endif %}
+
             </div>
+
         </div>
 
         <!-- body section -->
@@ -30,6 +36,8 @@
             {% elif current_view == "restaurant_view" %}
             {% include "restaurant/bottomSection/form/formRestaurant.html" %}
             {% include "restaurant/bottomSection/form/formMenuItem.html" %}
+            {% elif current_view == "group_view" %}
+            {% include "group/bottomSection/form/formGroupItem.html" %}
             {% endif %}
         </div>
     </div>

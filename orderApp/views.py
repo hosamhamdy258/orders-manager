@@ -8,15 +8,22 @@ from orderApp.restaurantContext import restaurant_context
 from orderApp.orderContext import order_context
 
 
-from orderApp.enums import GeneralContextKeys, CurrentViews
-from orderApp.models import MenuItem, Clients
+from orderApp.enums import GeneralContextKeys as GC, CurrentViews as CV
+from orderApp.models import MenuItem, Client
 from orderApp.forms import OrderItemForm
+from orderApp.groupContext import group_context
 
 
-# Create your views here.
+class IndexView(LoginRequiredMixin, TemplateView):
+    template_name = "base/index.html"
 
-# def index(request):
-#     return render(request, "order/index.html")
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        ctx = get_context(user=user, view=CV.GROUP_VIEW)
+
+        context = super().get_context_data(**kwargs)
+        context.update({GC.WS_URL: "/ws/index/", **ctx})
+        return context
 
 
 class GroupView(LoginRequiredMixin, TemplateView):
@@ -24,19 +31,21 @@ class GroupView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        group_name = kwargs.get(GeneralContextKeys.GROUP_NAME)
-        ctx = get_context(user=user, view=CurrentViews.ORDER_VIEW)
+        group_name = kwargs.get(GC.GROUP_NAME)
+        ctx = get_context(user=user, view=CV.ORDER_VIEW, group=group_name)
+        # !check if this needed
         form = OrderItemForm()
 
         context = super().get_context_data(**kwargs)
-        context.update({GeneralContextKeys.GROUP_NAME: group_name, "form": form, **ctx})
+        context.update({GC.GROUP_NAME: group_name, GC.WS_URL: f"/ws/group/{group_name}/", "form": form, **ctx})
         return context
 
 
-def get_context(user, view=CurrentViews.ORDER_VIEW):
+def get_context(user, view=CV.ORDER_VIEW, group=None):
     context = {
-        CurrentViews.ORDER_VIEW: order_context(user=user, view=view),
-        CurrentViews.RESTAURANT_VIEW: restaurant_context(view=view),
+        CV.ORDER_VIEW: order_context(user=user, group=group),
+        CV.RESTAURANT_VIEW: restaurant_context(view=view),
+        CV.GROUP_VIEW: group_context(view=view),
     }
     return context.get(view)
 
@@ -52,7 +61,7 @@ from asgiref.sync import async_to_sync
 
 
 def announcement(request):
-    channels = Clients.objects.all()
+    channels = Client.objects.all()
     channel_layer = get_channel_layer()
     # print(channel_layer, "xxxxx")
     # async_to_sync(channel_layer.group_send)("group_hosam", {"type": "groupOrderSummary"})

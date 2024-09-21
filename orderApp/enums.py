@@ -3,11 +3,13 @@ from enum import EnumMeta
 
 class GeneralContextKeys(EnumMeta):
     GROUP_NAME = "group_name"
+    WS_URL = "ws_url"
 
 
 class CurrentViews(EnumMeta):
     ORDER_VIEW = "order_view"
     RESTAURANT_VIEW = "restaurant_view"
+    GROUP_VIEW = "group_view"
 
 
 class ViewContextKeys(EnumMeta):
@@ -32,11 +34,13 @@ class OrderContextKeys(EnumMeta):
     ORDER = "order"
     RESTAURANTS = "restaurants"
     MENU_ITEMS = "menuItems"
-    DISABLE_FORM = "disable_form"
+    DISABLE_ORDER_ITEM_FORM = "disable_order_item_form"
     DISABLE_FINISH_BUTTON = "disable_finish_button"
+    DISABLE_COMPLETE_BUTTON = "disable_complete_button"
+    DISABLE_REMOVE_BUTTON = "disable_remove_button"
     FORM_ORDER_ID = "form_order_id"
     FINISH_ORDER_ID = "finish_order_id"
-    
+
     ALL_ORDERS = "all_orders"
     ALL_ORDERS_BUTTON = "all_orders_button"
 
