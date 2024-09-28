@@ -35,13 +35,18 @@ class Group(models.Model):
 
     def is_order_completed(self, user):
         # ! user must be in order do complete it
-        # ! empty order issue
-        # ! check for unfinished from connected users
         # ! timer to finish unfinished orders to don't lock orders
-        data = self.order_set.filter(finished_ordering=False).values_list("fk_user__username", flat=True)
+        orders = self.order_set
 
-        if data.exists():
-            members = ", ".join(data)
+        has_order = orders.filter(fk_user=user).exists()
+        if not has_order:
+            error_msg = _(f"Only Members Has Orders Can Complete Order")
+            return False, error_msg
+
+        unfinished_orders = orders.filter(finished_ordering=False).values_list("fk_user__username", flat=True)
+
+        if unfinished_orders.exists():
+            members = ", ".join(unfinished_orders)
             error_msg = _(f"Some Members Didn't Finish Ordering Yet:\n{members}")
             return False, error_msg
 

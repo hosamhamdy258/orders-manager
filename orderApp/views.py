@@ -34,30 +34,31 @@ class GroupView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         try:
-            Group.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
+            self.group = Group.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
         except ObjectDoesNotExist:
             return redirect("index")
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-        group_name = kwargs.get(GC.GROUP_NAME)
-        ctx = get_context(user=user, view=CV.ORDER_VIEW, group=group_name)
+
+        ctx = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
         # !check if this needed
         form = OrderItemForm()
 
         context = super().get_context_data(**kwargs)
-        context.update({GC.GROUP_NAME: group_name, GC.WS_URL: f"/ws/group/{group_name}/", "form": form, **ctx})
+        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/group/{self.group.room_number}/", "form": form, **ctx})
         return context
 
 
 def get_context(user, view=CV.ORDER_VIEW, group=None):
-    context = {
-        CV.ORDER_VIEW: order_context(user=user, group=group),
-        CV.RESTAURANT_VIEW: restaurant_context(view=view),
-        CV.GROUP_VIEW: group_context(view=view),
-    }
-    return context.get(view)
+    if view == CV.ORDER_VIEW:
+        return order_context(user=user, group=group)
+    if view == CV.RESTAURANT_VIEW:
+        return restaurant_context(view=view)
+    if view == CV.GROUP_VIEW:
+        return group_context(view=view)
+    return view
 
 
 def menuitems(request):
@@ -82,3 +83,19 @@ def announcement(request):
     #     async_to_sync(channel_layer.send)(channel.channel_name, {"type": "sendNotification","type2x": "sendNotification", "message": {"message_type": "sendNotification"}})
 
     return render(request, "order/bottomSection/form/menuItems.html")
+
+
+import threading
+
+
+def run_after_delay(func, delay_in_seconds, *args, **kwargs):
+    timer = threading.Timer(delay_in_seconds, func, args=args, kwargs=kwargs)
+    timer.start()
+
+
+def my_background_function():
+    Group.objects.all().delete()
+    print("This function runs after a delay in the background.")
+
+
+run_after_delay(my_background_function, 7)

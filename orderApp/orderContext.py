@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
+from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
@@ -13,8 +14,7 @@ order_limit = 1
 
 def check_order_complete_status(user, group):
     if user and group:
-        group_obj = Group.objects.get(room_number=group)
-        return group_obj.completed or user in group_obj.accepted_order_users.all()
+        return group.completed or user in group.accepted_order_users.all()
     else:
         return False
 
@@ -24,7 +24,7 @@ def order_context(user, group, restaurant=None):
 
     form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=order_completed)
     return {
-        **order_title_section(),
+        **order_title_section(group=group),
         **order_list_section(group=group),
         **order_details_section(order=form_section.get(OC.ORDER), disable_remove_button=order_completed, skip_check=True),
         **form_section,
@@ -32,12 +32,13 @@ def order_context(user, group, restaurant=None):
     }
 
 
-def order_title_section():
+def order_title_section(group=None):
     return {
         **get_current_view(view=CV.ORDER_VIEW),
         VC.MAIN_TITLE: _("Orders Screen"),
         VC.TITLE_ACTION: _("Add Restaurant"),
         VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
+        GC.GROUP_NAME: group.name,
     }
 
 
@@ -127,9 +128,9 @@ def orders_query():
 
 def get_all_orders(user=None, group=None):
     if user and group:
-        orders = orders_query().filter(finished_ordering=True, fk_user=user, fk_group__name=group)
+        orders = orders_query().filter(finished_ordering=True, fk_user=user, fk_group=group)
     else:
-        orders = orders_query().filter(finished_ordering=True, fk_group__name=group)
+        orders = orders_query().filter(finished_ordering=True, fk_group=group)
     return orders
 
 
@@ -139,7 +140,7 @@ def disable_order_item_form(user, group):
 
 
 def get_last_order(user, group):
-    order = orders_query().filter(fk_user=user, fk_group__name=group, finished_ordering=False).last()
+    order = orders_query().filter(fk_user=user, fk_group=group, finished_ordering=False).last()
     return order
 
 

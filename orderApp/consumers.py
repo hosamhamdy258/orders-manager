@@ -234,7 +234,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 context.update({"form": form})
 
             templates.append("order/bottomSection/form/formOrderItem.html")
-            context.update(**order_form_section(user=user, group=self.group.name, restaurant=event[self.message].get("fk_restaurant")))
+            context.update(**order_form_section(user=user, group=self.group, restaurant=event[self.message].get("fk_restaurant")))
 
             response = templates_joiner(context, templates)
 
@@ -254,7 +254,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             if isFinished:
                 context.update({"remove_errors": True})
 
-                context.update(**order_form_section(user=user, group=self.group.name))
+                context.update(**order_form_section(user=user, group=self.group))
                 templates.append("order/bottomSection/form/formOrderItem.html")
 
                 context.update(**order_details_section())
@@ -282,7 +282,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             templates = []
             context = {}
 
-            context.update(**order_list_section(group=self.group.name))
+            context.update(**order_list_section(group=self.group))
             templates.append("base/bodySection/listSection.html")
             response = templates_joiner(context, templates)
             self.send(text_data=response)
@@ -300,10 +300,10 @@ class GroupConsumer(JsonWebsocketConsumer):
             all_orders = event[self.message].get("all_orders")
 
             if all_orders:
-                context.update(**order_list_section(group=self.group.name))
+                context.update(**order_list_section(group=self.group))
                 context.update(**order_actions_section())
             else:
-                context.update(**order_list_section(user=user, group=self.group.name))
+                context.update(**order_list_section(user=user, group=self.group))
                 context.update(**order_actions_section(all_orders=True))
 
             templates.append("base/bodySection/listSection.html")
@@ -351,7 +351,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
             user = self.scope["user"]
             context.update({"user": user})
-            context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, user=user, group=self.group.name)})
+            context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, user=user, group=self.group)})
             templates.append("base/bodySection/detailsSection.html")
 
             response = templates_joiner(context, templates)
@@ -370,7 +370,7 @@ class GroupConsumer(JsonWebsocketConsumer):
 
             UserModel = get_user_model()
 
-            if get_all_orders(group=self.group.name).count() == 0:
+            if get_all_orders(group=self.group).count() == 0:
                 templates.append("order/bottomSection/actions/orderSummary.html")
                 context.update({"order_summary_error": _("There's No Orders Today Yet")})
             else:
@@ -476,7 +476,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             user = self.scope["user"]
             context.update({"user": user})
 
-            view_context = get_context(user=user, group=self.group.name, view=event[self.message].get("next_view"))
+            view_context = get_context(user=user, group=self.group, view=event[self.message].get("next_view"))
 
             context.update(view_context)
             templates.append("base/body.html")
@@ -611,7 +611,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
             complete_order_error = event[self.message].get("complete_order_error")
             if not complete_order_error:
-                context.update(**order_form_section(force_disable=True, group=self.group.name))
+                context.update(**order_form_section(force_disable=True, group=self.group))
                 templates.append("order/bottomSection/form/formOrderItem.html")
 
                 templates.append("order/bodySection/remove_button.html")
