@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-02 12:50+0000\n"
+"POT-Creation-Date: 2024-09-28 13:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,18 +17,263 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: core/settings/base.py:125
+
+#: core/settings/base.py:127
 msgid "English"
 msgstr ""
 
-#: core/settings/base.py:126
+#: core/settings/base.py:128
 msgid "Arabic"
 msgstr ""
 
-#: templates/order/index.html:14
-msgid "order manager"
+#: orderApp/consumers.py:375
+msgid "There's No Orders Today Yet"
 msgstr ""
 
-#: templates/order/index.html:26
-msgid "order item"
+#: orderApp/groupContext.py:15
+msgid "Groups Screen"
+msgstr ""
+
+#: orderApp/groupContext.py:16
+msgid "Refresh Groups"
+msgstr ""
+
+#: orderApp/groupContext.py:25
+msgid "Group Members"
+msgstr ""
+
+#: orderApp/groupContext.py:35
+msgid "Group List"
+msgstr ""
+
+#: orderApp/models.py:16
+msgid "channel name"
+msgstr ""
+
+#: orderApp/models.py:20
+#: templates/group/bottomSection/form/formGroupItem.html:6
+msgid "Group Name"
+msgstr ""
+
+#: orderApp/models.py:21
+msgid "Users"
+msgstr ""
+
+#: orderApp/models.py:22
+msgid "Accepted Order Users"
+msgstr ""
+
+#: orderApp/models.py:23
+msgid "Completed"
+msgstr ""
+
+#: orderApp/models.py:24
+msgid "Room Number"
+msgstr ""
+
+#: orderApp/models.py:45
+#, python-brace-format
+msgid ""
+"Some Members Didn't Finish Ordering Yet:\n"
+"{members}"
+msgstr ""
+
+#: orderApp/models.py:59
+msgid "Name"
+msgstr ""
+
+#: orderApp/models.py:66
+msgid "Restaurant"
+msgstr ""
+
+#: orderApp/models.py:67 orderApp/models.py:91
+msgid "Menu Item"
+msgstr ""
+
+#: orderApp/models.py:68
+#: templates/order/bottomSection/actions/summaryTables.html:25
+#: templates/order/bottomSection/actions/summaryTables.html:75
+#: templates/order/bottomSection/actions/summaryTables.html:145
+msgid "Price"
+msgstr ""
+
+#: orderApp/models.py:76
+msgid "User"
+msgstr ""
+
+#: orderApp/models.py:77
+msgid "Group"
+msgstr ""
+
+#: orderApp/models.py:78
+msgid "Created"
+msgstr ""
+
+#: orderApp/models.py:79
+msgid "finished ordering"
+msgstr ""
+
+#: orderApp/models.py:90
+msgid "Order"
+msgstr ""
+
+#: orderApp/models.py:92
+#: templates/order/bottomSection/actions/summaryTables.html:26
+#: templates/order/bottomSection/actions/summaryTables.html:76
+#: templates/order/bottomSection/actions/summaryTables.html:146
+#: templates/order/bottomSection/form/formOrderItem.html:24
+msgid "Quantity"
+msgstr ""
+
+#: orderApp/orderContext.py:38
+msgid "Orders Screen"
+msgstr ""
+
+#: orderApp/orderContext.py:39
+#: templates/restaurant/bottomSection/form/formRestaurant.html:14
+msgid "Add Restaurant"
+msgstr ""
+
+#: orderApp/orderContext.py:47
+msgid "Members Orders"
+msgstr ""
+
+#: orderApp/orderContext.py:60
+msgid "Order Items"
+msgstr ""
+
+#: orderApp/orderContext.py:101
+msgid "All Orders"
+msgstr ""
+
+#: orderApp/orderContext.py:101
+msgid "My Orders"
+msgstr ""
+
+#: orderApp/orderContext.py:153
+#, python-brace-format
+msgid "Only {order_limit} orders per day"
+msgstr ""
+
+#: orderApp/orderContext.py:175 orderApp/orderContext.py:177
+msgid "Add Order Items"
+msgstr ""
+
+#: orderApp/restaurantContext.py:15
+msgid "Restaurant Screen"
+msgstr ""
+
+#: orderApp/restaurantContext.py:16
+msgid "Add Order"
+msgstr ""
+
+#: orderApp/restaurantContext.py:30
+msgid "Menu Items"
+msgstr ""
+
+#: orderApp/restaurantContext.py:41
+msgid "Restaurant List"
+msgstr ""
+
+#: orderApp/utils.py:11
+#, python-format
+msgid "Ensure this value is greater than %(limit_value)s."
+msgstr ""
+
+#: templates/base/base.html:17
+msgid "Order Manager"
+msgstr ""
+
+#: templates/base/bodySection/listSection.html:18
+#: templates/group/bodySection/listSection.html:9
+msgid "Show"
+msgstr ""
+
+#: templates/group/bodySection/listSection.html:14
+msgid "Join"
+msgstr ""
+
+#: templates/group/bottomSection/form/formGroupItem.html:13
+msgid "Add Group"
+msgstr ""
+
+#: templates/order/bottomSection/actions/completeOrder.html:4
+msgid "Complete Order"
+msgstr ""
+
+#: templates/order/bottomSection/actions/finishOrder.html:5
+msgid "Finish Order"
+msgstr ""
+
+#: templates/order/bottomSection/actions/orderSummary.html:4
+msgid "Orders Summary"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:8
+msgid "Restaurant Order Summary"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:11
+msgid "Restaurant User Order Summary"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:14
+msgid "User Restaurant Order Summary"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:24
+#: templates/order/bottomSection/actions/summaryTables.html:74
+#: templates/order/bottomSection/actions/summaryTables.html:144
+msgid "Item"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:27
+#: templates/order/bottomSection/actions/summaryTables.html:77
+#: templates/order/bottomSection/actions/summaryTables.html:147
+msgid "Total"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:46
+#: templates/order/bottomSection/actions/summaryTables.html:116
+#: templates/order/bottomSection/actions/summaryTables.html:169
+msgid "Restaurant Total"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:59
+#: templates/order/bottomSection/actions/summaryTables.html:129
+#: templates/order/bottomSection/actions/summaryTables.html:199
+msgid "Grand Total"
+msgstr ""
+
+#: templates/order/bottomSection/actions/summaryTables.html:99
+#: templates/order/bottomSection/actions/summaryTables.html:186
+msgid "User Total"
+msgstr ""
+
+#: templates/order/bottomSection/form/formOrderItem.html:8
+msgid "Select Restaurant"
+msgstr ""
+
+#: templates/order/bottomSection/form/formOrderItem.html:32
+msgid "Add"
+msgstr ""
+
+#: templates/order/bottomSection/form/menuItems.html:3
+msgid "Select Item"
+msgstr ""
+
+#: templates/restaurant/bottomSection/form/formMenuItem.html:7
+msgid "Menu Item Name"
+msgstr ""
+
+#: templates/restaurant/bottomSection/form/formMenuItem.html:14
+msgid "Menu Item Price"
+msgstr ""
+
+#: templates/restaurant/bottomSection/form/formMenuItem.html:22
+msgid "Add Menu Item"
+msgstr ""
+
+#: templates/restaurant/bottomSection/form/formRestaurant.html:6
+msgid "Restaurant Name"
 msgstr ""
