@@ -1,17 +1,20 @@
-from django.views.generic import TemplateView
+from typing import Any
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpRequest
+from django.http.response import HttpResponse as HttpResponse
+from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
+from django.views.generic import TemplateView
 
-
-from orderApp.restaurantContext import restaurant_context
-from orderApp.orderContext import order_context
-
-
-from orderApp.enums import GeneralContextKeys as GC, CurrentViews as CV
-from orderApp.models import MenuItem, Client
+from orderApp.enums import CurrentViews as CV
+from orderApp.enums import GeneralContextKeys as GC
 from orderApp.forms import OrderItemForm
 from orderApp.groupContext import group_context
+from orderApp.models import Client, Group, MenuItem
+from orderApp.orderContext import order_context
+from orderApp.restaurantContext import restaurant_context
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -28,6 +31,13 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
 class GroupView(LoginRequiredMixin, TemplateView):
     template_name = "base/index.html"
+
+    def get(self, request, *args, **kwargs):
+        try:
+            Group.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
+        except ObjectDoesNotExist:
+            return redirect("index")
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -56,17 +66,19 @@ def menuitems(request):
     return render(request, "order/bottomSection/form/menuItems.html", {"menuItems": menuItems})
 
 
-from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 
 def announcement(request):
+    # Group.objects.all().delete()
     channels = Client.objects.all()
     channel_layer = get_channel_layer()
-    # print(channel_layer, "xxxxx")
-    # async_to_sync(channel_layer.group_send)("group_hosam", {"type": "groupOrderSummary"})
+    # print(channel_layer.__dict__, "xxxxx")
+    # async_to_sync(channel_layer.group_send)("group_index_home_group", {"type": "sendNotification", "message": {"message_type": "sendNotification"}})
+    # async_to_sync(channel_layer.send)("group_index_home_group", {"type": "sendNotification"})
 
-    for channel in channels:
-        async_to_sync(channel_layer.send)(channel.channel_name, {"type": "groupOrderSummary"})
+    # for channel in channels:
+    #     async_to_sync(channel_layer.send)(channel.channel_name, {"type": "sendNotification","type2x": "sendNotification", "message": {"message_type": "sendNotification"}})
 
     return render(request, "order/bottomSection/form/menuItems.html")

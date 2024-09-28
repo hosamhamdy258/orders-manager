@@ -1,18 +1,19 @@
+import time
 from datetime import datetime
+
+from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
-from asgiref.sync import async_to_sync
-from django.db.models import F, Sum, DecimalField
+from django.db.models import DecimalField, F, Sum
 from django.utils.translation import gettext as _
 
-
-from orderApp.utils import calculate_totals, group_nested_data
-
-
-from orderApp.models import Client, Group, MenuItem, OrderItem, Restaurant
 from orderApp.forms import GroupForm, MenuItemForm, OrderItemForm, RestaurantForm
-
-from orderApp.utils import templates_joiner
+from orderApp.groupContext import (
+    group_context,
+    group_details_section,
+    group_list_section,
+)
+from orderApp.models import Client, Group, MenuItem, OrderItem, Restaurant
 from orderApp.orderContext import (
     create_order_updated,
     finish_order,
@@ -22,11 +23,17 @@ from orderApp.orderContext import (
     order_form_section,
     order_list_section,
 )
-from orderApp.restaurantContext import restaurant_context, restaurant_details_section, restaurant_list_section
+from orderApp.restaurantContext import (
+    restaurant_context,
+    restaurant_details_section,
+    restaurant_list_section,
+)
+from orderApp.utils import calculate_totals, group_nested_data, templates_joiner
 from orderApp.views import get_context
-from orderApp.groupContext import group_context, group_details_section, group_list_section
 
 UserModel = get_user_model()
+HOME_ROOM_NAME = "home_room"
+HOME_GROUP_NAME = f"group_{HOME_ROOM_NAME}"
 
 
 class HomeConsumer(JsonWebsocketConsumer):
@@ -34,8 +41,8 @@ class HomeConsumer(JsonWebsocketConsumer):
     message = "message"
 
     def connect(self):
-        self.room_name = "index_home_group"
-        self.room_group_name = f"group_{self.room_name}"
+        self.room_name = HOME_ROOM_NAME
+        self.room_group_name = HOME_GROUP_NAME
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
         self.accept()
@@ -58,7 +65,7 @@ class HomeConsumer(JsonWebsocketConsumer):
         )
 
     def updateGroupsList(self, event):
-        group = event.get("group", False)
+        group = event.get("group", True)
         if group:  # to recursive call dispatch method
             self.self_dispatch(event)
         else:
@@ -101,19 +108,50 @@ class HomeConsumer(JsonWebsocketConsumer):
             context = {}
             user = self.scope["user"]
             context.update({"user": user})
-
+            event[self.message].update({"room_number": f"g{time.time_ns()}"})
             form = GroupForm(event[self.message])
             if form.is_valid():
                 instance = form.save(True)
                 context.update(**group_list_section())
                 context.update(**group_context(group=instance.id))
-                templates.append("base/bodySection/listSection.html")
-                templates.append("base/bodySection/detailsSection.html")
                 templates.append("group/bottomSection/form/formGroupItem.html")
+                self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
+
             else:
                 context.update({"form": form})
 
             templates.append("group/bottomSection/form/formGroupItem.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def sendNotification(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            templates.append("base/helpers/notification.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def updateConnectedUsers(self, event):
+        group = event.get("group", False)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            context.update(event[self.message]["ctx"])
+            templates.append("group/bodySection/connectedUsers.html")
 
             response = templates_joiner(context, templates)
 
@@ -132,9 +170,10 @@ class GroupConsumer(JsonWebsocketConsumer):
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
         Client.objects.create(channel_name=self.channel_name)
-        self.group, created = Group.objects.get_or_create(name=self.room_name)
+        self.group = Group.objects.get(room_number=self.room_name)
         user = self.scope["user"]
         self.group.m2m_users.add(user)
+        self.updateUsersConnectedCount()
         self.accept()
 
     def disconnect(self, close_code):
@@ -143,6 +182,7 @@ class GroupConsumer(JsonWebsocketConsumer):
         Client.objects.filter(channel_name=self.channel_name).delete()
         user = self.scope["user"]
         self.group.m2m_users.remove(user)
+        self.updateUsersConnectedCount()
 
     # Receive message from room group
     def receive_json(self, content, **kwargs):
@@ -155,6 +195,12 @@ class GroupConsumer(JsonWebsocketConsumer):
         print(f"Unknown event type received: {message}")
 
     def self_dispatch(self, event):
+        # ! add handle for this 2 cases
+        # ! from regular dispatch inside consumer
+        #  ?{"message": {"message_type": "membersOrders"}}
+        # ! from outside consumers
+        # ?{"type": "sendNotification", "message": {"message_type": "sendNotification"}}
+
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
@@ -579,3 +625,37 @@ class GroupConsumer(JsonWebsocketConsumer):
 
             self.send(text_data=response)
             pass
+
+    def sendNotification(self, event):
+        group = event.get("group", True)
+        if group:  # to recursive call dispatch method
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+            user = self.scope["user"]
+
+            templates.append("base/helpers/notification.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def updateUsersConnectedCount(self):
+        async_to_sync(self.channel_layer.group_send)(
+            HOME_GROUP_NAME,
+            {
+                "type": "updateConnectedUsers",
+                "message": {
+                    "message_type": "updateConnectedUsers",
+                    "ctx": {
+                        "item": {
+                            "name": self.group.name,
+                            "room_number": self.group.room_number,
+                            "connected_users": self.group.connected_users(),
+                        }
+                    },
+                },
+            },
+        )

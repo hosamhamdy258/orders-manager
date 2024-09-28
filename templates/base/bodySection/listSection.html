@@ -5,6 +5,9 @@
     </div>
     <div class="row">
         <div class="col border border-3 rounded-4 border-info p-2 overflow-y-scroll" style="height: 40vh;">
+            {% if current_view == "group_view" %}
+            {% include "group/bodySection/listSection.html" %}
+            {% else %}
             {% for item in list_section_data %}
             <div class="row justify-content-between align-items-center border border-3 rounded-4 border-black g-1 m-1">
                 <div class="col-auto p-2">{{item}}</div>
@@ -15,15 +18,9 @@
                         <button type="submit" class="btn btn-warning">{% translate "Show" %}</button>
                     </form>
                 </div>
-                {% if current_view == "group_view" %}
-                <div class="col-auto p-2">
-                    <form action="/group/{{item.name}}" method="get">
-                        <button type="submit" class="btn btn-success">{% translate "Join" %}</button>
-                    </form>
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>

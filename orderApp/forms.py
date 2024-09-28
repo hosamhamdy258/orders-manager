@@ -1,5 +1,6 @@
-from django.forms import ModelForm, ModelChoiceField
-from .models import Group, OrderItem, Order, MenuItem, Restaurant
+from django.forms import ModelChoiceField, ModelForm
+
+from .models import Group, MenuItem, Order, OrderItem, Restaurant
 
 
 class OrderItemForm(ModelForm):
@@ -35,4 +36,4 @@ class RestaurantForm(ModelForm):
 class GroupForm(ModelForm):
     class Meta:
         model = Group
-        fields = ["name"]
+        fields = ["name", "room_number"]

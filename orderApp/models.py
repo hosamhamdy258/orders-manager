@@ -1,7 +1,9 @@
-from django.db import models
-from django.utils.translation import gettext_lazy as _
+from typing import Iterable
+
 from django.contrib.auth import get_user_model
-from django.db.models import Sum, F
+from django.db import models
+from django.db.models import F, Sum
+from django.utils.translation import gettext_lazy as _
 
 from orderApp.utils import PositiveValueValidator
 
@@ -15,14 +17,18 @@ class Client(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(_("group name"), max_length=50)
+    name = models.CharField(_("Group Name"), max_length=50, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Users"), blank=True)
     accepted_order_users = models.ManyToManyField(UserModel, related_name="accepted_order_users", verbose_name=_("Accepted Order Users"), blank=True)
-    completed = models.BooleanField(_("completed"), default=False)
+    completed = models.BooleanField(_("Completed"), default=False)
+    room_number = models.CharField(_("Room Number"), max_length=50)
 
     def __str__(self):
-        keys = [self.name, len(self.m2m_users.all())]
+        keys = [self.name, self.connected_users()]
         return " / ".join(list(map(str, keys)))
+
+    def connected_users(self):
+        return len(self.m2m_users.all())
 
     def add_user_to_accepted_order_users(self, user):
         self.accepted_order_users.add(user)

@@ -1,18 +1,19 @@
 from datetime import datetime
+
 from django.utils.translation import gettext as _
 
 from orderApp.context import get_current_view
-
-
-from orderApp.enums import OrderContextKeys as OC, ViewContextKeys as VC, CurrentViews as CV
-from orderApp.models import Group, Order, OrderItem, Restaurant, MenuItem
+from orderApp.enums import CurrentViews as CV
+from orderApp.enums import OrderContextKeys as OC
+from orderApp.enums import ViewContextKeys as VC
+from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
 
 order_limit = 1
 
 
 def check_order_complete_status(user, group):
     if user and group:
-        group_obj, created = Group.objects.get_or_create(name=group)
+        group_obj = Group.objects.get(room_number=group)
         return group_obj.completed or user in group_obj.accepted_order_users.all()
     else:
         return False
