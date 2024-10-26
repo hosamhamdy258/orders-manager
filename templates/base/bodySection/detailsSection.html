@@ -1,20 +1,15 @@
-{% load i18n %}
-<div id="{{details_section_id}}" class="col border border-3 rounded-4 border-success p-2" hx-swap-oob="innerHTML">
-    <div class="row justify-content-center align-items-center">
-        <div class="col p-2">{{details_section_title}}</div>
-    </div>
-    <div class="row">
-        <div class="col border border-3 rounded-4 border-info p-2 overflow-y-scroll" style="height: 40vh;">
-            {% for item in details_section_data %}
-            {% if current_view == "order_view" %}
-            {% include "order/bodySection/detailsSection.html" %}
-            {% elif current_view == "restaurant_view" %}
-            {% include "restaurant/bodySection/detailsSection.html" %}
-            {% elif current_view == "group_view" %}
-            {% include "group/bodySection/detailsSection.html" %}
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    {% include "base/helpers/error_remover.html" %}
-</div>
+{% extends "base/bodySection/base.html" %}
+
+{% block id %}{{details_section_id}}{% endblock id %}
+{% block title %}{{details_section_title}}{% endblock title %}
+{% block body %}
+{% if current_view == "order_view" %}
+{% include "order/bodySection/detailsSection.html" %}
+{% elif current_view == "restaurant_view" %}
+{% include "restaurant/bodySection/detailsSection.html" %}
+{% elif current_view == "group_view" %}
+{% include "group/bodySection/detailsSection.html" %}
+{% else %}
+{% include "base/bodySection/detailsSectionBody.html" %}
+{% endif %}
+{% endblock body %}

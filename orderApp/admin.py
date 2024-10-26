@@ -1,9 +1,6 @@
 from django.contrib import admin
 
-
-from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant, Client
-
-# Register your models here.
+from orderApp.models import Client, Group, MenuItem, Order, OrderItem, Restaurant
 
 
 class OrderItemInlineAdmin(admin.TabularInline):
@@ -17,7 +14,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 class GroupAdmin(admin.ModelAdmin):
-    filter_horizontal = ["m2m_users", "accepted_order_users"]
+    filter_horizontal = ["m2m_users"]
 
 
 admin.site.register(Restaurant)

@@ -1,28 +1,13 @@
-{% load i18n%}
-<div id="{{list_section_id}}" class="col border border-3 rounded-4 border-primary p-2" hx-swap-oob="innerHTML">
-    <div class="row justify-content-center align-items-center">
-        <div class="col p-2">{{list_section_title}}</div>
-    </div>
-    <div class="row">
-        <div class="col border border-3 rounded-4 border-info p-2 overflow-y-scroll" style="height: 40vh;">
-            {% if current_view == "group_view" %}
-            {% include "group/bodySection/listSection.html" %}
-            {% elif current_view == "restaurant_view" %}
-            {% include "restaurant/bodySection/listSection.html" %}
-            {% else %}
-            {% for item in list_section_data %}
-            <div class="row justify-content-between align-items-center border border-3 rounded-4 border-black g-1 m-1">
-                <div class="col-auto p-2">{{item}}</div>
-                <div class="col-auto p-2 ms-auto">
-                    <form ws-send>
-                        <input type="hidden" name="message_type" value="{{list_message_type}}">
-                        <input type="hidden" name="item_id" value="{{item.id}}">
-                        <button type="submit" class="btn btn-warning">{% translate "Show" %}</button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-</div>
+{% extends "base/bodySection/base.html" %}
+
+{% block id %}{{list_section_id}}{% endblock id %}
+{% block title %}{{list_section_title}}{% endblock title %}
+{% block body %}
+{% if current_view == "group_view" %}
+{% include "group/bodySection/listSection.html" %}
+{% elif current_view == "restaurant_view" %}
+{% include "restaurant/bodySection/listSection.html" %}
+{% else %}
+{% include "base/bodySection/listSectionBody.html" %}
+{% endif %}
+{% endblock body %}

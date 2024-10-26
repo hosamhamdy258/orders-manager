@@ -1,0 +1,21 @@
+{% load i18n %}
+{% for item in list_section_data %}
+<div class="row justify-content-between align-items-center border border-3 rounded-4 border-black g-1 m-1">
+    {% block list_item_description %}
+    <div class="col-auto p-2">{{item}}</div>
+    {% endblock list_item_description %}
+    <div class="col-auto p-2 ms-auto">
+        <form ws-send>
+            <input type="hidden" name="message_type" value="{{list_message_type}}">
+            <input type="hidden" name="item_id" value="{{item.id}}">
+            <button type="submit" class="btn btn-warning">
+                {% block submit_text %}
+                {% translate "Show" %}
+                {% endblock submit_text %}
+            </button>
+        </form>
+    </div>
+    {% block extra_actions %}
+    {% endblock extra_actions %}
+</div>
+{% endfor %}

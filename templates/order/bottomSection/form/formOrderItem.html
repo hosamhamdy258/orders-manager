@@ -30,6 +30,7 @@
 
     <div class="col border border-3 rounded-4 border-black p-2">
       <button type="submit" class="btn btn-primary" {% if disable_order_item_form %}disabled{% endif %}>{% translate "Add" %}</button>
+      {% include "base/error.html" with error=create_order_error %}
     </div>
   </div>
 </form>

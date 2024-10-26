@@ -12,33 +12,24 @@ from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
 order_limit = 1
 
 
-def check_order_complete_status(user, group):
-    if user and group:
-        return group.completed or user in group.accepted_order_users.all()
-    else:
-        return False
-
-
 def order_context(user, group, restaurant=None):
-    order_completed = check_order_complete_status(user=user, group=group)
 
-    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=order_completed)
+    form_section = order_form_section(user=user, group=group, restaurant=restaurant)
     return {
-        **order_title_section(group=group),
+        **order_title_section(),
         **order_list_section(group=group),
-        **order_details_section(order=form_section.get(OC.ORDER), disable_remove_button=order_completed, skip_check=True),
+        **order_details_section(order=form_section.get(OC.ORDER)),
         **form_section,
-        **order_actions_section(force_disable=order_completed),
+        **order_actions_section(),
     }
 
 
-def order_title_section(group=None):
+def order_title_section():
     return {
         **get_current_view(view=CV.ORDER_VIEW),
         VC.MAIN_TITLE: _("Orders Screen"),
         VC.TITLE_ACTION: _("Add Restaurant"),
         VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
-        GC.GROUP_NAME: group.name,
     }
 
 
@@ -52,15 +43,13 @@ def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False
     }
 
 
-def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disable_remove_button=False, user=None, group=None, skip_check=False):
-
-    disable = True if disable_remove_button else check_order_complete_status(user=user, group=group) if not skip_check else False
+def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disable_remove_button=False):
 
     return {
         VC.DETAILS_SECTION_ID: "order_items",
         VC.DETAILS_SECTION_TITLE: _("Order Items"),
         VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
-        OC.DISABLE_REMOVE_BUTTON: disable,
+        OC.DISABLE_REMOVE_BUTTON: disable_remove_button,
         VC.DETAILS_SECTION_DATA: get_order_items(order),
         **(get_current_view(view=view) if add_view else {}),
     }
@@ -144,23 +133,13 @@ def get_last_order(user, group):
     return order
 
 
-def create_order(user):
-
-    orders = orders_query().filter(fk_user=user).count()
-    order = get_last_order(user)
-    if orders == order_limit:
-        return False, "", order
-    elif orders > order_limit:
-        return False, _(f"Only {order_limit} orders per day"), order
-
-    order = Order.objects.create(fk_user=user)
-    return True, "", order
-
-
-def create_order_updated(user, group):
-    # !check for max allowed orders per day and use create_order function
-    order = Order.objects.create(fk_user=user, fk_group=group)
-    return order
+def create_order(user, group):
+    orders = get_all_orders(user=user, group=group)
+    if orders.count() >= order_limit:
+        return False, orders.none().first()
+    else:
+        order = Order.objects.create(fk_user=user, fk_group=group)
+        return True, order
 
 
 def finish_order(order):
@@ -171,10 +150,8 @@ def finish_order(order):
         if orderItems:
             order.finished_ordering = True
             order.save()
-            return True, "", order
+            return True, order
         else:
-            return False, _("Add Order Items"), order
+            return False, order
     else:
-        return False, _("Add Order Items"), None
-        # !check for max allowed orders per day
-        # return False, _(f"Only {order_limit} orders per day"), None
+        return False, Order.objects.none().first()

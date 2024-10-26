@@ -1,12 +1,11 @@
 from django.utils.translation import gettext as _
 
-from orderApp.orderContext import get_restaurant_menu_items
-
 from orderApp.context import get_current_view
-
-
-from orderApp.enums import RestaurantContextKeys as RC, ViewContextKeys as VC, CurrentViews as CV
+from orderApp.enums import CurrentViews as CV
+from orderApp.enums import RestaurantContextKeys as RC
+from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import Restaurant
+from orderApp.orderContext import get_restaurant_menu_items
 
 
 def restaurant_context(view=CV.RESTAURANT_VIEW, restaurant=None):
@@ -15,11 +14,8 @@ def restaurant_context(view=CV.RESTAURANT_VIEW, restaurant=None):
         VC.MAIN_TITLE: _("Restaurant Screen"),
         VC.TITLE_ACTION: _("Add Order"),
         VC.NEXT_VIEW: CV.ORDER_VIEW,
-        # ==============
         **restaurant_list_section(),
-        #
         **restaurant_details_section(restaurant),
-        #
         RC.FORM_MENU_ITEM_DISABLE: True,
     }
 

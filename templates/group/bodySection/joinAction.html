@@ -1,0 +1,6 @@
+{% load i18n %}
+<div class="col-auto p-2">
+    <form action="/group/{{item.room_number}}" method="get">
+        <button type="submit" class="btn btn-success">{% translate "Join" %}</button>
+    </form>
+</div>

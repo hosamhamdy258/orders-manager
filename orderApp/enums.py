@@ -1,5 +1,7 @@
 from enum import EnumMeta
 
+from django.utils.translation import gettext as _
+
 
 class GeneralContextKeys(EnumMeta):
     GROUP_NAME = "group_name"
@@ -47,3 +49,9 @@ class OrderContextKeys(EnumMeta):
 
 class RestaurantContextKeys(EnumMeta):
     FORM_MENU_ITEM_DISABLE = "form_menu_item_disable"
+
+
+class ErrorMessage(EnumMeta):
+    CREATE_ORDER = {"create_order_error": _("Reached Max Orders Per Group")}
+    FINISH_ORDER = {"finish_order_error": _("Add Order Items")}
+    ORDER_SUMMARY = {"order_summary_error": _("There's No Orders Created Yet")}

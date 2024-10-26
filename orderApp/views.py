@@ -43,11 +43,9 @@ class GroupView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         ctx = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
-        # !check if this needed
-        form = OrderItemForm()
 
         context = super().get_context_data(**kwargs)
-        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/group/{self.group.room_number}/", "form": form, **ctx})
+        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/group/{self.group.room_number}/", **ctx})
         return context
 
 
@@ -98,4 +96,4 @@ def my_background_function():
     print("This function runs after a delay in the background.")
 
 
-run_after_delay(my_background_function, 7)
+# run_after_delay(my_background_function, 1)

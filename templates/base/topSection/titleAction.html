@@ -1,5 +1,5 @@
-<form id="title_action" ws-send hx-swap-oob="innerHTML">
-    <input type="hidden" name="message_type" value="switchView">
-    <input type="hidden" name="next_view" value="{{next_view}}">
-    <button type="submit" class="btn btn-primary">{{title_action}}</button>
-</form>
+{% extends "base/topSection/titleActionBase.html" %}
+{% block inputs %}
+<input type="hidden" name="message_type" value="switchView">
+<input type="hidden" name="next_view" value="{{next_view}}">
+{% endblock inputs %}

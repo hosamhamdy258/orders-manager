@@ -8,8 +8,6 @@ from django.utils.translation import gettext_lazy as _
 from orderApp.utils import PositiveValueValidator
 
 UserModel = get_user_model()
-# to be as == connected to channel
-minium_accepting_users = 2
 
 
 class Client(models.Model):
@@ -19,8 +17,6 @@ class Client(models.Model):
 class Group(models.Model):
     name = models.CharField(_("Group Name"), max_length=50, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Users"), blank=True)
-    accepted_order_users = models.ManyToManyField(UserModel, related_name="accepted_order_users", verbose_name=_("Accepted Order Users"), blank=True)
-    completed = models.BooleanField(_("Completed"), default=False)
     room_number = models.CharField(_("Room Number"), max_length=50)
 
     def __str__(self):
@@ -29,35 +25,6 @@ class Group(models.Model):
 
     def connected_users(self):
         return len(self.m2m_users.all())
-
-    def add_user_to_accepted_order_users(self, user):
-        self.accepted_order_users.add(user)
-
-    def is_order_completed(self, user):
-        # ! user must be in order do complete it
-        # ! timer to finish unfinished orders to don't lock orders
-        orders = self.order_set
-
-        has_order = orders.filter(fk_user=user).exists()
-        if not has_order:
-            error_msg = _(f"Only Members Has Orders Can Complete Order")
-            return False, error_msg
-
-        unfinished_orders = orders.filter(finished_ordering=False).values_list("fk_user__username", flat=True)
-
-        if unfinished_orders.exists():
-            members = ", ".join(unfinished_orders)
-            error_msg = _(f"Some Members Didn't Finish Ordering Yet:\n{members}")
-            return False, error_msg
-
-        self.add_user_to_accepted_order_users(user)
-
-        if self.accepted_order_users.count() >= minium_accepting_users:
-            self.completed = True
-            self.save()
-            return True, ""
-        else:
-            return False, ""
 
 
 class Restaurant(models.Model):

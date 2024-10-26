@@ -2,9 +2,10 @@ from collections import defaultdict
 from decimal import Decimal
 from itertools import groupby
 from operator import itemgetter
+
 from django.core.validators import BaseValidator
-from django.utils.translation import gettext_lazy as _
 from django.template.loader import render_to_string
+from django.utils.translation import gettext_lazy as _
 
 
 class PositiveValueValidator(BaseValidator):
@@ -12,7 +13,7 @@ class PositiveValueValidator(BaseValidator):
     code = "positive_value"
 
     def compare(self, a, b):
-        return a <= b  # Invalid if a is less than or equal to 0
+        return a <= b
 
 
 def templates_joiner(context, templates):
@@ -33,7 +34,7 @@ def group_nested_data(data, group_keys):
 
     # Sort data by the current group key
     data = sorted(data, key=itemgetter(group_keys[0]))
-    # To avoid extra list wraps in nested groups 
+    # To avoid extra list wraps in nested groups
     if len(group_keys) > 1:
         grouped_data = defaultdict(dict)
     else:
