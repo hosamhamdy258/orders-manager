@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Iterable
 
 from django.contrib.auth import get_user_model
@@ -25,6 +26,18 @@ class Group(models.Model):
 
     def connected_users(self):
         return len(self.m2m_users.all())
+
+
+class GroupUser(models.Model):
+    fk_user = models.ForeignKey(UserModel, verbose_name=_("Users"), on_delete=models.CASCADE)
+    fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
+    joined = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    def get_time_left(self):
+        end_time = self.joined + timedelta(minutes=15)
+        current_time = datetime.now(timezone.utc)
+        remaining_time = end_time - current_time
+        return int(remaining_time.total_seconds())
 
 
 class Restaurant(models.Model):

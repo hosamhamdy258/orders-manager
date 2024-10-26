@@ -7,29 +7,33 @@ from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
-from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
+from orderApp.models import GroupUser, MenuItem, Order, OrderItem, Restaurant
 
 order_limit = 1
 
 
 def order_context(user, group, restaurant=None):
-
-    form_section = order_form_section(user=user, group=group, restaurant=restaurant)
+    time_left = GroupUser.objects.get_or_create(fk_group=group, fk_user=user)[0].get_time_left()
+    force_disable = True if time_left <= 0 else False
+    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=force_disable)
     return {
-        **order_title_section(),
+        **order_title_section(group=group, time_left=time_left),
         **order_list_section(group=group),
         **order_details_section(order=form_section.get(OC.ORDER)),
         **form_section,
-        **order_actions_section(),
+        **order_actions_section(force_disable=force_disable),
     }
 
 
-def order_title_section():
+def order_title_section(group=None, time_left=0):
+
     return {
         **get_current_view(view=CV.ORDER_VIEW),
         VC.MAIN_TITLE: _("Orders Screen"),
         VC.TITLE_ACTION: _("Add Restaurant"),
         VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
+        GC.GROUP_NAME: group.name,
+        OC.TIME_LEFT: time_left,
     }
 
 

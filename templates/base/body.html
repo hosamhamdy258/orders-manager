@@ -7,7 +7,7 @@
         <div class="row row-cols-auto justify-content-between align-items-center g-1 m-1">
             <div class="col-auto p-2">{{main_title}}</div>
             {% if current_view == "order_view" %}
-            <div class="col-auto p-2">{% translate "Group" %} : {{group_name}}</div>
+            {% include "order/topSection/middleTitle.html" %}
             {% endif %}
             <div class="col-auto p-2">
                 {% if current_view == "group_view" %}

@@ -46,6 +46,8 @@ class OrderContextKeys(EnumMeta):
     ALL_ORDERS = "all_orders"
     ALL_ORDERS_BUTTON = "all_orders_button"
 
+    TIME_LEFT = "time_left"
+
 
 class RestaurantContextKeys(EnumMeta):
     FORM_MENU_ITEM_DISABLE = "form_menu_item_disable"
