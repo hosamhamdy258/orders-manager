@@ -1,9 +1,13 @@
-{% load i18n %}
+{% load i18n static %}
 <div id="timer" class="col-auto p-2">
-    <script>
+    <script type="module">
         // immediately invoked function expression
-        (() => {
-            const endTime = new Date(Date.now() + parseInt('{{ time_left }}') * 1000);
+        import { getServerDate } from "{% static '/server_date/serverDate.js' %}";
+        (async () => {
+            const { date, offset, uncertainty } = await getServerDate();
+            console.log(`The server's date is ${date} +/- ${uncertainty} milliseconds.`);
+
+            const endTime = new Date(Date.now() + offset + parseInt('{{ time_left }}') * 1000);
             const timerElement = document.getElementById("timer");
             var clearTimer = () => { }
             const countdownInterval = countdown(endTime, (ts) => {
