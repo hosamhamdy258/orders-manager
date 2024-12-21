@@ -31,7 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-LOGIN_URL = "/admin/login/"
+# LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 # Application definition
 
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     # Packages
     "corsheaders",
     # Apps
+    "accounts",
     "orderApp",
 ]
 

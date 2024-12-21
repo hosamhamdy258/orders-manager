@@ -1,0 +1,41 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">
+                {% block form_name %}{% endblock form_name %}
+            </h2>
+            <form {% block form_attrs %}{% endblock form_attrs %}>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% for field in form %}
+                <div class="mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger">
+                        {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% block submit_button %}
+                <button type="submit" class="btn btn-primary w-100">{% translate "Submit" %}</button>
+                {% endblock submit_button %}
+            </form>
+            {% block extra_buttons %}{% endblock extra_buttons %}
+            {% block bottom_text %}{% endblock bottom_text %}
+        </div>
+    </div>
+</div>
+{% endblock body %}

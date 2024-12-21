@@ -1,22 +1,23 @@
-from typing import Any
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
-from orderApp.forms import OrderItemForm
 from orderApp.groupContext import group_context
 from orderApp.models import Client, Group, MenuItem
 from orderApp.orderContext import order_context
 from orderApp.restaurantContext import restaurant_context
 
+decorators = [never_cache]
 
+
+@method_decorator(decorators, name="dispatch")
 class IndexView(LoginRequiredMixin, TemplateView):
     template_name = "base/index.html"
 
@@ -65,7 +66,6 @@ def menuitems(request):
     return render(request, "order/bottomSection/form/menuItems.html", {"menuItems": menuItems})
 
 
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 
