@@ -1,0 +1,6 @@
+{% load static i18n %}
+<a href="{% url 'password_change' %}" class="btn btn-primary">{% translate "Change Password" %}</a>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">{% translate "Logout" %}</button>
+</form>

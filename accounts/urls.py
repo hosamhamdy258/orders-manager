@@ -1,4 +1,4 @@
-from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.auth.views import LogoutView, PasswordChangeDoneView
 from django.urls import path
 
 from .views import CustomLoginView, CustomPasswordChangeView, CustomSignUpView
@@ -10,4 +10,5 @@ urlpatterns = [
     path(
         "password_change/done/", PasswordChangeDoneView.as_view(template_name="registration/password_change_done.html"), name="password_change_done"
     ),
+    path("logout/", LogoutView.as_view(), name="logout"),
 ]

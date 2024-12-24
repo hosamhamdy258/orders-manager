@@ -8,7 +8,7 @@
 {% block form_attrs %}method="post" action="{% url 'signup' %}"{% endblock form_attrs %}
 
 {% block bottom_text %}
-<div class="mt-3 text-center">
+<div class="mt-3 text-center" hx-boost="true">
   <p>{% translate "Already have an account? " %}<a href="{% url 'login' %}">{% translate "Login" %}</a>.</p>
 </div>
 {% endblock bottom_text %}
