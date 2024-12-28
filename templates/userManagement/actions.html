@@ -1,6 +1,13 @@
 {% load static i18n %}
-<a href="{% url 'password_change' %}" class="btn btn-primary">{% translate "Change Password" %}</a>
-<form action="{% url 'logout' %}" method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">{% translate "Logout" %}</button>
-</form>
+<div class="row align-items-center">
+    <div class="col">
+        <h5>{% translate "Welcome" %} <span class="text-success">{{user.username}}</span></h5>
+    </div>
+    <div class="col-3 ms-auto">
+        <a href="{% url 'password_change' %}" class="btn btn-primary">{% translate "Change Password" %}</a>
+    </div>
+    <form action="{% url 'logout' %}" method="post" class="col-1">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">{% translate "Logout" %}</button>
+    </form>
+</div>
