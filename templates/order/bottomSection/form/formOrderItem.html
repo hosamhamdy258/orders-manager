@@ -2,9 +2,11 @@
 <form id="order_item_form" ws-send hx-swap="outerHTML">
   {% include "order/bottomSection/form/form_order_id.html" %}
   <input type="hidden" name="message_type" value="addOrderItem">
-  <div class="row g-1 m-1 align-items-center">
-    <div class="col border border-3 rounded-4 border-black p-2">
-      <select class="form-select" name="fk_restaurant" required autocomplete="off" hx-get="/menuitems" hx-target="#menuItems" {% if disable_order_item_form %}disabled{% endif %}>
+  <div class="row g-3 align-items-center mb-3">
+
+    <!-- Restaurant Selection -->
+    <div class="col-md-4">
+      <select class="form-select" name="fk_restaurant" required autocomplete="off" hx-get="{% url 'get_menu_items' %}" hx-target="#menuItems" {% if disable_order_item_form %}disabled{% endif %}>
         <option selected disabled>{% translate "Select Restaurant" %}</option>
         {% for restaurant in restaurants %}
         <option value="{{restaurant.id}}" {% if restaurant.id == form.fk_restaurant.value|add:"0" %}selected{% endif %}>{{restaurant.name}}
@@ -16,20 +18,22 @@
       {% endfor %}
     </div>
 
-    <div class="col border border-3 rounded-4 border-black p-2">
+    <!-- Menu Item Selection -->
+    <div class="col-md-4">
       {% include "order/bottomSection/form/menuItems.html" %}
     </div>
 
-    <div class="col border border-3 rounded-4 border-black p-2">
-      <input type="number" class="form-control" id="quantity" name="quantity" placeholder='{% translate "Quantity" %}' min="1" value="{{form.quantity.value}}" required autocomplete="off"
-        {% if disable_order_item_form %}disabled{% endif %}>
+    <!-- Quantity Input -->
+    <div class="col-md-2">
+      <input type="number" class="form-control" id="quantity" name="quantity" placeholder='{% translate "Quantity" %}' min="1" value="{{form.quantity.value}}" required autocomplete="off" {% if disable_order_item_form %}disabled{% endif %}>
       {% for error in form.quantity.errors %}
       {% include "base/error.html" %}
       {% endfor %}
     </div>
 
-    <div class="col border border-3 rounded-4 border-black p-2">
-      <button type="submit" class="btn btn-primary" {% if disable_order_item_form %}disabled{% endif %}>{% translate "Add" %}</button>
+    <!-- Add Button -->
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100" {% if disable_order_item_form %}disabled{% endif %}>{% translate "Add" %}</button>
       {% include "base/error.html" with error=create_order_error %}
     </div>
   </div>

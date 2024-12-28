@@ -3,7 +3,9 @@
 {% block body %}
 <!-- main container -->
 <div class="container-fluid" hx-ext="ws" ws-connect={{ws_url}}>
-  <div class="border border-3 rounded-4 border-black text-center p-2 my-2">
+  <div class="bg-light p-4 rounded-4 shadow-lg mt-4">
+    <!-- user management section -->
+    {% include "userManagement/actions.html" %}
     {% include "base/body.html" %}
   </div>
 </div>

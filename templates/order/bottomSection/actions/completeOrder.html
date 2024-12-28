@@ -1,9 +1,0 @@
-{% load i18n%}
-<form id="completeOrder" ws-send hx-swap-oob="innerHTML">
-    <input type="hidden" name="message_type" value="completeOrder">
-    <button type="submit" class="btn btn-success" {% if disable_complete_button %}disabled{% endif %}>{% translate "Complete Order" %}</button>
-    {% if complete_order_error %}
-    {% include "base/error.html" with error=complete_order_error %}
-    {% endif %}
-    {% include "base/helpers/error_remover.html" %}
-</form>

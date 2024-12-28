@@ -1,13 +1,11 @@
 {% load i18n%}
-<div id="{% block id %}{% endblock id %}" class="col border border-3 rounded-4 border-primary p-2" hx-swap-oob="innerHTML">
-    <div class="row justify-content-center align-items-center">
-        <div class="col p-2">
+<div id="{% block id %}{% endblock id %}" class="col-md-6" hx-swap-oob="innerHTML">
+    <div class="card h-100">
+        <div class="card-header text-center fw-bold">
             {% block title %}
             {% endblock title %}
         </div>
-    </div>
-    <div class="row">
-        <div class="col border border-3 rounded-4 border-info p-2 overflow-y-scroll" style="height: 40vh;">
+        <div class="card-body table-responsive overflow-auto p-0" style="height: 25vh">
             {% block body %}
             {% endblock body %}
         </div>

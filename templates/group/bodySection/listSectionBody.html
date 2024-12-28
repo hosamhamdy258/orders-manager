@@ -1,0 +1,20 @@
+{% extends "base/bodySection/listSectionBody.html" %}
+{% load i18n %}
+
+{% block table_headers %}
+{% endblock table_headers %}
+
+{% block table_body %}
+<tr>
+    {% include "group/bodySection/connectedUsers.html" %}
+    {% block common_button %}
+    {{ block.super }}
+    {% endblock common_button %}
+    <td>
+        {% block extra_actions %}
+        {{ block.super }}
+        {% include "group/bodySection/joinAction.html" %}
+        {% endblock extra_actions %}
+    </td>
+</tr>
+{% endblock table_body %}

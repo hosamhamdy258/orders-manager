@@ -24,13 +24,12 @@ class IndexView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         user = self.request.user
         ctx = get_context(user=user, view=CV.GROUP_VIEW)
-
         context = super().get_context_data(**kwargs)
         context.update({GC.WS_URL: "/ws/index/", **ctx})
         return context
 
 
-class GroupView(LoginRequiredMixin, TemplateView):
+class OrderView(LoginRequiredMixin, TemplateView):
     template_name = "base/index.html"
 
     def get(self, request, *args, **kwargs):
@@ -42,11 +41,20 @@ class GroupView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         user = self.request.user
-
         ctx = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
-
         context = super().get_context_data(**kwargs)
-        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/group/{self.group.room_number}/", **ctx})
+        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/order/{self.group.room_number}/", **ctx})
+        return context
+
+
+class RestaurantView(LoginRequiredMixin, TemplateView):
+    template_name = "base/index.html"
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        ctx = get_context(user=user, view=CV.RESTAURANT_VIEW)
+        context = super().get_context_data(**kwargs)
+        context.update({GC.WS_URL: f"/ws/restaurant/", **ctx})
         return context
 
 

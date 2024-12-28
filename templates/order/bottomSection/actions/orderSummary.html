@@ -1,7 +1,7 @@
 {% load i18n %}
 <form id="orderSammary" ws-send hx-swap-oob="innerHTML">
     <input type="hidden" name="message_type" value="groupOrderSummary">
-    <button type="submit" class="btn btn-success">{% translate "Orders Summary" %}</button>
+    <button type="submit" class="btn btn-success w-100">{% translate "Orders Summary" %}</button>
     {% if order_summary_error %}
     {% include "base/error.html" with error=order_summary_error %}
     {% endif %}

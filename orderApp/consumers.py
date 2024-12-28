@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import DecimalField, F, Sum
 from django.utils.translation import gettext as _
 
+from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ErrorMessage as EM
 from orderApp.forms import GroupForm, MenuItemForm, OrderItemForm, RestaurantForm
 from orderApp.groupContext import (
@@ -35,9 +36,11 @@ from orderApp.views import get_context
 UserModel = get_user_model()
 HOME_ROOM_NAME = "home_room"
 HOME_GROUP_NAME = f"group_{HOME_ROOM_NAME}"
+RESTAURANT_ROOM_NAME = "restaurant_room"
+RESTAURANT_GROUP_NAME = f"group_{RESTAURANT_ROOM_NAME}"
 
 
-class HomeConsumer(JsonWebsocketConsumer):
+class GroupConsumer(JsonWebsocketConsumer):
     message_type = "message_type"
     message = "message"
 
@@ -47,6 +50,7 @@ class HomeConsumer(JsonWebsocketConsumer):
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
         print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
         self.accept()
+        self.updateGroupBody()
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
@@ -65,6 +69,21 @@ class HomeConsumer(JsonWebsocketConsumer):
             self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
+    def updateGroupBody(self):
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
+
+        view_context = get_context(user=user, view=CV.GROUP_VIEW)
+
+        context.update(view_context)
+        templates.append("group/body.html")
+
+        response = templates_joiner(context, templates)
+        self.send(text_data=response)
+        pass
+
     def updateGroupsList(self, event):
         group = event.get("group", True)
         if group:
@@ -74,7 +93,7 @@ class HomeConsumer(JsonWebsocketConsumer):
             context = {}
 
             context.update(**group_list_section(add_view=True))
-            templates.append("base/bodySection/listSection.html")
+            templates.append("group/bodySection/listSection.html")
             response = templates_joiner(context, templates)
             self.send(text_data=response)
             pass
@@ -90,7 +109,7 @@ class HomeConsumer(JsonWebsocketConsumer):
             context.update({**group_details_section(group=event[self.message].get("item_id"), add_view=True)})
             context.update({"remove_errors": True})
 
-            templates.append("base/bodySection/detailsSection.html")
+            templates.append("group/bodySection/detailsSection.html")
 
             response = templates_joiner(context, templates)
 
@@ -156,7 +175,7 @@ class HomeConsumer(JsonWebsocketConsumer):
             pass
 
 
-class GroupConsumer(JsonWebsocketConsumer):
+class OrderConsumer(JsonWebsocketConsumer):
     message_type = "message_type"
     message = "message"
 
@@ -171,6 +190,7 @@ class GroupConsumer(JsonWebsocketConsumer):
         self.group.m2m_users.add(user)
         self.updateUsersConnectedCount()
         self.accept()
+        self.updateOrderBody()
 
     def disconnect(self, close_code):
         # Leave room group
@@ -201,6 +221,22 @@ class GroupConsumer(JsonWebsocketConsumer):
             self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
+    def updateOrderBody(self):
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
+
+        view_context = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
+
+        context.update(view_context)
+        templates.append("order/body.html")
+
+        response = templates_joiner(context, templates)
+        # print("send",response)
+        self.send(text_data=response)
+        pass
+
     def addOrderItem(self, event):
         group = event.get("group", False)
         if group:
@@ -227,7 +263,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 context.update({"remove_errors": True})
 
                 context.update(**order_details_section(order=event[self.message]["fk_order"], add_view=True))
-                templates.append("base/bodySection/detailsSection.html")
+                templates.append("order/bodySection/detailsSection.html")
 
                 context.update(**order_actions_section())
                 templates.append("order/bottomSection/actions/finish_order_id.html")
@@ -259,7 +295,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 templates.append("order/bottomSection/form/formOrderItem.html")
 
                 context.update(**order_details_section(disable_remove_button=True))
-                templates.append("base/bodySection/detailsSection.html")
+                templates.append("order/bodySection/detailsSection.html")
 
                 context.update(**order_actions_section())
 
@@ -284,7 +320,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             context = {}
 
             context.update(**order_list_section(group=self.group))
-            templates.append("base/bodySection/listSection.html")
+            templates.append("order/bodySection/listSection.html")
             response = templates_joiner(context, templates)
             self.send(text_data=response)
             pass
@@ -307,7 +343,7 @@ class GroupConsumer(JsonWebsocketConsumer):
                 context.update(**order_list_section(user=user, group=self.group))
                 context.update(**order_actions_section(all_orders=True))
 
-            templates.append("base/bodySection/listSection.html")
+            templates.append("order/bodySection/listSection.html")
             templates.append("order/bottomSection/actions/getOrderList.html")
 
             response = templates_joiner(context, templates)
@@ -332,7 +368,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             order_id = orderItemObj.fk_order
 
             context.update({**order_details_section(order=order_id, add_view=True)})
-            templates.append("base/bodySection/detailsSection.html")
+            templates.append("order/bodySection/detailsSection.html")
 
             orderItemObj.delete()
             response = templates_joiner(context, templates)
@@ -351,7 +387,7 @@ class GroupConsumer(JsonWebsocketConsumer):
             context.update({"user": user})
 
             context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
-            templates.append("base/bodySection/detailsSection.html")
+            templates.append("order/bodySection/detailsSection.html")
 
             response = templates_joiner(context, templates)
 
@@ -485,97 +521,6 @@ class GroupConsumer(JsonWebsocketConsumer):
             self.send(text_data=response)
             pass
 
-    def showRestaurantItems(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-
-            context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
-            context.update({"remove_errors": True})
-
-            templates.append("base/bodySection/detailsSection.html")
-            templates.append("restaurant/bottomSection/form/formMenuItem.html")
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
-
-    def addRestaurant(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-
-            form = RestaurantForm(event[self.message])
-            if form.is_valid():
-                instance = form.save(True)
-                context.update(**restaurant_list_section())
-                context.update(**restaurant_context(restaurant=instance.id))
-                templates.append("base/bodySection/listSection.html")
-                templates.append("base/bodySection/detailsSection.html")
-                templates.append("restaurant/bottomSection/form/formMenuItem.html")
-            else:
-                context.update({"form": form})
-
-            templates.append("restaurant/bottomSection/form/formRestaurant.html")
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
-
-    def deleteMenuItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-
-            MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
-
-            restaurant_id = MenuItemObj.fk_restaurant.id
-
-            context.update({**restaurant_details_section(restaurant=restaurant_id, add_view=True)})
-
-            templates.append("base/bodySection/detailsSection.html")
-
-            MenuItemObj.delete()
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
-
-    def addMenuItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-
-            form = MenuItemForm(event[self.message])
-            if form.is_valid():
-                form.save(True)
-                context.update({**restaurant_details_section(restaurant=event[self.message].get("fk_restaurant"), add_view=True)})
-                templates.append("base/bodySection/detailsSection.html")
-            else:
-                context.update({"form": form})
-
-            templates.append("restaurant/bottomSection/form/formMenuItem.html")
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
-
     def sendNotification(self, event):
         group = event.get("group", True)
         if group:
@@ -609,3 +554,139 @@ class GroupConsumer(JsonWebsocketConsumer):
                 },
             },
         )
+
+
+class RestaurantConsumer(JsonWebsocketConsumer):
+    message_type = "message_type"
+    message = "message"
+
+    def connect(self):
+        self.room_name = RESTAURANT_ROOM_NAME
+        self.room_group_name = RESTAURANT_GROUP_NAME
+        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+        print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
+        self.accept()
+        self.updateRestaurantBody()
+
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+
+    def receive_json(self, content, **kwargs):
+        event_type = content.get(self.message_type, "")
+        message = dict(message=content)
+        handler = getattr(self, event_type, self.default_handler)
+        handler(message)
+
+    def default_handler(self, message):
+        print(f"Unknown event type received: {message}")
+
+    def self_dispatch(self, event):
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+        )
+
+    def updateRestaurantBody(self):
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
+
+        view_context = get_context(user=user, view=CV.RESTAURANT_VIEW)
+
+        context.update(view_context)
+        templates.append("restaurant/body.html")
+
+        response = templates_joiner(context, templates)
+        self.send(text_data=response)
+        pass
+
+    def showRestaurantItems(self, event):
+        group = event.get("group", False)
+        if group:
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
+            context.update({"remove_errors": True})
+
+            templates.append("restaurant/bodySection/detailsSection.html")
+            templates.append("restaurant/bottomSection/form/formMenuItem.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def addRestaurant(self, event):
+        group = event.get("group", False)
+        if group:
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            form = RestaurantForm(event[self.message])
+            if form.is_valid():
+                instance = form.save(True)
+                context.update(**restaurant_list_section())
+                context.update(**restaurant_context(restaurant=instance.id))
+                templates.append("restaurant/bodySection/listSection.html")
+                templates.append("restaurant/bodySection/detailsSection.html")
+                templates.append("restaurant/bottomSection/form/formMenuItem.html")
+            else:
+                context.update({"form": form})
+
+            templates.append("restaurant/bottomSection/form/formRestaurant.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def deleteMenuItem(self, event):
+        group = event.get("group", False)
+        if group:
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
+
+            restaurant_id = MenuItemObj.fk_restaurant.id
+
+            context.update({**restaurant_details_section(restaurant=restaurant_id, add_view=True)})
+
+            templates.append("restaurant/bodySection/detailsSection.html")
+
+            MenuItemObj.delete()
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass
+
+    def addMenuItem(self, event):
+        group = event.get("group", False)
+        if group:
+            self.self_dispatch(event)
+        else:
+            templates = []
+            context = {}
+
+            form = MenuItemForm(event[self.message])
+            if form.is_valid():
+                form.save(True)
+                context.update({**restaurant_details_section(restaurant=event[self.message].get("fk_restaurant"), add_view=True)})
+                templates.append("restaurant/bodySection/detailsSection.html")
+            else:
+                context.update({"form": form})
+
+            templates.append("restaurant/bottomSection/form/formMenuItem.html")
+
+            response = templates_joiner(context, templates)
+
+            self.send(text_data=response)
+            pass

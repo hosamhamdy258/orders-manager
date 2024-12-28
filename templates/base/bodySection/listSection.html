@@ -1,13 +1,3 @@
 {% extends "base/bodySection/base.html" %}
-
 {% block id %}{{list_section_id}}{% endblock id %}
 {% block title %}{{list_section_title}}{% endblock title %}
-{% block body %}
-{% if current_view == "group_view" %}
-{% include "group/bodySection/listSection.html" %}
-{% elif current_view == "restaurant_view" %}
-{% include "restaurant/bodySection/listSection.html" %}
-{% else %}
-{% include "base/bodySection/listSectionBody.html" %}
-{% endif %}
-{% endblock body %}

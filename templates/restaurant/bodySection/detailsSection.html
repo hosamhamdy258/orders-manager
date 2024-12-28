@@ -1,13 +1,4 @@
-{% extends "base/bodySection/detailsSectionBody.html" %}
+{% extends "base/bodySection/detailsSection.html" %}
 {% block body %}
-<div class="col p-1">{{item.menu_item}}</div>
-<div class="col p-1">{{item.price}}</div>
-
-<div class="col p-1">
-    <form ws-send>
-        <input type="hidden" name="message_type" value="{{details_message_type}}">
-        <input type="hidden" name="item_id" value="{{item.id}}">
-        <button type="submit" class="btn-close" aria-label="Close"></button>
-    </form>
-</div>
+{% include "restaurant/bodySection/detailsSectionBody.html" %}
 {% endblock body %}

@@ -1,15 +1,3 @@
 {% extends "base/bodySection/base.html" %}
-
 {% block id %}{{details_section_id}}{% endblock id %}
 {% block title %}{{details_section_title}}{% endblock title %}
-{% block body %}
-{% if current_view == "order_view" %}
-{% include "order/bodySection/detailsSection.html" %}
-{% elif current_view == "restaurant_view" %}
-{% include "restaurant/bodySection/detailsSection.html" %}
-{% elif current_view == "group_view" %}
-{% include "group/bodySection/detailsSection.html" %}
-{% else %}
-{% include "base/bodySection/detailsSectionBody.html" %}
-{% endif %}
-{% endblock body %}

@@ -1,11 +1,4 @@
-{% extends "base/bodySection/listSectionBody.html" %}
-{% load i18n %}
-
-{% block list_item_description %}
-{% include "group/bodySection/connectedUsers.html" %}
-{% endblock list_item_description %}
-
-{% block extra_actions %}
-{{ block.super }}
-{% include "group/bodySection/joinAction.html" %}
-{% endblock extra_actions %}
+{% extends "base/bodySection/listSection.html" %}
+{% block body %}
+{% include "group/bodySection/listSectionBody.html" %}
+{% endblock body %}

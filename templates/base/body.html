@@ -1,54 +1,40 @@
 {% load i18n %}
 <!-- split page to 3 sections [top-body-bottom] -->
-<div id="content" class="row row-cols-1 g-1 m-1 align-items-center">
-    <!-- user management section -->
-    {% include "userManagement/actions.html" %}
+<div id="content">
 
     <!-- top section -->
-    <div class="col border border-3 rounded-4 border-black p-2">
-        <div class="row row-cols-auto justify-content-between align-items-center g-1 m-1">
-            <div class="col-auto p-2">{{main_title}}</div>
-            {% if current_view == "order_view" %}
-            {% include "order/topSection/middleTitle.html" %}
-            {% endif %}
-            <div class="col-auto p-2">
-                {% if current_view == "group_view" %}
-                {% include "group/topSection/titleAction.html" %}
-                {% else %}
-                {% include "base/topSection/titleAction.html" %}
-                {% endif %}
-            </div>
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            {% block top_section_title %}
+            <span>{{main_title}}</span>
+            {% endblock top_section_title %}
+            {% block top_section_body %}
+            {% endblock top_section_body %}
         </div>
 
         <!-- body section -->
-        <div class="col border border-3 rounded-4 border-danger p-2">
+        <div class="card-body">
             <!-- split body to 2 sections [right-left] -->
-            <div class="row row-cols-2 g-1 m-1">
+            <div class="row g-3">
                 <!-- right section -->
-                {% include "base/bodySection/detailsSection.html" %}
+
+                {% block details_section %}{% endblock details_section %}
 
                 <!-- left section -->
-                {% include "base/bodySection/listSection.html" %}
+                {% block list_section %}{% endblock list_section %}
             </div>
         </div>
+    </div>
 
-        <!-- bottom section -->
-        <div class="col border border-3 rounded-4 border-black p-2">
-            {% if current_view == "order_view" %}
-            {% include "order/bottomSection/form/formOrderItem.html" %}
-            {% include "order/bottomSection/actions/orderActions.html" %}
-            {% elif current_view == "restaurant_view" %}
-            {% include "restaurant/bottomSection/form/formRestaurant.html" %}
-            {% include "restaurant/bottomSection/form/formMenuItem.html" %}
-            {% elif current_view == "group_view" %}
-            {% include "group/bottomSection/form/formGroupItem.html" %}
-            {% endif %}
+    <!-- bottom section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            {% block bottom_form %}{% endblock bottom_form %}
         </div>
     </div>
 
-    <!-- tables section -->
-    <div class="col">
-        {% include "order/bottomSection/actions/summaryTables.html" %}
-    </div>
+
+    {% block summary_table %}
+    {% endblock summary_table %}
 
 </div>

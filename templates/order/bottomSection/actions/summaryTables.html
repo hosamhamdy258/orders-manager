@@ -1,9 +1,10 @@
 {% load i18n%}
-<div id="summaryTables" class="" hx-swap-oob="innerHTML">
+<div id="summaryTables" hx-swap-oob="innerHTML">
     {% if showTables %}
-    <div class="border border-3 rounded-4 border-black p-2">
-        <div class="container my-3 text-center">
-            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+    <div class="border border-3 rounded-4 border-black p-3">
+        <!-- Toggle Buttons -->
+        <div class="container my-4 text-center">
+            <div class="btn-group" role="group" aria-label="table toggle buttons">
                 <input type="radio" class="btn-check" name="toggleBtn" id="btnradio1" autocomplete="off" data-target="table1" checked>
                 <label class="btn btn-outline-dark" for="btnradio1">{% translate "Restaurant Order Summary" %}</label>
 
@@ -15,10 +16,11 @@
             </div>
         </div>
 
-        <div id="table1" class="container toggler " >
+        <!-- Table 1 -->
+        <div id="table1" class="container toggler">
             <div class="table-responsive">
-                <table class="table table-bordered table-light text-center">
-                    <thead>
+                <table class="table table-hover table-bordered table-striped text-center align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>#</th>
                             <th>{% translate "Item" %}</th>
@@ -30,7 +32,7 @@
                     <tbody>
                         {% for restaurant, orderItems in orderTotalSummaryGrouped.items %}
                         <tr>
-                            <th colspan="5" class="bg-primary">{{restaurant}}</th>
+                            <th colspan="5" class="bg-primary text-white">{{restaurant}}</th>
                         </tr>
                         {% for orderItem in orderItems %}
                         <tr>
@@ -67,8 +69,8 @@
 
         <div id="table2" class="container toggler " style="display: none;">
             <div class="table-responsive">
-                <table class="table table-bordered table-light text-center">
-                    <thead>
+                <table class="table table-hover table-bordered table-striped text-center align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>#</th>
                             <th>{% translate "Item" %}</th>
@@ -80,11 +82,11 @@
                     <tbody>
                         {% for restaurant, usersGroup in orderUsersTotalSummaryGrouped.items %}
                         <tr>
-                            <th colspan="5" class="bg-primary">{{restaurant}}</th>
+                            <th colspan="5" class="bg-primary text-white">{{restaurant}}</th>
                         </tr>
                         {% for user,orderItems in usersGroup.items %}
                         <tr>
-                            <th colspan="5" class="bg-primary bg-opacity-50">{{user}}</th>
+                            <th colspan="5" class="bg-primary bg-opacity-50 text-white">{{user}}</th>
                         </tr>
                         {% for orderItem in orderItems %}
                         <tr>
@@ -137,8 +139,8 @@
 
         <div id="table3" class="container toggler " style="display: none;">
             <div class="table-responsive">
-                <table class="table table-bordered table-light text-center">
-                    <thead>
+                <table class="table table-hover table-bordered table-striped text-center align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>#</th>
                             <th>{% translate "Item" %}</th>
@@ -150,11 +152,11 @@
                     <tbody>
                         {% for user, restaurantGroup in orderUsersRestaurantSummaryGrouped.items %}
                         <tr>
-                            <th colspan="5" class="bg-primary">{{user}}</th>
+                            <th colspan="5" class="bg-primary text-white">{{user}}</th>
                         </tr>
                         {% for restaurant,orderItems in restaurantGroup.items %}
                         <tr>
-                            <th colspan="5" class="bg-primary bg-opacity-50">{{restaurant}}</th>
+                            <th colspan="5" class="bg-primary bg-opacity-50 text-white">{{restaurant}}</th>
                         </tr>
                         {% for orderItem in orderItems %}
                         <tr>

@@ -1,10 +1,11 @@
 from django.urls import path
 
-from . import views
+from orderApp.views import IndexView, OrderView, RestaurantView, announcement, menuitems
 
 urlpatterns = [
-    path("", views.IndexView.as_view(), name="index"),
-    path("group/<str:group_name>/", views.GroupView.as_view()),
-    path("menuitems/", views.menuitems),
-    path("test/", views.announcement),
+    path("", IndexView.as_view(), name="index"),
+    path("order/<str:group_name>/", OrderView.as_view(), name="order"),
+    path("restaurant/", RestaurantView.as_view(), name="restaurant"),
+    path("menuitems/", menuitems, name="get_menu_items"),
+    path("test/", announcement),
 ]

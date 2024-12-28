@@ -22,7 +22,7 @@ class Group(models.Model):
 
     def __str__(self):
         keys = [self.name, self.connected_users()]
-        return " / ".join(list(map(str, keys)))
+        return " | ".join(list(map(str, keys)))
 
     def connected_users(self):
         return len(self.m2m_users.all())
@@ -54,7 +54,7 @@ class MenuItem(models.Model):
 
     def __str__(self):
         keys = [self.fk_restaurant, self.menu_item]
-        return " / ".join(list(map(str, keys)))
+        return " | ".join(list(map(str, keys)))
 
 
 class Order(models.Model):
@@ -64,8 +64,11 @@ class Order(models.Model):
     finished_ordering = models.BooleanField(_("finished ordering"), default=False)
 
     def __str__(self):
-        keys = [self.fk_user.username, self.total_order()]
-        return " / ".join(list(map(str, keys)))
+        keys = [self.order_user(), self.total_order()]
+        return " | ".join(list(map(str, keys)))
+
+    def order_user(self):
+        return self.fk_user.username
 
     def total_order(self):
         return self.orderitem_set.aggregate(total=Sum(F("quantity") * F("fk_menu_item__price"), output_field=models.DecimalField()))["total"]
@@ -78,7 +81,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         keys = [self.fk_order, self.fk_menu_item, self.quantity, self.total_order_item()]
-        return " / ".join(list(map(str, keys)))
+        return " | ".join(list(map(str, keys)))
 
     def total_order_item(self):
         if self.fk_menu_item.price and self.quantity:
