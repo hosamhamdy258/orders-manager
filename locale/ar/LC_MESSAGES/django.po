@@ -8,39 +8,47 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-28 13:55+0000\n"
-"PO-Revision-Date: 2024-09-28 17:17+0300\n"
+"POT-Creation-Date: 2024-12-28 21:44+0200\n"
+"PO-Revision-Date: 2024-12-28 21:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n"
-"%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: core/settings/base.py:127
+#: core/settings/base.py:130
 msgid "English"
 msgstr "الأنجيليزيه"
 
-#: core/settings/base.py:128
+#: core/settings/base.py:131
 msgid "Arabic"
 msgstr "العربية"
 
-#: orderApp/consumers.py:375
-msgid "There's No Orders Today Yet"
+#: orderApp/enums.py:57
+msgid "Reached Max Orders Per Group"
+msgstr "تم الوصول إلى الحد الأقصى للطلبات للمجموعة"
+
+#: orderApp/enums.py:58
+msgid "Add Order Items"
+msgstr "طلب المطعم"
+
+#: orderApp/enums.py:59
+msgid "There's No Orders Created Yet"
 msgstr "لا توجد طلبات اليوم بعد"
 
-#: orderApp/groupContext.py:15
+#: orderApp/groupContext.py:16
 msgid "Groups Screen"
 msgstr "شاشه الطلبات"
 
-#: orderApp/groupContext.py:16
+#: orderApp/groupContext.py:17
 msgid "Refresh Groups"
 msgstr "تحديث المجموعات"
 
-#: orderApp/groupContext.py:25
+#: orderApp/groupContext.py:26
 msgid "Group Members"
 msgstr "أعضاء المجموعة"
 
@@ -48,152 +56,126 @@ msgstr "أعضاء المجموعة"
 msgid "Group List"
 msgstr "قائمه الأعضاء"
 
-#: orderApp/models.py:16
+#: orderApp/models.py:15
 msgid "channel name"
 msgstr "أسم القناه"
 
-#: orderApp/models.py:20
+#: orderApp/models.py:19
 #: templates/group/bottomSection/form/formGroupItem.html:6
 msgid "Group Name"
 msgstr "أسم المجموعة"
 
-#: orderApp/models.py:21
+#: orderApp/models.py:20 orderApp/models.py:32
 msgid "Users"
 msgstr "المستخدم"
 
-#: orderApp/models.py:22
-msgid "Accepted Order Users"
-msgstr "طلب المطعم"
-
-#: orderApp/models.py:23
-msgid "Completed"
-msgstr "مكتمل"
-
-#: orderApp/models.py:24
+#: orderApp/models.py:21
 msgid "Room Number"
 msgstr "رقم الغرفه"
 
-#: orderApp/models.py:45
-#, python-brace-format
-msgid ""
-"Some Members Didn't Finish Ordering Yet:\n"
-"{members}"
-msgstr ""
-"بعض الأعضاء لم يتموا الطلب بعد :\n"
-"{members}"
-
-#: orderApp/models.py:59
-msgid "Name"
-msgstr "الأسم"
-
-#: orderApp/models.py:66
-msgid "Restaurant"
-msgstr "المطعم"
-
-#: orderApp/models.py:67 orderApp/models.py:91
-msgid "Menu Item"
-msgstr "عنصر القائمه"
-
-#: orderApp/models.py:68
-#: templates/order/bottomSection/actions/summaryTables.html:25
-#: templates/order/bottomSection/actions/summaryTables.html:75
-#: templates/order/bottomSection/actions/summaryTables.html:145
-msgid "Price"
-msgstr "السعر"
-
-#: orderApp/models.py:76
-msgid "User"
-msgstr "المستخدم"
-
-#: orderApp/models.py:77
+#: orderApp/models.py:33 orderApp/models.py:62
+#: templates/order/topSection/middleTitle.html:2
 msgid "Group"
-msgstr "المجموعه"
+msgstr "المجموعة"
 
-#: orderApp/models.py:78
+#: orderApp/models.py:34 orderApp/models.py:63
 msgid "Created"
 msgstr "تم الأنشاء"
 
-#: orderApp/models.py:79
+#: orderApp/models.py:44
+msgid "Name"
+msgstr "الأسم"
+
+#: orderApp/models.py:51
+msgid "Restaurant"
+msgstr "المطعم"
+
+#: orderApp/models.py:52 orderApp/models.py:79
+msgid "Menu Item"
+msgstr "عنصر القائمه"
+
+#: orderApp/models.py:53
+#: templates/order/bottomSection/actions/summaryTables.html:27
+#: templates/order/bottomSection/actions/summaryTables.html:77
+#: templates/order/bottomSection/actions/summaryTables.html:147
+msgid "Price"
+msgstr "السعر"
+
+#: orderApp/models.py:61
+msgid "User"
+msgstr "المستخدم"
+
+#: orderApp/models.py:64
 msgid "finished ordering"
 msgstr "إنهاء الطلب"
 
-#: orderApp/models.py:90
+#: orderApp/models.py:78
 msgid "Order"
 msgstr "الطلب"
 
-#: orderApp/models.py:92
-#: templates/order/bottomSection/actions/summaryTables.html:26
-#: templates/order/bottomSection/actions/summaryTables.html:76
-#: templates/order/bottomSection/actions/summaryTables.html:146
-#: templates/order/bottomSection/form/formOrderItem.html:24
+#: orderApp/models.py:80
+#: templates/order/bottomSection/actions/summaryTables.html:28
+#: templates/order/bottomSection/actions/summaryTables.html:78
+#: templates/order/bottomSection/actions/summaryTables.html:148
+#: templates/order/bottomSection/form/formOrderItem.html:28
 msgid "Quantity"
 msgstr "الكميه"
 
-#: orderApp/orderContext.py:38
+#: orderApp/orderContext.py:32
 msgid "Orders Screen"
 msgstr "شاشه الطلبات"
 
-#: orderApp/orderContext.py:39
-#: templates/restaurant/bottomSection/form/formRestaurant.html:14
+#: orderApp/orderContext.py:33
+#: templates/restaurant/bottomSection/form/formRestaurant.html:12
 msgid "Add Restaurant"
 msgstr "أضافه مطعم"
 
-#: orderApp/orderContext.py:47
+#: orderApp/orderContext.py:43
 msgid "Members Orders"
 msgstr "طلبات الأعضاء"
 
-#: orderApp/orderContext.py:60
+#: orderApp/orderContext.py:54
 msgid "Order Items"
 msgstr "طلب المطعم"
 
-#: orderApp/orderContext.py:101
+#: orderApp/orderContext.py:95
 msgid "All Orders"
 msgstr "كل الطلبات"
 
-#: orderApp/orderContext.py:101
+#: orderApp/orderContext.py:95
 msgid "My Orders"
 msgstr "طلباتي"
 
-#: orderApp/orderContext.py:153
-#, python-brace-format
-msgid "Only {order_limit} orders per day"
-msgstr "المسموح به عدد  {order_limit} طلب باليوم"
-
-#: orderApp/orderContext.py:175 orderApp/orderContext.py:177
-msgid "Add Order Items"
-msgstr "طلب المطعم"
-
-#: orderApp/restaurantContext.py:15
+#: orderApp/restaurantContext.py:14
 msgid "Restaurant Screen"
 msgstr "شاشه المطعم"
 
-#: orderApp/restaurantContext.py:16
+#: orderApp/restaurantContext.py:15
 msgid "Add Order"
 msgstr "أضافه طلب"
 
-#: orderApp/restaurantContext.py:30
+#: orderApp/restaurantContext.py:26
 msgid "Menu Items"
 msgstr "عناصر القائمه"
 
-#: orderApp/restaurantContext.py:41
+#: orderApp/restaurantContext.py:37
 msgid "Restaurant List"
 msgstr "قائمه المطاعم"
 
-#: orderApp/utils.py:11
+#: orderApp/utils.py:12
 #, python-format
 msgid "Ensure this value is greater than %(limit_value)s."
 msgstr "برجاء التأكد بأن القيمة اكبر من   %(limit_value)s."
 
-#: templates/base/base.html:17
+#: templates/base/base.html:18
 msgid "Order Manager"
 msgstr "مدير المطعم"
 
-#: templates/base/bodySection/listSection.html:18
-#: templates/group/bodySection/listSection.html:9
+#: templates/common/showButton.html:7
 msgid "Show"
 msgstr "عرض"
 
-#: templates/group/bodySection/listSection.html:14
+#: templates/group/bodySection/joinAction.html:3
 msgid "Join"
 msgstr "دخول"
 
@@ -201,64 +183,65 @@ msgstr "دخول"
 msgid "Add Group"
 msgstr "أضافه مجموعه"
 
-#: templates/order/bottomSection/actions/completeOrder.html:4
-msgid "Complete Order"
-msgstr "مكتمل"
+#: templates/order/bodySection/detailsSectionBody.html:23
+#: templates/restaurant/bodySection/detailsSectionBody.html:18
+msgid "Remove"
+msgstr "حذف"
 
 #: templates/order/bottomSection/actions/finishOrder.html:5
-msgid "Finish Order"
+msgid "Finish Ordering"
 msgstr "إنهاء الطلب"
 
 #: templates/order/bottomSection/actions/orderSummary.html:4
 msgid "Orders Summary"
 msgstr "ملخص الطلب"
 
-#: templates/order/bottomSection/actions/summaryTables.html:8
+#: templates/order/bottomSection/actions/summaryTables.html:9
 msgid "Restaurant Order Summary"
 msgstr "ملخص الطلب بالمطعم"
 
-#: templates/order/bottomSection/actions/summaryTables.html:11
+#: templates/order/bottomSection/actions/summaryTables.html:12
 msgid "Restaurant User Order Summary"
 msgstr "ملخص الطلب بالمطعم والمستخدم"
 
-#: templates/order/bottomSection/actions/summaryTables.html:14
+#: templates/order/bottomSection/actions/summaryTables.html:15
 msgid "User Restaurant Order Summary"
 msgstr "ملخص الطلب بالمستخدم والمطعم"
 
-#: templates/order/bottomSection/actions/summaryTables.html:24
-#: templates/order/bottomSection/actions/summaryTables.html:74
-#: templates/order/bottomSection/actions/summaryTables.html:144
+#: templates/order/bottomSection/actions/summaryTables.html:26
+#: templates/order/bottomSection/actions/summaryTables.html:76
+#: templates/order/bottomSection/actions/summaryTables.html:146
 msgid "Item"
 msgstr "عنصر"
 
-#: templates/order/bottomSection/actions/summaryTables.html:27
-#: templates/order/bottomSection/actions/summaryTables.html:77
-#: templates/order/bottomSection/actions/summaryTables.html:147
+#: templates/order/bottomSection/actions/summaryTables.html:29
+#: templates/order/bottomSection/actions/summaryTables.html:79
+#: templates/order/bottomSection/actions/summaryTables.html:149
 msgid "Total"
 msgstr "الإجمالي"
 
-#: templates/order/bottomSection/actions/summaryTables.html:46
-#: templates/order/bottomSection/actions/summaryTables.html:116
-#: templates/order/bottomSection/actions/summaryTables.html:169
+#: templates/order/bottomSection/actions/summaryTables.html:48
+#: templates/order/bottomSection/actions/summaryTables.html:118
+#: templates/order/bottomSection/actions/summaryTables.html:171
 msgid "Restaurant Total"
 msgstr "إجمالي المطعم"
 
-#: templates/order/bottomSection/actions/summaryTables.html:59
-#: templates/order/bottomSection/actions/summaryTables.html:129
-#: templates/order/bottomSection/actions/summaryTables.html:199
+#: templates/order/bottomSection/actions/summaryTables.html:61
+#: templates/order/bottomSection/actions/summaryTables.html:131
+#: templates/order/bottomSection/actions/summaryTables.html:201
 msgid "Grand Total"
 msgstr "الإجمالي النهائي"
 
-#: templates/order/bottomSection/actions/summaryTables.html:99
-#: templates/order/bottomSection/actions/summaryTables.html:186
+#: templates/order/bottomSection/actions/summaryTables.html:101
+#: templates/order/bottomSection/actions/summaryTables.html:188
 msgid "User Total"
 msgstr "إجمالي المستخدم"
 
-#: templates/order/bottomSection/form/formOrderItem.html:8
+#: templates/order/bottomSection/form/formOrderItem.html:10
 msgid "Select Restaurant"
 msgstr "أختار مطعم"
 
-#: templates/order/bottomSection/form/formOrderItem.html:32
+#: templates/order/bottomSection/form/formOrderItem.html:36
 msgid "Add"
 msgstr "أضافه"
 
@@ -266,7 +249,55 @@ msgstr "أضافه"
 msgid "Select Item"
 msgstr "أختار عنصر"
 
-#: templates/restaurant/bottomSection/form/formMenuItem.html:7
+#: templates/order/topSection/countDownTimer.html:19
+msgid "Time's up !"
+msgstr "الوقت أنتهي !"
+
+#: templates/registration/base.html:33
+msgid "Submit"
+msgstr "أرسل"
+
+#: templates/registration/change_password.html:5
+#: templates/userManagement/actions.html:5
+msgid "Change Password"
+msgstr "تغيير كلمه السر"
+
+#: templates/registration/change_password.html:12
+msgid "Remembered your password?"
+msgstr "تذكرت كلمه المرور ؟"
+
+#: templates/registration/change_password.html:12
+#: templates/registration/login.html:5
+#: templates/registration/password_change_done.html:10
+#: templates/registration/sign_up.html:12
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+#: templates/registration/login.html:12
+msgid "Don't have an account? "
+msgstr "ليس لديك حساب ؟ "
+
+#: templates/registration/login.html:12
+msgid "Register"
+msgstr "تسجيل حساب"
+
+#: templates/registration/password_change_done.html:8
+msgid "Password Changed Successfully"
+msgstr "تم تغيير كلمه السر بنجاح"
+
+#: templates/registration/password_change_done.html:9
+msgid "Your password has been changed successfully."
+msgstr "تم تغيير كلمه السر الخاصة بك بنجاح."
+
+#: templates/registration/sign_up.html:5
+msgid "Create Your Account"
+msgstr "أنشئ حسابك"
+
+#: templates/registration/sign_up.html:12
+msgid "Already have an account? "
+msgstr "هل لديك حساب بالفعل ؟ "
+
+#: templates/restaurant/bottomSection/form/formMenuItem.html:8
 msgid "Menu Item Name"
 msgstr "أسم عنصر القائمه"
 
@@ -274,7 +305,7 @@ msgstr "أسم عنصر القائمه"
 msgid "Menu Item Price"
 msgstr "سعر عنصر القائمه"
 
-#: templates/restaurant/bottomSection/form/formMenuItem.html:22
+#: templates/restaurant/bottomSection/form/formMenuItem.html:21
 msgid "Add Menu Item"
 msgstr "أضافه عنصر قائمه"
 
@@ -282,5 +313,10 @@ msgstr "أضافه عنصر قائمه"
 msgid "Restaurant Name"
 msgstr "أسم المطعم"
 
-#~ msgid "show"
-#~ msgstr "عرض"
+#: templates/userManagement/actions.html:3
+msgid "Welcome"
+msgstr "أهلا"
+
+#: templates/userManagement/actions.html:8
+msgid "Logout"
+msgstr "تسجيل الخروج"
