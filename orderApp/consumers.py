@@ -503,9 +503,9 @@ class OrderConsumer(JsonWebsocketConsumer):
                     "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
                     "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
                     "showTables": True,
+                    "table_headers": ["#", _("Item"), _("Price"), _("Quantity"), _("Total")],
                 }
             )
-
         response = templates_joiner(context, templates)
 
         self.send(text_data=response)

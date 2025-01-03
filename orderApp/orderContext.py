@@ -42,6 +42,7 @@ def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False
         VC.LIST_SECTION_TITLE: _("Members Orders"),
         VC.LIST_MESSAGE_TYPE: "showMemberItemOrders",
         VC.LIST_SECTION_DATA: get_all_orders(user=user, group=group),
+        VC.LIST_TABLE_HEADERS: [_("User"), _("Total")],
         **(get_current_view(view=view) if add_view else {}),
     }
 
@@ -54,6 +55,7 @@ def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disabl
         VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
         OC.DISABLE_REMOVE_BUTTON: disable_remove_button,
         VC.DETAILS_SECTION_DATA: get_order_items(order),
+        VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
         **(get_current_view(view=view) if add_view else {}),
     }
 

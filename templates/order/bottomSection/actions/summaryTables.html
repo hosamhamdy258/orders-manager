@@ -1,215 +1,29 @@
 {% load i18n%}
 <div id="summaryTables" hx-swap-oob="innerHTML">
     {% if showTables %}
-    <div class="border border-3 rounded-4 border-black p-3">
-        <!-- Toggle Buttons -->
-        <div class="container my-4 text-center">
-            <div class="btn-group" role="group" aria-label="table toggle buttons">
-                <input type="radio" class="btn-check" name="toggleBtn" id="btnradio1" autocomplete="off" data-target="table1" checked>
-                <label class="btn btn-outline-dark" for="btnradio1">{% translate "Restaurant Order Summary" %}</label>
+    <div class="card mb-4">
+        <div class="card-body">
+            <!-- Toggle Buttons -->
+            <div class="my-4 text-center">
+                <div class="btn-group" role="group" aria-label="table toggle buttons">
+                    <input type="radio" class="btn-check" name="toggleBtn" id="btnradio1" autocomplete="off" data-target="table1" checked>
+                    <label class="btn btn-outline-primary" for="btnradio1">{% translate "Grouped By Restaurant" %}</label>
 
-                <input type="radio" class="btn-check" name="toggleBtn" id="btnradio2" autocomplete="off" data-target="table2">
-                <label class="btn btn-outline-dark" for="btnradio2">{% translate "Restaurant User Order Summary" %}</label>
+                    <input type="radio" class="btn-check" name="toggleBtn" id="btnradio2" autocomplete="off" data-target="table2">
+                    <label class="btn btn-outline-primary" for="btnradio2">{% translate "Grouped By Restaurant then User" %}</label>
 
-                <input type="radio" class="btn-check" name="toggleBtn" id="btnradio3" autocomplete="off" data-target="table3">
-                <label class="btn btn-outline-dark" for="btnradio3">{% translate "User Restaurant Order Summary" %}</label>
+                    <input type="radio" class="btn-check" name="toggleBtn" id="btnradio3" autocomplete="off" data-target="table3">
+                    <label class="btn btn-outline-primary" for="btnradio3">{% translate "Grouped By User then Restaurant " %}</label>
+                </div>
             </div>
-        </div>
-
-        <!-- Table 1 -->
-        <div id="table1" class="container toggler">
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered table-striped text-center align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>{% translate "Item" %}</th>
-                            <th>{% translate "Price" %}</th>
-                            <th>{% translate "Quantity" %}</th>
-                            <th>{% translate "Total" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for restaurant, orderItems in orderTotalSummaryGrouped.items %}
-                        <tr>
-                            <th colspan="5" class="bg-primary text-white">{{restaurant}}</th>
-                        </tr>
-                        {% for orderItem in orderItems %}
-                        <tr>
-                            <td>{{ forloop.counter}}</td>
-                            <td>{{ orderItem.item }}</td>
-                            <td>{{ orderItem.price }}</td>
-                            <td>{{ orderItem.quantity }}</td>
-                            <td>{{ orderItem.total }}</td>
-                        </tr>
-                        {% endfor %}
-
-                        <tr>
-                            <th colspan="3" class="bg-info bg-opacity-50">{% translate "Restaurant Total" %}</th>
-                            {% for k,v in totals_orderTotalSummary.items  %}
-                            {% if k == restaurant %}
-                            <td class="bg-info">{{v.quantity}}</td>
-                            <td class="bg-info">{{v.total}}</td>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="bg-black"></td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-success bg-opacity-50">{% translate "Grand Total" %}</th>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.quantity}}</td>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.total}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="table2" class="container toggler " style="display: none;">
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered table-striped text-center align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>{% translate "Item" %}</th>
-                            <th>{% translate "Price" %}</th>
-                            <th>{% translate "Quantity" %}</th>
-                            <th>{% translate "Total" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for restaurant, usersGroup in orderUsersTotalSummaryGrouped.items %}
-                        <tr>
-                            <th colspan="5" class="bg-primary text-white">{{restaurant}}</th>
-                        </tr>
-                        {% for user,orderItems in usersGroup.items %}
-                        <tr>
-                            <th colspan="5" class="bg-primary bg-opacity-50 text-white">{{user}}</th>
-                        </tr>
-                        {% for orderItem in orderItems %}
-                        <tr>
-                            <td>{{ forloop.counter}}</td>
-                            <td>{{ orderItem.item }}</td>
-                            <td>{{ orderItem.price }}</td>
-                            <td>{{ orderItem.quantity }}</td>
-                            <td>{{ orderItem.total }}</td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-success bg-opacity-50">{% translate "User Total" %}</th>
-                            {% for restaurant_total,users_total in totals_orderUsersTotalSummaryGrouped.items  %}
-                            {% if restaurant_total == restaurant %}
-                            {% for user_total,order_total in users_total.items %}
-                            {% if user_total == user %}
-                            <td class="bg-success">{{order_total.quantity}}</td>
-                            <td class="bg-success">{{order_total.total}}</td>
-                            {% endif %}
-                            {% endfor %}
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="bg-dark bg-opacity-25"></td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-primary bg-opacity-25">{% translate "Restaurant Total" %}</th>
-                            {% for k,v in totals_orderTotalSummary.items  %}
-                            {% if k == restaurant %}
-                            <td class="bg-info">{{v.quantity}}</td>
-                            <td class="bg-info">{{v.total}}</td>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="bg-black"></td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-success bg-opacity-50">{% translate "Grand Total" %}</th>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.quantity}}</td>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.total}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="table3" class="container toggler " style="display: none;">
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered table-striped text-center align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>{% translate "Item" %}</th>
-                            <th>{% translate "Price" %}</th>
-                            <th>{% translate "Quantity" %}</th>
-                            <th>{% translate "Total" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user, restaurantGroup in orderUsersRestaurantSummaryGrouped.items %}
-                        <tr>
-                            <th colspan="5" class="bg-primary text-white">{{user}}</th>
-                        </tr>
-                        {% for restaurant,orderItems in restaurantGroup.items %}
-                        <tr>
-                            <th colspan="5" class="bg-primary bg-opacity-50 text-white">{{restaurant}}</th>
-                        </tr>
-                        {% for orderItem in orderItems %}
-                        <tr>
-                            <td>{{ forloop.counter}}</td>
-                            <td>{{ orderItem.item }}</td>
-                            <td>{{ orderItem.price }}</td>
-                            <td>{{ orderItem.quantity }}</td>
-                            <td>{{ orderItem.total }}</td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-success bg-opacity-50">{% translate "Restaurant Total" %}</th>
-                            {% for restaurant_total,users_total in totals_orderUsersTotalSummaryGrouped.items  %}
-                            {% if restaurant_total == restaurant %}
-                            {% for user_total,order_total in users_total.items %}
-                            {% if user_total == user %}
-                            <td class="bg-success">{{order_total.quantity}}</td>
-                            <td class="bg-success">{{order_total.total}}</td>
-                            {% endif %}
-                            {% endfor %}
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="bg-dark bg-opacity-25"></td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-primary bg-opacity-25">{% translate "User Total" %}</th>
-                            {% for k,v in totals_orderUsersSummaryGrouped.items  %}
-                            {% if k == user %}
-                            <td class="bg-info">{{v.quantity}}</td>
-                            <td class="bg-info">{{v.total}}</td>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td colspan="5" class="bg-black"></td>
-                        </tr>
-                        {% endfor %}
-                        <tr>
-                            <th colspan="3" class="bg-success bg-opacity-50">{% translate "Grand Total" %}</th>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.quantity}}</td>
-                            <td class="bg-success">{{grand_totals_orderTotalSummary.total}}</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div style="height: 80vh;" class="overflow-auto">
+                {% include "order/summarySection/table1.html" with shown="true" %}
+                {% include "order/summarySection/table2.html" %}
+                {% include "order/summarySection/table3.html" %}
             </div>
         </div>
     </div>
-
     <script>
-
         // Function to toggle tables based on selected radio button
         function toggleTables() {
             const tables = document.querySelectorAll('.toggler'); // Get all tables
@@ -217,14 +31,12 @@
 
             const selectedRadio = document.querySelector('input[name="toggleBtn"]:checked'); // Get the checked radio button
             const targetTableId = selectedRadio.getAttribute('data-target'); // Get target table ID from data-target attribute
-            document.getElementById(targetTableId).style.display = 'table'; // Show the target table
+            document.getElementById(targetTableId).style.display = 'block'; // Show the target table
         }
-
         // Attach the toggle function to all radio buttons
         document.querySelectorAll('input[name="toggleBtn"]').forEach(function (radio) {
             radio.addEventListener('change', toggleTables);
         });
-
         // Initial call to display the correct table on page load
         toggleTables();
     </script>

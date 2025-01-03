@@ -1,7 +1,11 @@
 {% load i18n %}
 <table class="table table-hover table-bordered text-center align-middle">
     <thead class="table-light">
-        {% block table_headers %}{% endblock table_headers %}
+        {% block table_headers %}
+        {% for header in list_table_headers %}
+        <th>{{header}}</th>
+        {% endfor %}
+        {% endblock table_headers %}
     </thead>
     <tbody>
         {% for item in list_section_data %}

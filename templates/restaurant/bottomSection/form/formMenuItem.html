@@ -18,7 +18,7 @@
         </div>
 
         <div class="col">
-            <button type="submit" class="btn btn-primary w-100" {% if form_menu_item_disable %}disabled{% endif %}>{% translate "Add Menu Item" %}</button>
+            <button type="submit" class="btn btn-outline-success w-100" {% if form_menu_item_disable %}disabled{% endif %}>{% translate "Add Menu Item" %}</button>
             {% for error in form.fk_restaurant.errors %}
             {% include "base/helpers/error.html" %}
             {% endfor %}

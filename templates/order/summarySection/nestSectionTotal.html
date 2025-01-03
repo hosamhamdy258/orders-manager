@@ -1,0 +1,13 @@
+<tr>
+    <th colspan="3" class="">{{title}}</th>
+    {% for restaurant_total,users_total in looper %}
+    {% if restaurant_total == data %}
+    {% for user_total,order_total in users_total.items %}
+    {% if user_total == user %}
+    <td class="">{{order_total.quantity}}</td>
+    <td class="">{{order_total.total}}</td>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+</tr>

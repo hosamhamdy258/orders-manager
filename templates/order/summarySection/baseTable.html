@@ -1,0 +1,15 @@
+<div id="{% block table_id %}{% endblock table_id %}" class="toggler table-responsive" {% if shown %}{% else  %}style="display: none;" {% endif %}>
+    <table class="table table-bordered border-black text-center align-middle">
+        <thead class="table-primary">
+            {% block table_headers %}
+            {% for header in table_headers %}
+            <th>{{header}}</th>
+            {% endfor %}
+            {% endblock table_headers %}
+        </thead>
+        <tbody class="table-group-divider">
+            {% block table_body %}
+            {% endblock table_body %}
+        </tbody>
+    </table>
+</div>

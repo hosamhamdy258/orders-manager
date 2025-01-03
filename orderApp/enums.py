@@ -24,12 +24,14 @@ class ViewContextKeys(EnumMeta):
     LIST_SECTION_TITLE = "list_section_title"
     LIST_SECTION_DATA = "list_section_data"
     LIST_MESSAGE_TYPE = "list_message_type"
+    LIST_TABLE_HEADERS = "list_table_headers"
 
     DETAILS_SECTION_ID = "details_section_id"
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
     DETAILS_SECTION_DATA = "details_section_data"
     DETAILS_CURRENT_SELECTION = "details_current_selection"
+    DETAILS_TABLE_HEADERS = "details_table_headers"
 
 
 class OrderContextKeys(EnumMeta):

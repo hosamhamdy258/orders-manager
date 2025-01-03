@@ -1,0 +1,9 @@
+{% for orderItem in orderItems %}
+<tr>
+    <td>{{ forloop.counter}}</td>
+    <td>{{ orderItem.item }}</td>
+    <td>{{ orderItem.price }}</td>
+    <td>{{ orderItem.quantity }}</td>
+    <td>{{ orderItem.total }}</td>
+</tr>
+{% endfor %}

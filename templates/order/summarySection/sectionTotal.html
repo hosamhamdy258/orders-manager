@@ -1,0 +1,10 @@
+{% load i18n %}
+<tr>
+    <th colspan="3" class="bg-primary bg-opacity-50">{{title}}</th>
+    {% for k,v in looper  %}
+    {% if k == data %}
+    <td class="bg-primary bg-opacity-50">{{v.quantity}}</td>
+    <td class="bg-primary bg-opacity-50">{{v.total}}</td>
+    {% endif %}
+    {% endfor %}
+</tr>

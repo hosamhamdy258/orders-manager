@@ -2,10 +2,7 @@
 
 {% load i18n %}
 {% block table_headers %}
-<tr>
-    <th class="col-6">name</th>
-    <th class="col-3">price</th>
-</tr>
+{{ block.super }}
 {% endblock table_headers %}
 {% block table_body %}
 <tr>
@@ -15,7 +12,7 @@
         <form ws-send>
             <input type="hidden" name="message_type" value="{{details_message_type}}">
             <input type="hidden" name="item_id" value="{{item.id}}">
-            <button type="submit" class="btn btn-danger btn-sm">{% translate "Remove" %}</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm">{% translate "Remove" %}</button>
         </form>
     </td>
 </tr>

@@ -26,6 +26,7 @@ def restaurant_details_section(restaurant, view=CV.RESTAURANT_VIEW, add_view=Fal
         VC.DETAILS_SECTION_TITLE: _("Menu Items"),
         VC.DETAILS_MESSAGE_TYPE: "deleteMenuItem",
         VC.DETAILS_SECTION_DATA: get_restaurant_menu_items(restaurant),
+        VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
         VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=restaurant) if restaurant else None,
         **(get_current_view(view=view) if add_view else {}),
     }
@@ -37,5 +38,6 @@ def restaurant_list_section(view=CV.RESTAURANT_VIEW, add_view=False):
         VC.LIST_SECTION_TITLE: _("Restaurant List"),
         VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
         VC.LIST_SECTION_DATA: Restaurant.objects.all().order_by("-id"),
+        VC.LIST_TABLE_HEADERS: [_("Restaurant Name")],
         **(get_current_view(view=view) if add_view else {}),
     }
