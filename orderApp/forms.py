@@ -1,4 +1,5 @@
 from django.forms import ModelChoiceField, ModelForm
+from django.utils.translation import gettext as _
 
 from .models import Group, MenuItem, Order, OrderItem, Restaurant
 
@@ -24,7 +25,7 @@ class MenuItemForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["fk_restaurant"].error_messages = {"required": "Select Restaurant From List Above To Add Menu Item"}
+        self.fields["fk_restaurant"].error_messages = {"required": _("Select Restaurant From List Above To Add Menu Item")}
 
 
 class RestaurantForm(ModelForm):

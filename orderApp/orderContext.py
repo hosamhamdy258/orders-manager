@@ -13,15 +13,14 @@ order_limit = 1
 
 
 def order_context(user, group, restaurant=None):
-    time_left = GroupUser.objects.get_or_create(fk_group=group, fk_user=user)[0].get_time_left()
-    force_disable = True if time_left <= 0 else False
-    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=force_disable)
+    form_state = check_disable_form(group=group, user=user)
+    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=form_state["force_disable"])
     return {
-        **order_title_section(group=group, time_left=time_left),
+        **order_title_section(group=group, time_left=form_state["time_left"]),
         **order_list_section(group=group),
         **order_details_section(order=form_section.get(OC.ORDER)),
         **form_section,
-        **order_actions_section(force_disable=force_disable),
+        **order_actions_section(force_disable=form_state["force_disable"]),
     }
 
 
@@ -159,3 +158,8 @@ def finish_order(order):
             return False, order
     else:
         return False, Order.objects.none().first()
+
+
+def check_disable_form(group, user):
+    time_left = GroupUser.objects.get_or_create(fk_group=group, fk_user=user)[0].get_time_left()
+    return {"force_disable": time_left <= 0, "time_left": time_left}

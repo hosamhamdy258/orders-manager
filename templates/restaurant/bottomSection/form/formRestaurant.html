@@ -5,7 +5,7 @@
         <div class="col">
             <input type="text" class="form-control" id="restaurant" name="name" placeholder='{% translate "Restaurant Name" %}' value="{{form.name.value}}" required autocomplete="off" {% if disable_form %}disabled{% endif %}>
             {% for error in form.name.errors %}
-            {% include "base/error.html" %}
+            {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>
         <div class="col-auto">

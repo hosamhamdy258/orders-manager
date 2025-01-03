@@ -17,6 +17,7 @@ from orderApp.groupContext import (
 )
 from orderApp.models import Client, Group, MenuItem, OrderItem, Restaurant
 from orderApp.orderContext import (
+    check_disable_form,
     create_order,
     finish_order,
     get_all_orders,
@@ -82,65 +83,64 @@ class GroupConsumer(JsonWebsocketConsumer):
 
         response = templates_joiner(context, templates)
         self.send(text_data=response)
-        pass
 
     def updateGroupsList(self, event):
         group = event.get("group", True)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            context.update(**group_list_section(add_view=True))
-            templates.append("group/bodySection/listSection.html")
-            response = templates_joiner(context, templates)
-            self.send(text_data=response)
-            pass
+        templates = []
+        context = {}
+
+        context.update(**group_list_section(add_view=True))
+        templates.append("group/bodySection/listSection.html")
+        response = templates_joiner(context, templates)
+        self.send(text_data=response)
 
     def showGroupMembers(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            context.update({**group_details_section(group=event[self.message].get("item_id"), add_view=True)})
-            context.update({"remove_errors": True})
+        templates = []
+        context = {}
 
-            templates.append("group/bodySection/detailsSection.html")
+        context.update({**group_details_section(group=event[self.message].get("item_id"), add_view=True)})
+        context.update({"remove_errors": True})
 
-            response = templates_joiner(context, templates)
+        templates.append("group/bodySection/detailsSection.html")
 
-            self.send(text_data=response)
-            pass
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
     def addGroup(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+
+        event[self.message].update({"room_number": f"g{time.time_ns()}"})
+        form = GroupForm(event[self.message])
+        if form.is_valid():
+            instance = form.save(True)
+            context.update(**group_list_section())
+            context.update(**group_context(group=instance.id))
+            self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
+
         else:
-            templates = []
-            context = {}
+            context.update({"form": form})
 
-            event[self.message].update({"room_number": f"g{time.time_ns()}"})
-            form = GroupForm(event[self.message])
-            if form.is_valid():
-                instance = form.save(True)
-                context.update(**group_list_section())
-                context.update(**group_context(group=instance.id))
-                self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
+        templates.append("group/bottomSection/form/formGroupItem.html")
 
-            else:
-                context.update({"form": form})
+        response = templates_joiner(context, templates)
 
-            templates.append("group/bottomSection/form/formGroupItem.html")
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     # ! for testing
     def sendNotification(self, event):
@@ -156,23 +156,22 @@ class GroupConsumer(JsonWebsocketConsumer):
             response = templates_joiner(context, templates)
 
             self.send(text_data=response)
-            pass
 
     def updateConnectedUsers(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            context.update(event[self.message]["ctx"])
-            templates.append("group/bodySection/connectedUsers.html")
+        templates = []
+        context = {}
 
-            response = templates_joiner(context, templates)
+        context.update(event[self.message]["ctx"])
+        templates.append("group/bodySection/connectedUsers.html")
 
-            self.send(text_data=response)
-            pass
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
 
 class OrderConsumer(JsonWebsocketConsumer):
@@ -235,17 +234,22 @@ class OrderConsumer(JsonWebsocketConsumer):
         response = templates_joiner(context, templates)
         # print("send",response)
         self.send(text_data=response)
-        pass
 
     def addOrderItem(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            user = self.scope["user"]
-            context = {"user": user}
+            return
 
+        templates = []
+        user = self.scope["user"]
+        context = {"user": user}
+
+        form_state = check_disable_form(group=self.group, user=user)
+        if form_state["force_disable"]:
+            context.update(EM.TIME_UP)
+            templates.append("order/bottomSection/error_time_expired.html")
+        else:
             if not event[self.message].get("fk_order"):
                 state, order = create_order(user=user, group=self.group)
 
@@ -273,21 +277,27 @@ class OrderConsumer(JsonWebsocketConsumer):
             templates.append("order/bottomSection/form/formOrderItem.html")
             context.update(**order_form_section(user=user, group=self.group, restaurant=event[self.message].get("fk_restaurant")))
 
-            response = templates_joiner(context, templates)
+        response = templates_joiner(context, templates)
 
-            self.send(text_data=response)
+        self.send(text_data=response)
 
     def finishOrder(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+        user = self.scope["user"]
+
+        form_state = check_disable_form(group=self.group, user=user)
+        if form_state["force_disable"]:
+            context.update(EM.TIME_UP)
+            templates.append("order/bottomSection/error_time_expired.html")
         else:
-
-            templates = []
-            context = {}
-            user = self.scope["user"]
-
             isFinished, order = finish_order(event[self.message].get("fk_order"))
+
             if isFinished:
                 context.update({"remove_errors": True})
 
@@ -306,236 +316,229 @@ class OrderConsumer(JsonWebsocketConsumer):
 
             templates.append("order/bottomSection/actions/finishOrder.html")
 
-            response = templates_joiner(context, templates)
+        response = templates_joiner(context, templates)
 
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def membersOrders(self, event):
         group = event.get("group", True)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            context.update(**order_list_section(group=self.group))
-            templates.append("order/bodySection/listSection.html")
-            response = templates_joiner(context, templates)
-            self.send(text_data=response)
-            pass
+        templates = []
+        context = {}
+
+        context.update(**order_list_section(group=self.group))
+        templates.append("order/bodySection/listSection.html")
+        response = templates_joiner(context, templates)
+        self.send(text_data=response)
 
     def OrdersList(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+        user = self.scope["user"]
+
+        all_orders = event[self.message].get("all_orders")
+
+        if all_orders:
+            context.update(**order_list_section(group=self.group))
+            context.update(**order_actions_section())
         else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
+            context.update(**order_list_section(user=user, group=self.group))
+            context.update(**order_actions_section(all_orders=True))
 
-            all_orders = event[self.message].get("all_orders")
+        templates.append("order/bodySection/listSection.html")
+        templates.append("order/bottomSection/actions/getOrderList.html")
 
-            if all_orders:
-                context.update(**order_list_section(group=self.group))
-                context.update(**order_actions_section())
-            else:
-                context.update(**order_list_section(user=user, group=self.group))
-                context.update(**order_actions_section(all_orders=True))
+        response = templates_joiner(context, templates)
 
-            templates.append("order/bodySection/listSection.html")
-            templates.append("order/bottomSection/actions/getOrderList.html")
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def deleteOrderItem(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
-            context.update({"user": user})
+            return
 
-            orderItemObj = OrderItem.objects.get(pk=event[self.message].get("item_id"))
-            if orderItemObj.fk_order.fk_user != user:
-                return
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
 
-            order_id = orderItemObj.fk_order
+        orderItemObj = OrderItem.objects.get(pk=event[self.message].get("item_id"))
+        if orderItemObj.fk_order.fk_user != user:
+            return
 
-            context.update({**order_details_section(order=order_id, add_view=True)})
-            templates.append("order/bodySection/detailsSection.html")
+        order_id = orderItemObj.fk_order
 
-            orderItemObj.delete()
-            response = templates_joiner(context, templates)
+        context.update({**order_details_section(order=order_id, add_view=True)})
+        templates.append("order/bodySection/detailsSection.html")
 
-            self.send(text_data=response)
-            pass
+        orderItemObj.delete()
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
     def showMemberItemOrders(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
-            context.update({"user": user})
+            return
 
-            context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
-            templates.append("order/bodySection/detailsSection.html")
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
 
-            response = templates_joiner(context, templates)
+        context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
+        templates.append("order/bodySection/detailsSection.html")
 
-            self.send(text_data=response)
-            pass
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
     def groupOrderSummary(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+        user = self.scope["user"]
+
+        UserModel = get_user_model()
+
+        if get_all_orders(group=self.group).count() == 0:
+            templates.append("order/bottomSection/actions/orderSummary.html")
+            context.update(EM.ORDER_SUMMARY)
         else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
 
-            UserModel = get_user_model()
-
-            if get_all_orders(group=self.group).count() == 0:
-                templates.append("order/bottomSection/actions/orderSummary.html")
-                context.update(EM.ORDER_SUMMARY)
-            else:
-
-                orderTotalSummary = (
-                    Restaurant.objects.filter(
-                        menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
-                    )
-                    .values(
-                        restaurant=F("name"),
-                        item=F("menuitem__menu_item"),
-                        price=F("menuitem__price"),
-                        # user=F("menuitem__orderitem__fk_order__fk_user__username"),
-                    )
-                    .annotate(
-                        quantity=Sum("menuitem__orderitem__quantity"),
-                        total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
-                    )
-                    .distinct()
+            orderTotalSummary = (
+                Restaurant.objects.filter(
+                    menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
                 )
-                orderTotalSummary2 = (
-                    Restaurant.objects.filter(
-                        menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
-                    )
-                    .values(
-                        restaurant=F("name"),
-                        item=F("menuitem__menu_item"),
-                        price=F("menuitem__price"),
-                        user=F("menuitem__orderitem__fk_order__fk_user__username"),
-                    )
-                    .annotate(
-                        quantity=Sum("menuitem__orderitem__quantity"),
-                        total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
-                    )
-                    .distinct()
+                .values(
+                    restaurant=F("name"),
+                    item=F("menuitem__menu_item"),
+                    price=F("menuitem__price"),
+                    # user=F("menuitem__orderitem__fk_order__fk_user__username"),
                 )
+                .annotate(
+                    quantity=Sum("menuitem__orderitem__quantity"),
+                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
+            orderTotalSummary2 = (
+                Restaurant.objects.filter(
+                    menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
+                )
+                .values(
+                    restaurant=F("name"),
+                    item=F("menuitem__menu_item"),
+                    price=F("menuitem__price"),
+                    user=F("menuitem__orderitem__fk_order__fk_user__username"),
+                )
+                .annotate(
+                    quantity=Sum("menuitem__orderitem__quantity"),
+                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
 
-                grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
+            grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
 
-                orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
+            orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
 
-                totals_orderTotalSummary = {
-                    restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
+            totals_orderTotalSummary = {
+                restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
+            }
+
+            orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
+
+            totals_orderUsersTotalSummaryGrouped = {
+                restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
+                for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
+            }
+
+            orderUsersSummary = (
+                UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True, order__fk_group=self.group)
+                .values(
+                    user=F("username"),
+                    restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
+                    item=F("order__orderitem__fk_menu_item__menu_item"),
+                    price=F("order__orderitem__fk_menu_item__price"),
+                )
+                .annotate(
+                    quantity=Sum("order__orderitem__quantity"),
+                    total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
+                )
+                .distinct()
+            )
+
+            orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
+
+            orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
+
+            totals_orderUsersSummaryGrouped = {
+                user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
+            }
+
+            templates.append("order/bottomSection/actions/summaryTables.html")
+
+            context.update(
+                {
+                    "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
+                    "totals_orderTotalSummary": totals_orderTotalSummary,
+                    "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
+                    "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
+                    "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
+                    "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
+                    "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
+                    "showTables": True,
                 }
+            )
 
-                orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
+        response = templates_joiner(context, templates)
 
-                totals_orderUsersTotalSummaryGrouped = {
-                    restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
-                    for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
-                }
-
-                orderUsersSummary = (
-                    UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True, order__fk_group=self.group)
-                    .values(
-                        user=F("username"),
-                        restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
-                        item=F("order__orderitem__fk_menu_item__menu_item"),
-                        price=F("order__orderitem__fk_menu_item__price"),
-                    )
-                    .annotate(
-                        quantity=Sum("order__orderitem__quantity"),
-                        total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
-                    )
-                    .distinct()
-                )
-
-                orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
-
-                orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
-
-                totals_orderUsersSummaryGrouped = {
-                    user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
-                }
-
-                templates.append("order/bottomSection/actions/summaryTables.html")
-
-                context.update(
-                    {
-                        "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
-                        "totals_orderTotalSummary": totals_orderTotalSummary,
-                        "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
-                        "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
-                        "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
-                        "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
-                        "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
-                        "showTables": True,
-                    }
-                )
-
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def switchView(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
-            context.update({"user": user})
+        templates = []
+        context = {}
+        user = self.scope["user"]
+        context.update({"user": user})
 
-            view_context = get_context(user=user, group=self.group, view=event[self.message].get("next_view"))
+        view_context = get_context(user=user, group=self.group, view=event[self.message].get("next_view"))
 
-            context.update(view_context)
-            templates.append("base/body.html")
+        context.update(view_context)
+        templates.append("base/body.html")
 
-            response = templates_joiner(context, templates)
+        response = templates_joiner(context, templates)
 
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def sendNotification(self, event):
         group = event.get("group", True)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
-            user = self.scope["user"]
+            return
+        templates = []
+        context = {}
+        user = self.scope["user"]
 
-            templates.append("base/helpers/notification.html")
+        templates.append("base/helpers/notification.html")
 
-            response = templates_joiner(context, templates)
+        response = templates_joiner(context, templates)
 
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def updateUsersConnectedCount(self):
         async_to_sync(self.channel_layer.group_send)(
@@ -598,95 +601,94 @@ class RestaurantConsumer(JsonWebsocketConsumer):
 
         response = templates_joiner(context, templates)
         self.send(text_data=response)
-        pass
 
     def showRestaurantItems(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
-            context.update({"remove_errors": True})
+        templates = []
+        context = {}
 
-            templates.append("restaurant/bodySection/detailsSection.html")
-            templates.append("restaurant/bottomSection/form/formMenuItem.html")
+        context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
+        context.update({"remove_errors": True})
 
-            response = templates_joiner(context, templates)
+        templates.append("restaurant/bodySection/detailsSection.html")
+        templates.append("restaurant/bottomSection/form/formMenuItem.html")
 
-            self.send(text_data=response)
-            pass
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
     def addRestaurant(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+
+        form = RestaurantForm(event[self.message])
+        if form.is_valid():
+            instance = form.save(True)
+            context.update(**restaurant_list_section())
+            context.update(**restaurant_context(restaurant=instance.id))
+            templates.append("restaurant/bodySection/listSection.html")
+            templates.append("restaurant/bodySection/detailsSection.html")
+            templates.append("restaurant/bottomSection/form/formMenuItem.html")
         else:
-            templates = []
-            context = {}
+            context.update({"form": form})
 
-            form = RestaurantForm(event[self.message])
-            if form.is_valid():
-                instance = form.save(True)
-                context.update(**restaurant_list_section())
-                context.update(**restaurant_context(restaurant=instance.id))
-                templates.append("restaurant/bodySection/listSection.html")
-                templates.append("restaurant/bodySection/detailsSection.html")
-                templates.append("restaurant/bottomSection/form/formMenuItem.html")
-            else:
-                context.update({"form": form})
+        templates.append("restaurant/bottomSection/form/formRestaurant.html")
 
-            templates.append("restaurant/bottomSection/form/formRestaurant.html")
+        response = templates_joiner(context, templates)
 
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)
 
     def deleteMenuItem(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+            return
 
-            MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
+        templates = []
+        context = {}
 
-            restaurant_id = MenuItemObj.fk_restaurant.id
+        MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
 
-            context.update({**restaurant_details_section(restaurant=restaurant_id, add_view=True)})
+        restaurant_id = MenuItemObj.fk_restaurant.id
 
-            templates.append("restaurant/bodySection/detailsSection.html")
+        context.update({**restaurant_details_section(restaurant=restaurant_id, add_view=True)})
 
-            MenuItemObj.delete()
+        templates.append("restaurant/bodySection/detailsSection.html")
 
-            response = templates_joiner(context, templates)
+        MenuItemObj.delete()
 
-            self.send(text_data=response)
-            pass
+        response = templates_joiner(context, templates)
+
+        self.send(text_data=response)
 
     def addMenuItem(self, event):
         group = event.get("group", False)
         if group:
             self.self_dispatch(event)
+            return
+
+        templates = []
+        context = {}
+
+        form = MenuItemForm(event[self.message])
+        if form.is_valid():
+            form.save(True)
+            context.update({**restaurant_details_section(restaurant=event[self.message].get("fk_restaurant"), add_view=True)})
+            templates.append("restaurant/bodySection/detailsSection.html")
         else:
-            templates = []
-            context = {}
+            context.update({"form": form})
 
-            form = MenuItemForm(event[self.message])
-            if form.is_valid():
-                form.save(True)
-                context.update({**restaurant_details_section(restaurant=event[self.message].get("fk_restaurant"), add_view=True)})
-                templates.append("restaurant/bodySection/detailsSection.html")
-            else:
-                context.update({"form": form})
+        templates.append("restaurant/bottomSection/form/formMenuItem.html")
 
-            templates.append("restaurant/bottomSection/form/formMenuItem.html")
+        response = templates_joiner(context, templates)
 
-            response = templates_joiner(context, templates)
-
-            self.send(text_data=response)
-            pass
+        self.send(text_data=response)

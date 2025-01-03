@@ -1,5 +1,5 @@
 {% load i18n %}
-<select id="menuItems" class="form-select" name="fk_menu_item" required autocomplete="off" {% if disable_order_item_form %}disabled{% endif %}>
+<select id="menuItems" class="form-select time_lock" name="fk_menu_item" required autocomplete="off" {% if disable_order_item_form %}disabled{% endif %}>
     <option selected disabled>{% translate "Select Item" %}</option>
     {% for menuItem in menuItems %}
     <option value="{{menuItem.id}}" {% if menuItem.id == form.fk_menu_item.value|add:"0" %}selected{% endif %}>{{menuItem.menu_item}}
@@ -7,5 +7,5 @@
     {% endfor %}
 </select>
 {% for error in form.fk_menu_item.errors %}
-{% include "base/error.html" %}
+{% include "base/helpers/error.html" %}
 {% endfor %}

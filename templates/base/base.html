@@ -21,6 +21,7 @@
 
 <body>
     {% block body %}{% endblock body %}
+    {% include "base/helpers/temp.html" %}
     <script type="module" src="{% static '/bootstrap/bootstrap.min.js' %}"></script>
     <script type="module" src="{% static '/server_date/serverDate.js' %}"></script>
 </body>

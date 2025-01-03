@@ -1,0 +1,15 @@
+{% extends "base/helpers/temp.html" %}
+{% block temp_script %}
+<script>
+    (() => {
+        let elements = document.getElementsByClassName("time_lock");
+        for (let element of elements) {
+            element.setAttribute("disabled", true);
+        }
+    })();
+</script>
+{% endblock temp_script %}
+
+{% block temp_element %}
+{% include "base/helpers/error.html" with error=time_up_error hx_swap_oob="afterbegin:#bottom_card" %}
+{% endblock temp_element %}

@@ -3,7 +3,7 @@
     <input type="hidden" name="message_type" value="groupOrderSummary">
     <button type="submit" class="btn btn-success w-100">{% translate "Orders Summary" %}</button>
     {% if order_summary_error %}
-    {% include "base/error.html" with error=order_summary_error %}
+    {% include "base/helpers/error.html" with error=order_summary_error %}
     {% endif %}
     {% include "base/helpers/error_remover.html" %}
 </form>

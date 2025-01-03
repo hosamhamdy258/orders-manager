@@ -5,7 +5,7 @@
         <div class="col">
             <input type="text" class="form-control" id="group" name="name" placeholder='{% translate "Group Name" %}' value="{{form.name.value}}" required autocomplete="off">
             {% for error in form.name.errors %}
-            {% include "base/error.html" %}
+            {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>
 

@@ -2,9 +2,9 @@
 <form id="finishOrder" ws-send hx-swap-oob="innerHTML">
     {% include "order/bottomSection/actions/finish_order_id.html" %}
     <input type="hidden" name="message_type" value="finishOrder">
-    <button type="submit" class="btn btn-success w-100" {% if disable_order_item_form or disable_finish_button %}disabled{% endif %}>{% translate "Finish Ordering" %}</button>
+    <button type="submit" class="btn btn-success w-100 time_lock" {% if disable_order_item_form or disable_finish_button %}disabled{% endif %}>{% translate "Finish Ordering" %}</button>
     {% if finish_order_error %}
-    {% include "base/error.html" with error=finish_order_error %}
+    {% include "base/helpers/error.html" with error=finish_order_error %}
     {% endif %}
     {% include "base/helpers/error_remover.html" %}
 

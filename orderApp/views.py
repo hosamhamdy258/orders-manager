@@ -1,3 +1,6 @@
+from threading import Timer
+
+from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse as HttpResponse
@@ -59,22 +62,21 @@ class RestaurantView(LoginRequiredMixin, TemplateView):
 
 
 def get_context(user, view=CV.ORDER_VIEW, group=None):
-    if view == CV.ORDER_VIEW:
-        return order_context(user=user, group=group)
-    if view == CV.RESTAURANT_VIEW:
-        return restaurant_context(view=view)
-    if view == CV.GROUP_VIEW:
-        return group_context(view=view)
-    return view
+    match view:
+        case CV.ORDER_VIEW:
+            return order_context(user=user, group=group)
+        case CV.RESTAURANT_VIEW:
+            return restaurant_context(view=view)
+        case CV.GROUP_VIEW:
+            return group_context(view=view)
+        case __:
+            raise NotImplementedError(f"Unknown view: {view}")
 
 
 def menuitems(request):
     restaurant = request.GET.get("fk_restaurant")
     menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
     return render(request, "order/bottomSection/form/menuItems.html", {"menuItems": menuItems})
-
-
-from channels.layers import get_channel_layer
 
 
 def announcement(request):
@@ -91,17 +93,16 @@ def announcement(request):
     return render(request, "order/bottomSection/form/menuItems.html")
 
 
-import threading
-
-
 def run_after_delay(func, delay_in_seconds, *args, **kwargs):
-    timer = threading.Timer(delay_in_seconds, func, args=args, kwargs=kwargs)
+    timer = Timer(delay_in_seconds, func, args=args, kwargs=kwargs)
     timer.start()
+    print(timer.name)
+    print(timer.native_id)
 
 
 def my_background_function():
-    Group.objects.all().delete()
+    # Group.objects.all().delete()
     print("This function runs after a delay in the background.")
 
 
-# run_after_delay(my_background_function, 1)
+# run_after_delay(my_background_function, 20)
