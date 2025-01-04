@@ -1,0 +1,12 @@
+{% load static i18n %}
+
+{% if current_view != 'group_view' %}
+<div class="col-6 col-md-auto">
+    <a href="{% url 'index' %}" class="btn btn-outline-primary me-2">{% translate "Groups" %}</a>
+</div>
+{% endif %}
+{% if current_view != 'restaurant_view' %}
+<div class="col-6 col-md-auto">
+    <a href="{% url 'restaurant' %}" class="btn btn-outline-primary me-2">{% translate "Restaurants" %}</a>
+</div>
+{% endif %}

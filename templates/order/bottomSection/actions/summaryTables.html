@@ -39,6 +39,16 @@
         });
         // Initial call to display the correct table on page load
         toggleTables();
+
+        function scrollToView() {
+            const targetSection = document.getElementById('summaryTables');
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        scrollToView()
+
     </script>
     {% endif %}
 </div>

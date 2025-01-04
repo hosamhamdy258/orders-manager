@@ -4,12 +4,15 @@
 
     <!-- top section -->
     <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            {% block top_section_title %}
-            <span>{{main_title}}</span>
-            {% endblock top_section_title %}
-            {% block top_section_body %}
-            {% endblock top_section_body %}
+        <div class="card-header">
+            <div class="row g-3 align-items-center justify-content-evenly text-center text-sm-center text-md-start">
+                {% block top_section_title %}
+                <span class="col-12 col-md-3 me-auto">{{main_title}}</span>
+                {% endblock top_section_title %}
+                {% block top_section_body %}
+                {% include "base/navbar.html" %}
+                {% endblock top_section_body %}
+            </div>
         </div>
 
         <!-- body section -->
