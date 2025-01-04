@@ -28,7 +28,7 @@ def order_title_section(group=None, time_left=0):
 
     return {
         **get_current_view(view=CV.ORDER_VIEW),
-        VC.MAIN_TITLE: _("Orders Screen"),
+        VC.MAIN_TITLE: _("Orders"),
         VC.TITLE_ACTION: _("Add Restaurant"),
         VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
         GC.GROUP_NAME: group.name,

@@ -1,4 +1,8 @@
 <form id="title_action" ws-send hx-swap-oob="innerHTML" class="col-6 col-md-auto">
     {% block inputs %}{% endblock inputs %}
-    <button type="submit" class="btn btn-outline-primary">{{title_action}}</button>
+    <button type="submit" class="btn btn-outline-primary">
+        {% block title_action %}
+        {{title_action}}
+        {% endblock title_action %}
+    </button>
 </form>

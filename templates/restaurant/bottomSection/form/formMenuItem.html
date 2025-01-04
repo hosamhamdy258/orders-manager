@@ -4,21 +4,21 @@
     {% include "restaurant/bottomSection/form/restaurantID.html" %}
 
     <div class="row g-3 align-items-center mb-3">
-        <div class="col-md-4">
+        <div class="col-12 col-md-6">
             <input type="text" class="form-control" id="menu_item" name="menu_item" placeholder='{% translate "Menu Item Name" %}' value="{{form.menu_item.value}}" required autocomplete="off" {% if form_menu_item_disable %}disabled{% endif %}>
             {% for error in form.menu_item.errors %}
             {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>
-        <div class="col-md-4">
+        <div class="col-10 col-md-5">
             <input type="number" class="form-control" id="price" name="price" placeholder='{% translate "Menu Item Price" %}' value="{{form.price.value}}" min="0" required autocomplete="off" {% if form_menu_item_disable %}disabled{% endif %}>
             {% for error in form.price.errors %}
             {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>
 
-        <div class="col">
-            <button type="submit" class="btn btn-outline-success w-100" {% if form_menu_item_disable %}disabled{% endif %}>{% translate "Add Menu Item" %}</button>
+        <div class="col-auto ms-auto">
+            <button type="submit" class="btn btn-outline-success w-100" {% if form_menu_item_disable %}disabled{% endif %}><i class="bi bi-plus-lg"></i></button>
             {% for error in form.fk_restaurant.errors %}
             {% include "base/helpers/error.html" %}
             {% endfor %}

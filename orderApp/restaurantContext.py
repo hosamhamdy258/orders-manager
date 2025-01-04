@@ -11,7 +11,7 @@ from orderApp.orderContext import get_restaurant_menu_items
 def restaurant_context(view=CV.RESTAURANT_VIEW, restaurant=None):
     return {
         **get_current_view(view=view),
-        VC.MAIN_TITLE: _("Restaurant Screen"),
+        VC.MAIN_TITLE: _("Restaurants"),
         VC.TITLE_ACTION: _("Add Order"),
         VC.NEXT_VIEW: CV.ORDER_VIEW,
         **restaurant_list_section(),

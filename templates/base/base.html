@@ -11,11 +11,12 @@
     {% else %}
     <link rel="stylesheet" href="{% static '/bootstrap/bootstrap.min.css' %}" />
     {% endif %}
+    <link rel="stylesheet" href="{% static '/bootstrap_icons/bootstrap-icons.min.css' %}" />
     <script src="{% static '/htmx_2_0_2/htmx.min.js' %}"></script>
     <script src="{% static '/htmx_2_0_2/ws.js' %}"></script>
     <script src="{% static '/countdownjs/countdown.min.js' %}"></script>
 
-    <title>{% block title %}{% translate "Order Manager" %}{% endblock title %}
+    <title>{% block title %}{% translate "Order Manager" %} | {{main_title}}{% endblock title %}
     </title>
 </head>
 

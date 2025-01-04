@@ -1,4 +1,6 @@
 {% load i18n %}
 <form action="{% url 'order' item.room_number %}" method="get">
-    <button type="submit" class="btn btn-outline-success btn-sm">{% translate "Join" %}</button>
+    <button type="submit" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-box-arrow-in-right"></i> {% translate "Join" %}
+    </button>
 </form>

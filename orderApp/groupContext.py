@@ -13,7 +13,7 @@ UserModel = get_user_model()
 def group_context(view=CV.GROUP_VIEW, group=None):
     return {
         **get_current_view(view=view),
-        VC.MAIN_TITLE: _("Groups Screen"),
+        VC.MAIN_TITLE: _("Groups"),
         VC.TITLE_ACTION: _("Refresh Groups"),
         **group_list_section(),
         **group_details_section(),
