@@ -2,7 +2,7 @@
 
 
 DEBUG = True
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.10", "https://net-rosana-hosamhamdy-798965e4.koyeb.app/"]
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.10", "net-rosana-hosamhamdy-798965e4.koyeb.app/"]
 # CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SECURE = True
