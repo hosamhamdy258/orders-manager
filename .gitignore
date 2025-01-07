@@ -52,7 +52,7 @@ coverage.xml
 cover/
 
 # Translations
-*.mo
+# *.mo
 *.pot
 
 # Django stuff:
@@ -164,3 +164,4 @@ cython_debug/
 
 chat/
 templates/chat/
+static/
