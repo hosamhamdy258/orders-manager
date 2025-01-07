@@ -1,5 +1,5 @@
 services:
-  order-back-end:
+  development:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     ports:
@@ -7,5 +7,19 @@ services:
       - "35729:35729"
     volumes:
       - .:/app
-    container_name: order
+    container_name: development
     image: order:v1.0
+
+  production:
+    build:
+      dockerfile: prod.dockerfile
+    # command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "9000:80"
+    volumes:
+      - .:/app
+      - ./config/nginx:/etc/nginx/conf.d
+      - ./config/supervisor:/etc/supervisor/conf.d
+
+    container_name: production
+    image: hosamhamdy/orders-manager:v1.0
