@@ -12,6 +12,9 @@ python initialize_logs.py
 
 # echo "DJANGO_DEVELOPMENT is set to: $DJANGO_DEVELOPMENT"
 
+# Default DJANGO_DEVELOPMENT to False if not set
+DJANGO_DEVELOPMENT="${DJANGO_DEVELOPMENT:-False}"
+
 # Define the marker file location inside the container
 MARKER_FILE="/static/.collectstatic_done"
 
