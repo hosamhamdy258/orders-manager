@@ -9,11 +9,11 @@ services:
       - .:/app
     container_name: development
     image: order:v1.0
+    environment:
+      - DJANGO_DEVELOPMENT=True
 
   production:
-    build:
-      dockerfile: prod.dockerfile
-    # command: python manage.py runserver 0.0.0.0:8000
+    build: .
     ports:
       - "9000:80"
     volumes:
@@ -23,3 +23,5 @@ services:
 
     container_name: production
     image: hosamhamdy/orders-manager:v1.0
+    environment:
+      - DJANGO_DEVELOPMENT=False

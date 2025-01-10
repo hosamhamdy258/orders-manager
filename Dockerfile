@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     htop \
+    nano \
     && apt-get clean
 
 WORKDIR /app
@@ -37,4 +38,6 @@ EXPOSE 80 443 8000 9000
 # Start Supervisor to manage all processes
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
-# RUN python manage.py collectstatic --noinput
+# Start Django Development Server
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
