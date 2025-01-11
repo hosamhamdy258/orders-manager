@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta, timezone
-from typing import Iterable
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, Sum
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from orderApp.utils import PositiveValueValidator
@@ -31,11 +31,11 @@ class Group(models.Model):
 class GroupUser(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("Users"), on_delete=models.CASCADE)
     fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
-    joined = models.DateTimeField(_("Created"), auto_now_add=True)
+    joined = models.DateTimeField(_("Created"), default=timezone.now)
 
     def get_time_left(self):
         end_time = self.joined + timedelta(minutes=15)
-        current_time = datetime.now(timezone.utc)
+        current_time = timezone.now()
         remaining_time = end_time - current_time
         return int(remaining_time.total_seconds())
 
@@ -60,7 +60,7 @@ class MenuItem(models.Model):
 class Order(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
     fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
-    created = models.DateTimeField(_("Created"), auto_now_add=True)
+    created = models.DateTimeField(_("Created"), default=timezone.now)
     finished_ordering = models.BooleanField(_("finished ordering"), default=False)
 
     def __str__(self):

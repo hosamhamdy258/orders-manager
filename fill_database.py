@@ -8,21 +8,10 @@ django.setup()
 
 # Now this script or any imported module can use any part of Django it needs.
 import random
-from datetime import timedelta, timezone
 
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
-from django.utils.timezone import now
 
-from orderApp.models import (
-    Client,
-    Group,
-    GroupUser,
-    MenuItem,
-    Order,
-    OrderItem,
-    Restaurant,
-)
+from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
 
 UserModel = get_user_model()
 

@@ -1,10 +1,10 @@
 import time
-from datetime import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
 from django.db.models import DecimalField, F, Sum
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from orderApp.enums import CurrentViews as CV
@@ -422,7 +422,7 @@ class OrderConsumer(JsonWebsocketConsumer):
 
             orderTotalSummary = (
                 Restaurant.objects.filter(
-                    menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
+                    menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_group=self.group
                 )
                 .values(
                     restaurant=F("name"),
@@ -438,7 +438,7 @@ class OrderConsumer(JsonWebsocketConsumer):
             )
             orderTotalSummary2 = (
                 Restaurant.objects.filter(
-                    menuitem__orderitem__fk_order__created__date=datetime.today(), menuitem__orderitem__fk_order__fk_group=self.group
+                    menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_group=self.group
                 )
                 .values(
                     restaurant=F("name"),
@@ -469,7 +469,7 @@ class OrderConsumer(JsonWebsocketConsumer):
             }
 
             orderUsersSummary = (
-                UserModel.objects.filter(order__created__date=datetime.today(), order__finished_ordering=True, order__fk_group=self.group)
+                UserModel.objects.filter(order__created__date=timezone.now(), order__finished_ordering=True, order__fk_group=self.group)
                 .values(
                     user=F("username"),
                     restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),

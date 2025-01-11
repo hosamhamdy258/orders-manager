@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from orderApp.context import get_current_view
@@ -117,7 +116,7 @@ def get_restaurant_menu_items(restaurant):
 
 
 def orders_query():
-    return Order.objects.filter(created__date=datetime.today())
+    return Order.objects.filter(created__date=timezone.now())
 
 
 def get_all_orders(user=None, group=None):
