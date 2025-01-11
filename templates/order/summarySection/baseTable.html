@@ -1,6 +1,6 @@
 <div id="{% block table_id %}{% endblock table_id %}" class="toggler table-responsive" {% if shown %}{% else  %}style="display: none;" {% endif %}>
     <table class="table table-bordered border-black text-center align-middle">
-        <thead class="table-primary">
+        <thead class="table-success">
             {% block table_headers %}
             {% for header in table_headers %}
             <th>{{header}}</th>

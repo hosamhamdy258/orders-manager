@@ -426,7 +426,7 @@ class OrderConsumer(JsonWebsocketConsumer):
                 )
                 .values(
                     restaurant=F("name"),
-                    item=F("menuitem__menu_item"),
+                    item=F("menuitem__name"),
                     price=F("menuitem__price"),
                     # user=F("menuitem__orderitem__fk_order__fk_user__username"),
                 )
@@ -442,7 +442,7 @@ class OrderConsumer(JsonWebsocketConsumer):
                 )
                 .values(
                     restaurant=F("name"),
-                    item=F("menuitem__menu_item"),
+                    item=F("menuitem__name"),
                     price=F("menuitem__price"),
                     user=F("menuitem__orderitem__fk_order__fk_user__username"),
                 )
@@ -473,7 +473,7 @@ class OrderConsumer(JsonWebsocketConsumer):
                 .values(
                     user=F("username"),
                     restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
-                    item=F("order__orderitem__fk_menu_item__menu_item"),
+                    item=F("order__orderitem__fk_menu_item__name"),
                     price=F("order__orderitem__fk_menu_item__price"),
                 )
                 .annotate(

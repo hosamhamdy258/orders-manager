@@ -49,11 +49,11 @@ class Restaurant(models.Model):
 
 class MenuItem(models.Model):
     fk_restaurant = models.ForeignKey(Restaurant, verbose_name=_("Restaurant"), on_delete=models.CASCADE)
-    menu_item = models.CharField(_("Menu Item"), max_length=50)
+    name = models.CharField(_("Menu Item"), max_length=50)
     price = models.DecimalField(_("Price"), max_digits=9, decimal_places=2, validators=[PositiveValueValidator(0)])
 
     def __str__(self):
-        keys = [self.fk_restaurant, self.menu_item]
+        keys = [self.fk_restaurant, self.name]
         return " | ".join(list(map(str, keys)))
 
 

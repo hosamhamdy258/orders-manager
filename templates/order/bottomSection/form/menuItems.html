@@ -2,7 +2,7 @@
 <select id="menuItems" class="form-select time_lock" name="fk_menu_item" required autocomplete="off" {% if disable_order_item_form %}disabled{% endif %}>
     <option selected disabled>{% translate "Select Item" %}</option>
     {% for menuItem in menuItems %}
-    <option value="{{menuItem.id}}" {% if menuItem.id == form.fk_menu_item.value|add:"0" %}selected{% endif %}>{{menuItem.menu_item}}
+    <option value="{{menuItem.id}}" {% if menuItem.id == form.fk_menu_item.value|add:"0" %}selected{% endif %}>{{menuItem.name}}
     </option>
     {% endfor %}
 </select>

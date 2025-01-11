@@ -21,7 +21,7 @@ class OrderForm(ModelForm):
 class MenuItemForm(ModelForm):
     class Meta:
         model = MenuItem
-        fields = ["fk_restaurant", "menu_item", "price"]
+        fields = ["fk_restaurant", "name", "price"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

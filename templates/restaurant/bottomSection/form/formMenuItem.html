@@ -5,8 +5,8 @@
 
     <div class="row g-3 align-items-center mb-3">
         <div class="col-12 col-md-6">
-            <input type="text" class="form-control" id="menu_item" name="menu_item" placeholder='{% translate "Menu Item Name" %}' value="{{form.menu_item.value}}" required autocomplete="off" {% if form_menu_item_disable %}disabled{% endif %}>
-            {% for error in form.menu_item.errors %}
+            <input type="text" class="form-control" id="name" name="name" placeholder='{% translate "Menu Item Name" %}' value="{{form.name.value}}" required autocomplete="off" {% if form_menu_item_disable %}disabled{% endif %}>
+            {% for error in form.name.errors %}
             {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>

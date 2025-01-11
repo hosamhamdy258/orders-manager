@@ -85,11 +85,5 @@ if [ "$DJANGO_DEVELOPMENT" = "False" ]; then
 
 fi
 
-# ===========================================
-# Run migrations on startup
-python manage.py makemigrations
-python manage.py migrate
-# ===========================================
-
 # Execute the main command (passed as CMD in Dockerfile)
 exec "$@"
