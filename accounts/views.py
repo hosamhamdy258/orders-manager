@@ -1,13 +1,15 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
     AuthenticationForm,
     PasswordChangeForm,
     UserCreationForm,
 )
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+
+UserModel = get_user_model()
 
 
 def add_custom_class(self):
@@ -16,22 +18,14 @@ def add_custom_class(self):
 
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
 
     class Meta:
-        model = User
+        model = UserModel
         fields = ("username", "email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         add_custom_class(self)
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data["email"]
-        if commit:
-            user.save()
-        return user
 
 
 class CustomSignUpView(CreateView):

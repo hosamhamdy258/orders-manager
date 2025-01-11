@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
 from django.db.models import DecimalField, F, Sum
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ErrorMessage as EM

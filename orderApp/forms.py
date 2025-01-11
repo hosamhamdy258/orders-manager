@@ -1,5 +1,5 @@
 from django.forms import ModelChoiceField, ModelForm
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from .models import Group, MenuItem, Order, OrderItem, Restaurant
 

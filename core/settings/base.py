@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
-from datetime import timedelta
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
@@ -31,6 +30,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = "accounts.User"
+
 # LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
@@ -40,22 +41,18 @@ LOGOUT_REDIRECT_URL = "/"
 INSTALLED_APPS = [
     # Default
     "daphne",
-    "livereload",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Packages
-    "corsheaders",
     # Apps
     "accounts",
     "orderApp",
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -65,7 +62,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.ServerClock",
-    "livereload.middleware.LiveReloadScript",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -158,31 +154,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_METHODS = [
-    # "DELETE",
-    "GET",
-    # "OPTIONS",
-    # "PATCH",
-    "POST",
-]
-
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "Accept-Language",
-    "currency",
-    "display",
-]
-
 # CHANNEL_LAYERS = {
 #     "default": {
 #         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -193,5 +164,3 @@ CORS_ALLOW_HEADERS = [
 # }
 
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
-
-LIVERELOAD_HOST = "0.0.0.0"

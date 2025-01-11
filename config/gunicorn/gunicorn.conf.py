@@ -14,7 +14,7 @@ workers = 4 if multiprocessing.cpu_count() * 2 >= 4 else 2  # Adjusted based ser
 worker_class = "uvicorn.workers.UvicornWorker"
 
 # Redirect stdout/stderr to specified file in errorlog.
-# capture_output = True
+capture_output = True
 
 # Preload the app for faster startup but ensure enough memory is available
 preload_app = True
@@ -24,6 +24,6 @@ preload_app = True
 
 # Log files (adjust paths as needed)
 errorlog = "/app/logs/gunicorn/error.log"
-accesslog = "/app/logs/gunicorn/access.log"
+# accesslog = "/app/logs/gunicorn/access.log"
 
-loglevel = "debug"
+loglevel = "error"
