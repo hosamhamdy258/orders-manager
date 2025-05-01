@@ -44,7 +44,8 @@ if [ "$DJANGO_DEVELOPMENT" = "False" ]; then
 	if [ ! -f "$MARKER_FILE" ]; then
 		echo "Running collectstatic as DJANGO_DEVELOPMENT is False and it hasn't run yet."
 		# Collect static files into the container to reduce image size
-		python manage.py collectstatic --clear --link --noinput
+		rm -rf ./static
+		python manage.py collectstatic --link --noinput
 		# Create the marker file to indicate collectstatic has been run
 		mkdir -p "$(dirname "$MARKER_FILE")"
 		touch "$MARKER_FILE"

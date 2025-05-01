@@ -10,10 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import logging
+import logging.config
 import os
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
+
+from logger_config import LOGGING
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "des",
     # Apps
     "accounts",
     "orderApp",
@@ -164,3 +169,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # }
 
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+logging.config.dictConfig(LOGGING)
+
+async_logger = logging.getHandlerByName("async_queue")
+async_logger.start_listener()
+
+EMAIL_BACKEND = "des.backends.ConfiguredEmailBackend"
+ADMINS = [("Hosam", "hosamhamdy258@gmail.com")]
+SERVER_EMAIL = "dev.hosamhamdy@gmail.com"

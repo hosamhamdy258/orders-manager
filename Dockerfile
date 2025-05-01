@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     htop \
     nano \
+    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
