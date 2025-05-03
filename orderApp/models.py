@@ -6,6 +6,7 @@ from django.db.models import F, Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from accounts.models import configuration
 from orderApp.utils import PositiveValueValidator
 
 UserModel = get_user_model()
@@ -34,7 +35,7 @@ class GroupUser(models.Model):
     joined = models.DateTimeField(_("Created"), default=timezone.now)
 
     def get_time_left(self):
-        end_time = self.joined + timedelta(minutes=15)
+        end_time = self.joined + timedelta(minutes=configuration().order_time_limit)
         current_time = timezone.now()
         remaining_time = end_time - current_time
         return int(remaining_time.total_seconds())
@@ -57,11 +58,23 @@ class MenuItem(models.Model):
         return " | ".join(list(map(str, keys)))
 
 
+class CustomOrderManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().exclude(order_archived=True)
+
+
+def archive_time():
+    return timezone.now() + timedelta(hours=configuration().order_archive_delay)
+
+
 class Order(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
     fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
     created = models.DateTimeField(_("Created"), default=timezone.now)
-    finished_ordering = models.BooleanField(_("finished ordering"), default=False)
+    finished_ordering = models.BooleanField(_("Finished Ordering"), default=False)
+    delete_timer = models.DateTimeField(_("Created"), default=archive_time)
+    order_archived = models.BooleanField(_("Is Done ?"), default=False)
+    objects = CustomOrderManager()
 
     def __str__(self):
         keys = [self.order_user(), self.total_order()]

@@ -1,14 +1,13 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from accounts.models import configuration
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import GroupUser, MenuItem, Order, OrderItem, Restaurant
-
-order_limit = 1
 
 
 def order_context(user, group, restaurant=None):
@@ -129,7 +128,7 @@ def get_all_orders(user=None, group=None):
 
 def disable_order_item_form(user, group):
     orders = get_all_orders(user=user, group=group)
-    return orders.count() >= order_limit
+    return orders.count() >= configuration().order_limit
 
 
 def get_last_order(user, group):
@@ -139,7 +138,7 @@ def get_last_order(user, group):
 
 def create_order(user, group):
     orders = get_all_orders(user=user, group=group)
-    if orders.count() >= order_limit:
+    if orders.count() >= configuration().order_limit:
         return False, orders.none().first()
     else:
         order = Order.objects.create(fk_user=user, fk_group=group)

@@ -91,18 +91,3 @@ def announcement(request):
     #     async_to_sync(channel_layer.send)(channel.channel_name, {"type": "sendNotification","type2x": "sendNotification", "message": {"message_type": "sendNotification"}})
 
     return render(request, "order/bottomSection/form/menuItems.html")
-
-
-def run_after_delay(func, delay_in_seconds, *args, **kwargs):
-    timer = Timer(delay_in_seconds, func, args=args, kwargs=kwargs)
-    timer.start()
-    print(timer.name)
-    print(timer.native_id)
-
-
-def my_background_function():
-    # Group.objects.all().delete()
-    print("This function runs after a delay in the background.")
-
-
-# run_after_delay(my_background_function, 20)
