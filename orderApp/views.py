@@ -1,12 +1,9 @@
-from threading import Timer
-
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 
@@ -57,7 +54,7 @@ class RestaurantView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         ctx = get_context(user=user, view=CV.RESTAURANT_VIEW)
         context = super().get_context_data(**kwargs)
-        context.update({GC.WS_URL: f"/ws/restaurant/", **ctx})
+        context.update({GC.WS_URL: "/ws/restaurant/", **ctx})
         return context
 
 

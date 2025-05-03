@@ -419,7 +419,6 @@ class OrderConsumer(JsonWebsocketConsumer):
             templates.append("order/bottomSection/actions/orderSummary.html")
             context.update(EM.ORDER_SUMMARY)
         else:
-
             orderTotalSummary = (
                 Restaurant.objects.filter(
                     menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_group=self.group

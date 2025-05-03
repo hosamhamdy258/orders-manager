@@ -1,5 +1,3 @@
-from django.utils.translation import gettext_lazy as _
-
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ViewContextKeys as VC
 

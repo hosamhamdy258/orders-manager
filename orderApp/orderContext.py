@@ -23,7 +23,6 @@ def order_context(user, group, restaurant=None):
 
 
 def order_title_section(group=None, time_left=0):
-
     return {
         **get_current_view(view=CV.ORDER_VIEW),
         VC.MAIN_TITLE: _("Orders"),
@@ -46,7 +45,6 @@ def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False
 
 
 def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disable_remove_button=False):
-
     return {
         VC.DETAILS_SECTION_ID: "order_items",
         VC.DETAILS_SECTION_TITLE: _("Order Items"),
@@ -59,7 +57,6 @@ def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disabl
 
 
 def order_form_section(user=None, group=None, restaurant=None, force_disable=False):
-
     disable = True if force_disable else disable_order_item_form(user=user, group=group)
 
     if disable:
@@ -85,7 +82,6 @@ def order_form_id(order=None):
 
 
 def order_actions_section(order=None, add_order_id=False, all_orders=False, force_disable=False):
-
     return {
         OC.FINISH_ORDER_ID: OC.FINISH_ORDER_ID,
         OC.DISABLE_COMPLETE_BUTTON: force_disable,

@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
-from orderApp.enums import RestaurantContextKeys as RC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import Group
 
