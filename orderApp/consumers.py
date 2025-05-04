@@ -41,20 +41,42 @@ RESTAURANT_ROOM_NAME = "restaurant_room"
 RESTAURANT_GROUP_NAME = f"group_{RESTAURANT_ROOM_NAME}"
 
 
-class GroupConsumer(JsonWebsocketConsumer):
+class BaseConsumer(JsonWebsocketConsumer):
     message_type = "message_type"
     message = "message"
+    room_name = None
+    room_group_name = None
 
     def connect(self):
-        self.room_name = HOME_ROOM_NAME
-        self.room_group_name = HOME_GROUP_NAME
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
+        self.user = self.scope["user"]
+        async_to_sync(self.channel_layer.group_add)(self.get_room_group_name(), self.channel_name)
         self.accept()
+        self.after_connect()
+
+    def after_connect(self):
+        pass
+
+    def get_room_name(self):
+        if self.room_name is None:
+            raise NotImplementedError("Subclasses must define room_name or implement get_room_name()")
+        return self.room_name
+
+    def get_room_group_name(self):
+        if self.room_group_name is None:
+            raise NotImplementedError("Subclasses must define room_group_name or implement get_room_group_name()")
+        return self.room_group_name
+
+
+class GroupConsumer(BaseConsumer):
+    room_name = HOME_ROOM_NAME
+    room_group_name = HOME_GROUP_NAME
+
+    def after_connect(self):
+        super().after_connect()
         self.updateGroupBody()
 
     def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
 
     def receive_json(self, content, **kwargs):
         event_type = content.get(self.message_type, "")
@@ -67,7 +89,7 @@ class GroupConsumer(JsonWebsocketConsumer):
 
     def self_dispatch(self, event):
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
     def updateGroupBody(self):
@@ -174,26 +196,27 @@ class GroupConsumer(JsonWebsocketConsumer):
         self.send(text_data=response)
 
 
-class OrderConsumer(JsonWebsocketConsumer):
-    message_type = "message_type"
-    message = "message"
+class OrderConsumer(BaseConsumer):
 
-    def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["group_name"]
-        self.room_group_name = f"group_{self.room_name}"
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        Client.objects.create(channel_name=self.channel_name)
-        self.group = Group.objects.get(room_number=self.room_name)
-        user = self.scope["user"]
-        self.group.m2m_users.add(user)
+    def after_connect(self):
+        super().after_connect()
+        self.add_user_to_group()
         self.updateUsersConnectedCount()
-        self.accept()
         self.updateOrderBody()
+
+    def get_room_name(self):
+        return self.scope["url_route"]["kwargs"]["group_name"]
+
+    def get_room_group_name(self):
+        return f"group_{self.room_name}"
+
+    def add_user_to_group(self):
+        self.group = Group.objects.get(room_number=self.get_room_name())
+        self.group.m2m_users.add(self.user)
 
     def disconnect(self, close_code):
         # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
         Client.objects.filter(channel_name=self.channel_name).delete()
         user = self.scope["user"]
         self.group.m2m_users.remove(user)
@@ -217,7 +240,7 @@ class OrderConsumer(JsonWebsocketConsumer):
         # ?{"type": "sendNotification", "message": {"message_type": "sendNotification"}}
 
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
     def updateOrderBody(self):
@@ -558,20 +581,16 @@ class OrderConsumer(JsonWebsocketConsumer):
         )
 
 
-class RestaurantConsumer(JsonWebsocketConsumer):
-    message_type = "message_type"
-    message = "message"
+class RestaurantConsumer(BaseConsumer):
+    room_name = RESTAURANT_ROOM_NAME
+    room_group_name = RESTAURANT_GROUP_NAME
 
-    def connect(self):
-        self.room_name = RESTAURANT_ROOM_NAME
-        self.room_group_name = RESTAURANT_GROUP_NAME
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        print(f"Connected to group: {self.room_group_name} , channel : {self.channel_name}")
-        self.accept()
+    def after_connect(self):
+        super().after_connect()
         self.updateRestaurantBody()
 
     def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
 
     def receive_json(self, content, **kwargs):
         event_type = content.get(self.message_type, "")
@@ -584,7 +603,7 @@ class RestaurantConsumer(JsonWebsocketConsumer):
 
     def self_dispatch(self, event):
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
+            self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
     def updateRestaurantBody(self):
