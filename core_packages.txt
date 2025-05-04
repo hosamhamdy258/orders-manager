@@ -1,8 +1,10 @@
 
-channels==4.2.0
+channels==4.2.2
 daphne==4.1.2
-Django==4.2.17
+django==4.2.20
+django-des @ git+https://github.com/jamiecounsell/django-des@4d121c62ffd0cd7e6a7288a6f6aa14e82fb247e1
+django-solo==2.3.0
 gunicorn==23.0.0
-python-dotenv==1.0.1
-uvicorn[standard]==0.34.0
+python-dotenv==1.1.0
+uvicorn[standard]==0.34.2
 uvicorn-worker==0.3.0
