@@ -17,45 +17,60 @@ from orderApp.restaurantContext import restaurant_context
 decorators = [never_cache]
 
 
-@method_decorator(decorators, name="dispatch")
-class IndexView(LoginRequiredMixin, TemplateView):
+class BaseView(LoginRequiredMixin, TemplateView):
     template_name = "base/index.html"
+    view_type = None
+    ws_url = None
+    extra_context = {}
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        ctx = get_context(user=user, view=CV.GROUP_VIEW)
         context = super().get_context_data(**kwargs)
-        context.update({GC.WS_URL: "/ws/index/", **ctx})
+        self.user = self.request.user
+        group = getattr(self, "group", None)
+        ctx = get_context(user=self.user, view=self.view_type, group=group)
+        context.update({GC.WS_URL: self.get_ws_url(), **ctx, **self.get_extra_context()})
         return context
 
+    def get_view_type(self):
+        if self.view_type is None:
+            raise NotImplementedError("Subclasses must define view_type or implement get_view_type()")
+        return self.view_type
 
-class OrderView(LoginRequiredMixin, TemplateView):
-    template_name = "base/index.html"
+    def get_ws_url(self):
+        if self.ws_url is None:
+            raise NotImplementedError("Subclasses must define ws_url or implement get_ws_url()")
+        return self.ws_url
 
-    def get(self, request, *args, **kwargs):
+    def get_extra_context(self):
+        return self.extra_context
+
+
+@method_decorator(decorators, name="dispatch")
+class IndexView(BaseView):
+    view_type = CV.GROUP_VIEW
+    ws_url = "/ws/index/"
+
+
+class OrderView(BaseView):
+    view_type = CV.ORDER_VIEW
+
+    def dispatch(self, request, *args, **kwargs):
         try:
             self.group = Group.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
         except ObjectDoesNotExist:
             return redirect("index")
-        return super().get(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        ctx = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
-        context = super().get_context_data(**kwargs)
-        context.update({GC.GROUP_NAME: self.group.name, GC.WS_URL: f"/ws/order/{self.group.room_number}/", **ctx})
-        return context
+    def get_ws_url(self):
+        return f"/ws/order/{self.group.room_number}/"
+
+    def get_extra_context(self):
+        return {GC.GROUP_NAME: self.group.name, **super().get_extra_context()}
 
 
-class RestaurantView(LoginRequiredMixin, TemplateView):
-    template_name = "base/index.html"
-
-    def get_context_data(self, **kwargs):
-        user = self.request.user
-        ctx = get_context(user=user, view=CV.RESTAURANT_VIEW)
-        context = super().get_context_data(**kwargs)
-        context.update({GC.WS_URL: "/ws/restaurant/", **ctx})
-        return context
+class RestaurantView(BaseView):
+    view_type = CV.RESTAURANT_VIEW
+    ws_url = "/ws/restaurant/"
 
 
 def get_context(user, view=CV.ORDER_VIEW, group=None):
