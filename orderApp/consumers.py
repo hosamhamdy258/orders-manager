@@ -46,15 +46,24 @@ class BaseConsumer(JsonWebsocketConsumer):
     message = "message"
     room_name = None
     room_group_name = None
+    user = None
+    view = None
+    group = None
+    body_template = None
+
+    def get_user(self):
+        if self.user is None:
+            self.user = self.scope["user"]
+        return self.user
 
     def connect(self):
-        self.user = self.scope["user"]
+        self.get_user()
         async_to_sync(self.channel_layer.group_add)(self.get_room_group_name(), self.channel_name)
         self.accept()
         self.after_connect()
 
     def after_connect(self):
-        pass
+        self.updatePageBody()
 
     def get_room_name(self):
         if self.room_name is None:
@@ -66,18 +75,6 @@ class BaseConsumer(JsonWebsocketConsumer):
             raise NotImplementedError("Subclasses must define room_group_name or implement get_room_group_name()")
         return self.room_group_name
 
-
-class GroupConsumer(BaseConsumer):
-    room_name = HOME_ROOM_NAME
-    room_group_name = HOME_GROUP_NAME
-
-    def after_connect(self):
-        super().after_connect()
-        self.updateGroupBody()
-
-    def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
-
     def receive_json(self, content, **kwargs):
         event_type = content.get(self.message_type, "")
         message = dict(message=content)
@@ -88,23 +85,35 @@ class GroupConsumer(BaseConsumer):
         print(f"Unknown event type received: {message}")
 
     def self_dispatch(self, event):
+        # ! add handle for this 2 cases
+        # ! from regular dispatch inside consumer
+        #  ?{"message": {"message_type": "membersOrders"}}
+        # ! from outside consumers
+        # ?{"type": "sendNotification", "message": {"message_type": "sendNotification"}}
+
         async_to_sync(self.channel_layer.group_send)(
             self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
-    def updateGroupBody(self):
+    def updatePageBody(self):
         templates = []
         context = {}
-        user = self.scope["user"]
-        context.update({"user": user})
 
-        view_context = get_context(user=user, view=CV.GROUP_VIEW)
-
-        context.update(view_context)
-        templates.append("group/body.html")
+        context.update({"user": self.get_user(), **get_context(user=self.get_user(), view=self.view, group=self.group)})
+        templates.append(self.body_template)
 
         response = templates_joiner(context, templates)
         self.send(text_data=response)
+
+
+class GroupConsumer(BaseConsumer):
+    room_name = HOME_ROOM_NAME
+    room_group_name = HOME_GROUP_NAME
+    view = CV.GROUP_VIEW
+    body_template = "group/body.html"
+
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
 
     def updateGroupsList(self, event):
         group = event.get("group", True)
@@ -197,12 +206,13 @@ class GroupConsumer(BaseConsumer):
 
 
 class OrderConsumer(BaseConsumer):
+    view = CV.ORDER_VIEW
+    body_template = "order/body.html"
 
     def after_connect(self):
-        super().after_connect()
         self.add_user_to_group()
         self.updateUsersConnectedCount()
-        self.updateOrderBody()
+        super().after_connect()
 
     def get_room_name(self):
         return self.scope["url_route"]["kwargs"]["group_name"]
@@ -212,7 +222,7 @@ class OrderConsumer(BaseConsumer):
 
     def add_user_to_group(self):
         self.group = Group.objects.get(room_number=self.get_room_name())
-        self.group.m2m_users.add(self.user)
+        self.group.m2m_users.add(self.get_user())
 
     def disconnect(self, close_code):
         # Leave room group
@@ -221,42 +231,6 @@ class OrderConsumer(BaseConsumer):
         user = self.scope["user"]
         self.group.m2m_users.remove(user)
         self.updateUsersConnectedCount()
-
-    # Receive message from room group
-    def receive_json(self, content, **kwargs):
-        event_type = content.get(self.message_type, "")
-        message = dict(message=content)
-        handler = getattr(self, event_type, self.default_handler)
-        handler(message)
-
-    def default_handler(self, message):
-        print(f"Unknown event type received: {message}")
-
-    def self_dispatch(self, event):
-        # ! add handle for this 2 cases
-        # ! from regular dispatch inside consumer
-        #  ?{"message": {"message_type": "membersOrders"}}
-        # ! from outside consumers
-        # ?{"type": "sendNotification", "message": {"message_type": "sendNotification"}}
-
-        async_to_sync(self.channel_layer.group_send)(
-            self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
-        )
-
-    def updateOrderBody(self):
-        templates = []
-        context = {}
-        user = self.scope["user"]
-        context.update({"user": user})
-
-        view_context = get_context(user=user, view=CV.ORDER_VIEW, group=self.group)
-
-        context.update(view_context)
-        templates.append("order/body.html")
-
-        response = templates_joiner(context, templates)
-        # print("send",response)
-        self.send(text_data=response)
 
     def addOrderItem(self, event):
         group = event.get("group", False)
@@ -584,41 +558,11 @@ class OrderConsumer(BaseConsumer):
 class RestaurantConsumer(BaseConsumer):
     room_name = RESTAURANT_ROOM_NAME
     room_group_name = RESTAURANT_GROUP_NAME
-
-    def after_connect(self):
-        super().after_connect()
-        self.updateRestaurantBody()
+    view = CV.RESTAURANT_VIEW
+    body_template = "restaurant/body.html"
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
-
-    def receive_json(self, content, **kwargs):
-        event_type = content.get(self.message_type, "")
-        message = dict(message=content)
-        handler = getattr(self, event_type, self.default_handler)
-        handler(message)
-
-    def default_handler(self, message):
-        print(f"Unknown event type received: {message}")
-
-    def self_dispatch(self, event):
-        async_to_sync(self.channel_layer.group_send)(
-            self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
-        )
-
-    def updateRestaurantBody(self):
-        templates = []
-        context = {}
-        user = self.scope["user"]
-        context.update({"user": user})
-
-        view_context = get_context(user=user, view=CV.RESTAURANT_VIEW)
-
-        context.update(view_context)
-        templates.append("restaurant/body.html")
-
-        response = templates_joiner(context, templates)
-        self.send(text_data=response)
 
     def showRestaurantItems(self, event):
         group = event.get("group", False)
