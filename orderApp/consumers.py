@@ -65,6 +65,13 @@ class BaseConsumer(JsonWebsocketConsumer):
     def after_connect(self):
         self.updatePageBody()
 
+    def after_disconnect(self):
+        pass
+
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
+        self.after_disconnect()
+
     def get_room_name(self):
         if self.room_name is None:
             raise NotImplementedError("Subclasses must define room_name or implement get_room_name()")
@@ -111,9 +118,6 @@ class GroupConsumer(BaseConsumer):
     room_group_name = HOME_GROUP_NAME
     view = CV.GROUP_VIEW
     body_template = "group/body.html"
-
-    def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
 
     def updateGroupsList(self, event):
         group = event.get("group", True)
@@ -224,12 +228,12 @@ class OrderConsumer(BaseConsumer):
         self.group = Group.objects.get(room_number=self.get_room_name())
         self.group.m2m_users.add(self.get_user())
 
-    def disconnect(self, close_code):
-        # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
-        Client.objects.filter(channel_name=self.channel_name).delete()
-        user = self.scope["user"]
-        self.group.m2m_users.remove(user)
+    def remove_user_from_group(self):
+        self.group.m2m_users.remove(self.get_user())
+
+    def after_disconnect(self):
+        super().after_disconnect()
+        self.remove_user_from_group()
         self.updateUsersConnectedCount()
 
     def addOrderItem(self, event):
@@ -560,9 +564,6 @@ class RestaurantConsumer(BaseConsumer):
     room_group_name = RESTAURANT_GROUP_NAME
     view = CV.RESTAURANT_VIEW
     body_template = "restaurant/body.html"
-
-    def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.get_room_group_name(), self.channel_name)
 
     def showRestaurantItems(self, event):
         group = event.get("group", False)
