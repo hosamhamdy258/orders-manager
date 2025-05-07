@@ -1,4 +1,5 @@
 import time
+from functools import wraps
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
@@ -39,6 +40,16 @@ HOME_ROOM_NAME = "home_room"
 HOME_GROUP_NAME = f"group_{HOME_ROOM_NAME}"
 RESTAURANT_ROOM_NAME = "restaurant_room"
 RESTAURANT_GROUP_NAME = f"group_{RESTAURANT_ROOM_NAME}"
+
+
+def group_message(fn):
+    @wraps(fn)
+    def wrapper(self, event, *args, **kwargs):
+        if event.get("group", True):
+            return self.self_dispatch(event)
+        return fn(self, event, *args, **kwargs)
+
+    return wrapper
 
 
 class BaseConsumer(JsonWebsocketConsumer):
@@ -102,9 +113,7 @@ class BaseConsumer(JsonWebsocketConsumer):
             self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
-    def updatePageBody(self):
-        templates = []
-        context = {}
+    def updatePageBody(self, templates=[], context={}):
 
         context.update({"user": self.get_user(), **get_context(user=self.get_user(), view=self.view, group=self.group)})
         templates.append(self.body_template)
@@ -122,28 +131,15 @@ class GroupConsumer(BaseConsumer):
     view = CV.GROUP_VIEW
     body_template = "group/body.html"
 
-    def updateGroupsList(self, event):
-        group = event.get("group", True)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    @group_message
+    def updateGroupsList(self, event, templates=[], context={}):
 
         context.update(**group_list_section(add_view=True))
         templates.append("group/bodySection/listSection.html")
 
         self.response_builder(templates, context)
 
-    def showGroupMembers(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def showGroupMembers(self, event, templates=[], context={}):
 
         context.update({**group_details_section(group=event[self.message].get("item_id"), add_view=True)})
         context.update({"remove_errors": True})
@@ -152,14 +148,7 @@ class GroupConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addGroup(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def addGroup(self, event, templates=[], context={}):
 
         event[self.message].update({"room_number": f"g{time.time_ns()}"})
         form = GroupForm(event[self.message])
@@ -177,26 +166,14 @@ class GroupConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
     # ! for testing
-    def sendNotification(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-        else:
-            templates = []
-            context = {}
+    @group_message
+    def sendNotification(self, event, templates=[], context={}):
 
-            templates.append("base/helpers/notification.html")
+        templates.append("base/helpers/notification.html")
 
-            self.response_builder(templates, context)
+        self.response_builder(templates, context)
 
-    def updateConnectedUsers(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def updateConnectedUsers(self, event, templates=[], context={}):
 
         context.update(event[self.message]["ctx"])
         templates.append("group/bodySection/connectedUsers.html")
@@ -231,14 +208,9 @@ class OrderConsumer(BaseConsumer):
         self.remove_user_from_group()
         self.updateUsersConnectedCount()
 
-    def addOrderItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
+    def addOrderItem(self, event, templates=[], context={}):
 
-        templates = []
-        context = {"user": self.get_user()}
+        context.update({"user": self.get_user()})
 
         form_state = check_disable_form(group=self.group, user=self.get_user())
         if form_state["force_disable"]:
@@ -274,14 +246,7 @@ class OrderConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def finishOrder(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def finishOrder(self, event, templates=[], context={}):
 
         form_state = check_disable_form(group=self.group, user=self.get_user())
         if form_state["force_disable"]:
@@ -310,27 +275,14 @@ class OrderConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def membersOrders(self, event):
-        group = event.get("group", True)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    @group_message
+    def membersOrders(self, event, templates=[], context={}):
 
         context.update(**order_list_section(group=self.group))
         templates.append("order/bodySection/listSection.html")
         self.response_builder(templates, context)
 
-    def OrdersList(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def OrdersList(self, event, templates=[], context={}):
 
         all_orders = event[self.message].get("all_orders")
 
@@ -346,14 +298,8 @@ class OrderConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def deleteOrderItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
+    def deleteOrderItem(self, event, templates=[], context={}):
 
-        templates = []
-        context = {}
         context.update({"user": self.get_user()})
 
         orderItemObj = OrderItem.objects.get(pk=event[self.message].get("item_id"))
@@ -368,14 +314,8 @@ class OrderConsumer(BaseConsumer):
         orderItemObj.delete()
         self.response_builder(templates, context)
 
-    def showMemberItemOrders(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
+    def showMemberItemOrders(self, event, templates=[], context={}):
 
-        templates = []
-        context = {}
         context.update({"user": self.get_user()})
 
         context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
@@ -383,14 +323,7 @@ class OrderConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def groupOrderSummary(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def groupOrderSummary(self, event, templates=[], context={}):
 
         UserModel = get_user_model()
 
@@ -486,9 +419,8 @@ class OrderConsumer(BaseConsumer):
             )
         self.response_builder(templates, context)
 
-    def switchView(self, event):
-        templates = []
-        context = {}
+    def switchView(self, event, templates=[], context={}):
+
         context.update({"user": self.get_user()})
 
         view_context = get_context(user=self.get_user(), group=self.group, view=event[self.message].get("next_view"))
@@ -498,13 +430,8 @@ class OrderConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def sendNotification(self, event):
-        group = event.get("group", True)
-        if group:
-            self.self_dispatch(event)
-            return
-        templates = []
-        context = {}
+    @group_message
+    def sendNotification(self, event, templates=[], context={}):
 
         templates.append("base/helpers/notification.html")
 
@@ -535,14 +462,7 @@ class RestaurantConsumer(BaseConsumer):
     view = CV.RESTAURANT_VIEW
     body_template = "restaurant/body.html"
 
-    def showRestaurantItems(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def showRestaurantItems(self, event, templates=[], context={}):
 
         context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
         context.update({"remove_errors": True})
@@ -552,14 +472,7 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addRestaurant(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def addRestaurant(self, event, templates=[], context={}):
 
         form = RestaurantForm(event[self.message])
         if form.is_valid():
@@ -576,14 +489,7 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def deleteMenuItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def deleteMenuItem(self, event, templates=[], context={}):
 
         MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
 
@@ -597,14 +503,7 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addMenuItem(self, event):
-        group = event.get("group", False)
-        if group:
-            self.self_dispatch(event)
-            return
-
-        templates = []
-        context = {}
+    def addMenuItem(self, event, templates=[], context={}):
 
         form = MenuItemForm(event[self.message])
         if form.is_valid():
