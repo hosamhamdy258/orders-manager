@@ -47,11 +47,17 @@ class BaseView(LoginRequiredMixin, TemplateView):
 
 @method_decorator(decorators, name="dispatch")
 class IndexView(BaseView):
+    view_type = CV.ORDER_GROUP
+    ws_url = "/ws/index/"
+
+
+@method_decorator(decorators, name="dispatch")
+class OrderRoomView(BaseView):
     view_type = CV.ORDER_ROOM
     ws_url = "/ws/index/"
 
 
-class OrderView(BaseView):
+class OrderSelectionView(BaseView):
     view_type = CV.ORDER_SELECTION
 
     def dispatch(self, request, *args, **kwargs):
