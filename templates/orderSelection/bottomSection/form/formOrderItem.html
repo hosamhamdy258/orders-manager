@@ -1,6 +1,6 @@
 {% load i18n%}
 <form id="order_item_form" ws-send hx-swap="outerHTML">
-  {% include "order/bottomSection/form/form_order_id.html" %}
+  {% include "orderSelection/bottomSection/form/form_order_id.html" %}
   <input type="hidden" name="message_type" value="addOrderItem">
   {% for error in form.non_field_errors %}
   {% include "base/helpers/error.html" %}
@@ -23,7 +23,7 @@
 
     <!-- Menu Item Selection -->
     <div class="col-md-4">
-      {% include "order/bottomSection/form/menuItems.html" %}
+      {% include "orderSelection/bottomSection/form/menuItems.html" %}
     </div>
 
     <!-- Quantity Input -->

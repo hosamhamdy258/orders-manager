@@ -1,0 +1,27 @@
+{% extends "base/body.html" %}
+
+{% block top_section_body %}
+{% include "orderSelection/topSection/middleTitle.html" %}
+{{ block.super }}
+{% endblock top_section_body %}
+
+
+{% block details_section %}
+{% include "orderSelection/bodySection/detailsSection.html" %}
+{% endblock details_section %}
+
+
+{% block list_section %}
+{% include "orderSelection/bodySection/listSection.html" %}
+{% endblock list_section %}
+
+{% block bottom_form %}
+{% include "orderSelection/bottomSection/form/formOrderItem.html" %}
+{% include "orderSelection/bottomSection/actions/orderActions.html" %}
+
+{% endblock bottom_form %}
+
+
+{% block summary_table %}
+{% include "orderSelection/bottomSection/actions/summaryTables.html" %}
+{% endblock summary_table %}

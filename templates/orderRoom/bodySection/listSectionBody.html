@@ -7,14 +7,14 @@
 
 {% block table_body %}
 <tr>
-    {% include "group/bodySection/connectedUsers.html" %}
+    {% include "orderRoom/bodySection/connectedUsers.html" %}
     {% block common_button %}
     {{ block.super }}
     {% endblock common_button %}
     <td>
         {% block extra_actions %}
         {{ block.super }}
-        {% include "group/bodySection/joinAction.html" %}
+        {% include "orderRoom/bodySection/joinAction.html" %}
         {% endblock extra_actions %}
     </td>
 </tr>

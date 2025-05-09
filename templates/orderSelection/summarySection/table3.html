@@ -1,0 +1,23 @@
+{% extends "orderSelection/summarySection/baseTable.html" %}
+{% load i18n %}
+
+{% block table_id %}table3{% endblock table_id %}
+
+{% block table_headers %}
+{{ block.super }}
+{% endblock table_headers %}
+
+{% block table_body %}
+
+{% for user, restaurantGroup in orderUsersRestaurantSummaryGrouped.items %}
+{% include "orderSelection/summarySection/nestHeader.html" with data=user %}
+{% for restaurant,orderItems in restaurantGroup.items %}
+{% include "orderSelection/summarySection/nestHeader.html" with data=restaurant opacity=50 %}
+{% include "orderSelection/summarySection/itemsLoop.html" %}
+{% include "orderSelection/summarySection/nestSectionTotal.html" with title="Restaurant Total" looper=totals_orderUsersTotalSummaryGrouped.items data=restaurant %}
+{% endfor %}
+{% include "orderSelection/summarySection/sectionTotal.html" with title="User Total" looper=totals_orderUsersSummaryGrouped.items data=user %}
+{% include "orderSelection/summarySection/spacer.html" %}
+{% endfor %}
+{% include "orderSelection/summarySection/grandTotal.html" %}
+{% endblock table_body %}

@@ -1,0 +1,19 @@
+{% extends "orderSelection/summarySection/baseTable.html" %}
+{% load i18n %}
+
+{% block table_id %}table1{% endblock table_id %}
+
+{% block table_headers %}
+{{ block.super }}
+{% endblock table_headers %}
+
+{% block table_body %}
+
+{% for restaurant, orderItems in orderTotalSummaryGrouped.items %}
+{% include "orderSelection/summarySection/nestHeader.html" with data=restaurant %}
+{% include "orderSelection/summarySection/itemsLoop.html" %}
+{% include "orderSelection/summarySection/sectionTotal.html" with title="Restaurant Total" looper=totals_orderTotalSummary.items data=restaurant %}
+{% include "orderSelection/summarySection/spacer.html" %}
+{% endfor %}
+{% include "orderSelection/summarySection/grandTotal.html" %}
+{% endblock table_body %}
