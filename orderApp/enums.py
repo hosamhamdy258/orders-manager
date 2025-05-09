@@ -9,16 +9,17 @@ class GeneralContextKeys(EnumMeta):
 
 
 class CurrentViews(EnumMeta):
-    ORDER_VIEW = "order_view"
-    RESTAURANT_VIEW = "restaurant_view"
-    GROUP_VIEW = "group_view"
+    ORDER_SELECTION = "order_selection_view"
+    RESTAURANT = "restaurant_view"
+    ORDER_ROOM = "order_room_view"
+    ORDER_GROUP = "order_group_view"
 
 
 class ViewContextKeys(EnumMeta):
     MAIN_TITLE = "main_title"
     TITLE_ACTION = "title_action"
-    NEXT_VIEW = "next_view"
-    CURRENT_VIEW = "current_view"
+    NEXT = "next_view"
+    CURRENT = "current_view"
 
     LIST_SECTION_ID = "list_section_id"
     LIST_SECTION_TITLE = "list_section_title"

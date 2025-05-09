@@ -7,7 +7,7 @@ from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
-from orderApp.models import GroupUser, MenuItem, Order, OrderItem, Restaurant
+from orderApp.models import MenuItem, Order, OrderItem, OrderRoomUser, Restaurant
 
 
 def order_context(user, group, restaurant=None):
@@ -24,16 +24,16 @@ def order_context(user, group, restaurant=None):
 
 def order_title_section(group=None, time_left=0):
     return {
-        **get_current_view(view=CV.ORDER_VIEW),
+        **get_current_view(view=CV.ORDER_SELECTION),
         VC.MAIN_TITLE: _("Orders"),
         VC.TITLE_ACTION: _("Add Restaurant"),
-        VC.NEXT_VIEW: CV.RESTAURANT_VIEW,
+        VC.NEXT: CV.RESTAURANT,
         GC.GROUP_NAME: group.name,
         OC.TIME_LEFT: time_left,
     }
 
 
-def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False):
+def order_list_section(user=None, group=None, view=CV.ORDER_SELECTION, add_view=False):
     return {
         VC.LIST_SECTION_ID: "members_orders",
         VC.LIST_SECTION_TITLE: _("Members Orders"),
@@ -44,7 +44,7 @@ def order_list_section(user=None, group=None, view=CV.ORDER_VIEW, add_view=False
     }
 
 
-def order_details_section(order=None, view=CV.ORDER_VIEW, add_view=False, disable_remove_button=False):
+def order_details_section(order=None, view=CV.ORDER_SELECTION, add_view=False, disable_remove_button=False):
     return {
         VC.DETAILS_SECTION_ID: "order_items",
         VC.DETAILS_SECTION_TITLE: _("Order Items"),
@@ -157,5 +157,5 @@ def finish_order(order):
 
 
 def check_disable_form(group, user):
-    time_left = GroupUser.objects.get_or_create(fk_group=group, fk_user=user)[0].get_time_left()
+    time_left = OrderRoomUser.objects.get_or_create(fk_group=group, fk_user=user)[0].get_time_left()
     return {"force_disable": time_left <= 0, "time_left": time_left}

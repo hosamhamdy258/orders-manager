@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.groupContext import group_context
-from orderApp.models import Client, MenuItem, OrderGroup
+from orderApp.models import Client, MenuItem, OrderRoom
 from orderApp.orderContext import order_context
 from orderApp.restaurantContext import restaurant_context
 
@@ -47,16 +47,16 @@ class BaseView(LoginRequiredMixin, TemplateView):
 
 @method_decorator(decorators, name="dispatch")
 class IndexView(BaseView):
-    view_type = CV.GROUP_VIEW
+    view_type = CV.ORDER_ROOM
     ws_url = "/ws/index/"
 
 
 class OrderView(BaseView):
-    view_type = CV.ORDER_VIEW
+    view_type = CV.ORDER_SELECTION
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.group = OrderGroup.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
+            self.group = OrderRoom.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
         except ObjectDoesNotExist:
             return redirect("index")
         return super().dispatch(request, *args, **kwargs)
@@ -69,17 +69,17 @@ class OrderView(BaseView):
 
 
 class RestaurantView(BaseView):
-    view_type = CV.RESTAURANT_VIEW
+    view_type = CV.RESTAURANT
     ws_url = "/ws/restaurant/"
 
 
-def get_context(user, view=CV.ORDER_VIEW, group=None):
+def get_context(user, view=CV.ORDER_SELECTION, group=None):
     match view:
-        case CV.ORDER_VIEW:
+        case CV.ORDER_SELECTION:
             return order_context(user=user, group=group)
-        case CV.RESTAURANT_VIEW:
+        case CV.RESTAURANT:
             return restaurant_context(view=view)
-        case CV.GROUP_VIEW:
+        case CV.ORDER_ROOM:
             return group_context(view=view)
         case __:
             raise NotImplementedError(f"Unknown view: {view}")

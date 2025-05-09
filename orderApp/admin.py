@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from orderApp.models import Client, MenuItem, Order, OrderGroup, OrderItem, Restaurant
+from orderApp.models import (
+    Client,
+    MenuItem,
+    Order,
+    OrderGroup,
+    OrderItem,
+    OrderRoom,
+    Restaurant,
+)
 
 
 class OrderItemInlineAdmin(admin.TabularInline):
@@ -13,7 +21,11 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInlineAdmin]
 
 
-class GroupAdmin(admin.ModelAdmin):
+class OrderRoomAdmin(admin.ModelAdmin):
+    filter_horizontal = ["m2m_users"]
+
+
+class OrderGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ["m2m_users"]
 
 
@@ -22,4 +34,5 @@ admin.site.register(MenuItem)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Client)
-admin.site.register(OrderGroup, GroupAdmin)
+admin.site.register(OrderRoom, OrderRoomAdmin)
+admin.site.register(OrderGroup, OrderGroupAdmin)

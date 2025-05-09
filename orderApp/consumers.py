@@ -16,7 +16,7 @@ from orderApp.groupContext import (
     group_details_section,
     group_list_section,
 )
-from orderApp.models import Client, MenuItem, OrderGroup, OrderItem, Restaurant
+from orderApp.models import Client, MenuItem, OrderItem, OrderRoom, Restaurant
 from orderApp.orderContext import (
     check_disable_form,
     create_order,
@@ -128,7 +128,7 @@ class BaseConsumer(JsonWebsocketConsumer):
 class GroupConsumer(BaseConsumer):
     room_name = HOME_ROOM_NAME
     room_group_name = HOME_GROUP_NAME
-    view = CV.GROUP_VIEW
+    view = CV.ORDER_ROOM
     body_template = "group/body.html"
 
     @group_message
@@ -182,7 +182,7 @@ class GroupConsumer(BaseConsumer):
 
 
 class OrderConsumer(BaseConsumer):
-    view = CV.ORDER_VIEW
+    view = CV.ORDER_SELECTION
     body_template = "order/body.html"
 
     def after_connect(self):
@@ -197,7 +197,7 @@ class OrderConsumer(BaseConsumer):
         return f"group_{self.room_name}"
 
     def add_user_to_group(self):
-        self.group = OrderGroup.objects.get(room_number=self.get_room_name())
+        self.group = OrderRoom.objects.get(room_number=self.get_room_name())
         self.group.m2m_users.add(self.get_user())
 
     def remove_user_from_group(self):
@@ -459,7 +459,7 @@ class OrderConsumer(BaseConsumer):
 class RestaurantConsumer(BaseConsumer):
     room_name = RESTAURANT_ROOM_NAME
     room_group_name = RESTAURANT_GROUP_NAME
-    view = CV.RESTAURANT_VIEW
+    view = CV.RESTAURANT
     body_template = "restaurant/body.html"
 
     def showRestaurantItems(self, event, templates=[], context={}):

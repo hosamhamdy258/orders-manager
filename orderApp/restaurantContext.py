@@ -8,19 +8,19 @@ from orderApp.models import Restaurant
 from orderApp.orderContext import get_restaurant_menu_items
 
 
-def restaurant_context(view=CV.RESTAURANT_VIEW, restaurant=None):
+def restaurant_context(view=CV.RESTAURANT, restaurant=None):
     return {
         **get_current_view(view=view),
         VC.MAIN_TITLE: _("Restaurants"),
         VC.TITLE_ACTION: _("Add Order"),
-        VC.NEXT_VIEW: CV.ORDER_VIEW,
+        VC.NEXT: CV.ORDER_SELECTION,
         **restaurant_list_section(),
         **restaurant_details_section(restaurant),
         RC.FORM_MENU_ITEM_DISABLE: True,
     }
 
 
-def restaurant_details_section(restaurant, view=CV.RESTAURANT_VIEW, add_view=False):
+def restaurant_details_section(restaurant, view=CV.RESTAURANT, add_view=False):
     return {
         VC.DETAILS_SECTION_ID: "menu_items",
         VC.DETAILS_SECTION_TITLE: _("Menu Items"),
@@ -32,7 +32,7 @@ def restaurant_details_section(restaurant, view=CV.RESTAURANT_VIEW, add_view=Fal
     }
 
 
-def restaurant_list_section(view=CV.RESTAURANT_VIEW, add_view=False):
+def restaurant_list_section(view=CV.RESTAURANT, add_view=False):
     return {
         VC.LIST_SECTION_ID: "restaurant_list",
         VC.LIST_SECTION_TITLE: _("Restaurant List"),

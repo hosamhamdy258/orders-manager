@@ -4,12 +4,12 @@ from django.utils.translation import gettext_lazy as _
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ViewContextKeys as VC
-from orderApp.models import OrderGroup
+from orderApp.models import OrderRoom
 
 UserModel = get_user_model()
 
 
-def group_context(view=CV.GROUP_VIEW, group=None):
+def group_context(view=CV.ORDER_ROOM, group=None):
     return {
         **get_current_view(view=view),
         VC.MAIN_TITLE: _("Groups"),
@@ -19,7 +19,7 @@ def group_context(view=CV.GROUP_VIEW, group=None):
     }
 
 
-def group_details_section(group=None, view=CV.GROUP_VIEW, add_view=False):
+def group_details_section(group=None, view=CV.ORDER_ROOM, add_view=False):
     return {
         VC.DETAILS_SECTION_ID: "group_members",
         VC.DETAILS_SECTION_TITLE: _("Group Members"),
@@ -28,12 +28,12 @@ def group_details_section(group=None, view=CV.GROUP_VIEW, add_view=False):
     }
 
 
-def group_list_section(view=CV.GROUP_VIEW, add_view=False):
+def group_list_section(view=CV.ORDER_ROOM, add_view=False):
     return {
         VC.LIST_SECTION_ID: "group_list",
         VC.LIST_SECTION_TITLE: _("Group List"),
         VC.LIST_MESSAGE_TYPE: "showGroupMembers",
-        VC.LIST_SECTION_DATA: OrderGroup.objects.all().order_by("-id"),
+        VC.LIST_SECTION_DATA: OrderRoom.objects.all().order_by("-id"),
         VC.LIST_TABLE_HEADERS: [_("Room Name"), _("Connected Users")],
         **(get_current_view(view=view) if add_view else {}),
     }
