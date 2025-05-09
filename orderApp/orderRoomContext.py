@@ -9,36 +9,36 @@ from orderApp.models import OrderRoom
 UserModel = get_user_model()
 
 
-def group_context(view=CV.ORDER_ROOM, group=None):
+def order_room_context(view=CV.ORDER_ROOM, group=None):
     return {
         **get_current_view(view=view),
-        VC.MAIN_TITLE: _("Groups"),
-        VC.TITLE_ACTION: _("Refresh Groups"),
-        **group_list_section(),
-        **group_details_section(),
+        VC.MAIN_TITLE: _("Rooms"),
+        VC.TITLE_ACTION: _("Refresh"),
+        **order_room_list_section(),
+        **order_room_details_section(),
     }
 
 
-def group_details_section(group=None, view=CV.ORDER_ROOM, add_view=False):
+def order_room_details_section(group=None, view=CV.ORDER_ROOM, add_view=False):
     return {
-        VC.DETAILS_SECTION_ID: "group_members",
-        VC.DETAILS_SECTION_TITLE: _("Group Members"),
-        VC.DETAILS_SECTION_DATA: get_group_members(group) if group else None,
+        VC.DETAILS_SECTION_ID: "room_members",
+        VC.DETAILS_SECTION_TITLE: _("Room Members"),
+        VC.DETAILS_SECTION_DATA: get_order_room_members(group) if group else None,
         **(get_current_view(view=view) if add_view else {}),
     }
 
 
-def group_list_section(view=CV.ORDER_ROOM, add_view=False):
+def order_room_list_section(view=CV.ORDER_ROOM, add_view=False):
     return {
-        VC.LIST_SECTION_ID: "group_list",
-        VC.LIST_SECTION_TITLE: _("Group List"),
-        VC.LIST_MESSAGE_TYPE: "showGroupMembers",
+        VC.LIST_SECTION_ID: "room_list",
+        VC.LIST_SECTION_TITLE: _("Room List"),
+        VC.LIST_MESSAGE_TYPE: "showRoomMembers",
         VC.LIST_SECTION_DATA: OrderRoom.objects.all().order_by("-id"),
         VC.LIST_TABLE_HEADERS: [_("Room Name"), _("Connected Users")],
         **(get_current_view(view=view) if add_view else {}),
     }
 
 
-def get_group_members(group):
+def get_order_room_members(group):
     groupMembers = UserModel.objects.filter(group=group)
     return groupMembers

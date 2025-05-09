@@ -11,21 +11,21 @@ from django.utils.translation import gettext_lazy as _
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ErrorMessage as EM
 from orderApp.forms import GroupForm, MenuItemForm, OrderItemForm, RestaurantForm
-from orderApp.groupContext import (
-    group_context,
-    group_details_section,
-    group_list_section,
-)
 from orderApp.models import Client, MenuItem, OrderItem, OrderRoom, Restaurant
 from orderApp.orderContext import (
     check_disable_form,
     create_order,
     finish_order,
     get_all_orders,
-    order_actions_section,
-    order_details_section,
-    order_form_section,
-    order_list_section,
+    order_selection_actions_section,
+    order_selection_details_section,
+    order_selection_form_section,
+    order_selection_list_section,
+)
+from orderApp.orderRoomContext import (
+    order_room_context,
+    order_room_details_section,
+    order_room_list_section,
 )
 from orderApp.restaurantContext import (
     restaurant_context,
@@ -134,14 +134,14 @@ class GroupConsumer(BaseConsumer):
     @group_message
     def updateGroupsList(self, event, templates=[], context={}):
 
-        context.update(**group_list_section(add_view=True))
+        context.update(**order_room_list_section(add_view=True))
         templates.append("group/bodySection/listSection.html")
 
         self.response_builder(templates, context)
 
     def showGroupMembers(self, event, templates=[], context={}):
 
-        context.update({**group_details_section(group=event[self.message].get("item_id"), add_view=True)})
+        context.update({**order_room_details_section(group=event[self.message].get("item_id"), add_view=True)})
         context.update({"remove_errors": True})
 
         templates.append("group/bodySection/detailsSection.html")
@@ -154,8 +154,8 @@ class GroupConsumer(BaseConsumer):
         form = GroupForm(event[self.message])
         if form.is_valid():
             instance = form.save(True)
-            context.update(**group_list_section())
-            context.update(**group_context(group=instance.id))
+            context.update(**order_room_list_section())
+            context.update(**order_room_context(group=instance.id))
             self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
 
         else:
@@ -233,16 +233,18 @@ class OrderConsumer(BaseConsumer):
                 context.update({"form": form})
                 context.update({"remove_errors": True})
 
-                context.update(**order_details_section(order=event[self.message]["fk_order"], add_view=True))
+                context.update(**order_selection_details_section(order=event[self.message]["fk_order"], add_view=True))
                 templates.append("order/bodySection/detailsSection.html")
 
-                context.update(**order_actions_section())
+                context.update(**order_selection_actions_section())
                 templates.append("order/bottomSection/actions/finish_order_id.html")
             else:
                 context.update({"form": form})
 
             templates.append("order/bottomSection/form/formOrderItem.html")
-            context.update(**order_form_section(user=self.get_user(), group=self.group, restaurant=event[self.message].get("fk_restaurant")))
+            context.update(
+                **order_selection_form_section(user=self.get_user(), group=self.group, restaurant=event[self.message].get("fk_restaurant"))
+            )
 
         self.response_builder(templates, context)
 
@@ -258,18 +260,18 @@ class OrderConsumer(BaseConsumer):
             if isFinished:
                 context.update({"remove_errors": True})
 
-                context.update(**order_form_section(user=self.get_user(), group=self.group))
+                context.update(**order_selection_form_section(user=self.get_user(), group=self.group))
                 templates.append("order/bottomSection/form/formOrderItem.html")
 
-                context.update(**order_details_section(disable_remove_button=True))
+                context.update(**order_selection_details_section(disable_remove_button=True))
                 templates.append("order/bodySection/detailsSection.html")
 
-                context.update(**order_actions_section())
+                context.update(**order_selection_actions_section())
 
                 self.membersOrders({"message": {"message_type": "membersOrders"}})
             else:
                 context.update(EM.FINISH_ORDER)
-                context.update(**order_actions_section(order=order, add_order_id=True))
+                context.update(**order_selection_actions_section(order=order, add_order_id=True))
 
             templates.append("order/bottomSection/actions/finishOrder.html")
 
@@ -278,7 +280,7 @@ class OrderConsumer(BaseConsumer):
     @group_message
     def membersOrders(self, event, templates=[], context={}):
 
-        context.update(**order_list_section(group=self.group))
+        context.update(**order_selection_list_section(group=self.group))
         templates.append("order/bodySection/listSection.html")
         self.response_builder(templates, context)
 
@@ -287,11 +289,11 @@ class OrderConsumer(BaseConsumer):
         all_orders = event[self.message].get("all_orders")
 
         if all_orders:
-            context.update(**order_list_section(group=self.group))
-            context.update(**order_actions_section())
+            context.update(**order_selection_list_section(group=self.group))
+            context.update(**order_selection_actions_section())
         else:
-            context.update(**order_list_section(user=self.get_user(), group=self.group))
-            context.update(**order_actions_section(all_orders=True))
+            context.update(**order_selection_list_section(user=self.get_user(), group=self.group))
+            context.update(**order_selection_actions_section(all_orders=True))
 
         templates.append("order/bodySection/listSection.html")
         templates.append("order/bottomSection/actions/getOrderList.html")
@@ -308,7 +310,7 @@ class OrderConsumer(BaseConsumer):
 
         order_id = orderItemObj.fk_order
 
-        context.update({**order_details_section(order=order_id, add_view=True)})
+        context.update({**order_selection_details_section(order=order_id, add_view=True)})
         templates.append("order/bodySection/detailsSection.html")
 
         orderItemObj.delete()
@@ -318,7 +320,7 @@ class OrderConsumer(BaseConsumer):
 
         context.update({"user": self.get_user()})
 
-        context.update({**order_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
+        context.update({**order_selection_details_section(order=event[self.message].get("item_id"), add_view=True, disable_remove_button=True)})
         templates.append("order/bodySection/detailsSection.html")
 
         self.response_builder(templates, context)

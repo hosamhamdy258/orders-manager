@@ -10,19 +10,19 @@ from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import MenuItem, Order, OrderItem, OrderRoomUser, Restaurant
 
 
-def order_context(user, group, restaurant=None):
+def order_selection_context(user, group, restaurant=None):
     form_state = check_disable_form(group=group, user=user)
-    form_section = order_form_section(user=user, group=group, restaurant=restaurant, force_disable=form_state["force_disable"])
+    form_section = order_selection_form_section(user=user, group=group, restaurant=restaurant, force_disable=form_state["force_disable"])
     return {
-        **order_title_section(group=group, time_left=form_state["time_left"]),
-        **order_list_section(group=group),
-        **order_details_section(order=form_section.get(OC.ORDER)),
+        **order_selection_title_section(group=group, time_left=form_state["time_left"]),
+        **order_selection_list_section(group=group),
+        **order_selection_details_section(order=form_section.get(OC.ORDER)),
         **form_section,
-        **order_actions_section(force_disable=form_state["force_disable"]),
+        **order_selection_actions_section(force_disable=form_state["force_disable"]),
     }
 
 
-def order_title_section(group=None, time_left=0):
+def order_selection_title_section(group=None, time_left=0):
     return {
         **get_current_view(view=CV.ORDER_SELECTION),
         VC.MAIN_TITLE: _("Orders"),
@@ -33,7 +33,7 @@ def order_title_section(group=None, time_left=0):
     }
 
 
-def order_list_section(user=None, group=None, view=CV.ORDER_SELECTION, add_view=False):
+def order_selection_list_section(user=None, group=None, view=CV.ORDER_SELECTION, add_view=False):
     return {
         VC.LIST_SECTION_ID: "members_orders",
         VC.LIST_SECTION_TITLE: _("Members Orders"),
@@ -44,7 +44,7 @@ def order_list_section(user=None, group=None, view=CV.ORDER_SELECTION, add_view=
     }
 
 
-def order_details_section(order=None, view=CV.ORDER_SELECTION, add_view=False, disable_remove_button=False):
+def order_selection_details_section(order=None, view=CV.ORDER_SELECTION, add_view=False, disable_remove_button=False):
     return {
         VC.DETAILS_SECTION_ID: "order_items",
         VC.DETAILS_SECTION_TITLE: _("Order Items"),
@@ -56,7 +56,7 @@ def order_details_section(order=None, view=CV.ORDER_SELECTION, add_view=False, d
     }
 
 
-def order_form_section(user=None, group=None, restaurant=None, force_disable=False):
+def order_selection_form_section(user=None, group=None, restaurant=None, force_disable=False):
     disable = True if force_disable else disable_order_item_form(user=user, group=group)
 
     if disable:
@@ -70,18 +70,18 @@ def order_form_section(user=None, group=None, restaurant=None, force_disable=Fal
         OC.RESTAURANTS: restaurants,
         OC.MENU_ITEMS: menuItems,
         OC.DISABLE_ORDER_ITEM_FORM: disable,
-        **order_form_id(order),
+        **order_selection_form_id(order),
     }
 
 
-def order_form_id(order=None):
+def order_selection_form_id(order=None):
     return {
         OC.ORDER: order,
         OC.FORM_ORDER_ID: OC.FORM_ORDER_ID,
     }
 
 
-def order_actions_section(order=None, add_order_id=False, all_orders=False, force_disable=False):
+def order_selection_actions_section(order=None, add_order_id=False, all_orders=False, force_disable=False):
     return {
         OC.FINISH_ORDER_ID: OC.FINISH_ORDER_ID,
         OC.DISABLE_COMPLETE_BUTTON: force_disable,

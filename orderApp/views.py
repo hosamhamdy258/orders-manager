@@ -9,9 +9,9 @@ from django.views.generic import TemplateView
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
-from orderApp.groupContext import group_context
 from orderApp.models import Client, MenuItem, OrderRoom
-from orderApp.orderContext import order_context
+from orderApp.orderContext import order_selection_context
+from orderApp.orderRoomContext import order_room_context
 from orderApp.restaurantContext import restaurant_context
 
 decorators = [never_cache]
@@ -76,11 +76,11 @@ class RestaurantView(BaseView):
 def get_context(user, view=CV.ORDER_SELECTION, group=None):
     match view:
         case CV.ORDER_SELECTION:
-            return order_context(user=user, group=group)
+            return order_selection_context(user=user, group=group)
         case CV.RESTAURANT:
             return restaurant_context(view=view)
         case CV.ORDER_ROOM:
-            return group_context(view=view)
+            return order_room_context(view=view)
         case __:
             raise NotImplementedError(f"Unknown view: {view}")
 
