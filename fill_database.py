@@ -11,7 +11,7 @@ import random
 
 from django.contrib.auth import get_user_model
 
-from orderApp.models import Group, MenuItem, Order, OrderItem, Restaurant
+from orderApp.models import MenuItem, Order, OrderGroup, OrderItem, Restaurant
 
 UserModel = get_user_model()
 
@@ -34,9 +34,9 @@ for user in users - all_users:
     UserModel.objects.create_user(username=user, email=f"{user}@example.com", password="password")
 
 # # Create Groups
-all_groups = set(Group.objects.values_list("name", flat=True))
+all_groups = set(OrderGroup.objects.values_list("name", flat=True))
 for group in groups - all_groups:
-    Group.objects.create(name=group, room_number=f"g{time.time_ns()}")
+    OrderGroup.objects.create(name=group, room_number=f"g{time.time_ns()}")
 
 # Create Restaurants
 all_restaurants = set(Restaurant.objects.values_list("name", flat=True))
@@ -54,7 +54,7 @@ for restaurant, menu_item in restaurant_menu_items - all_menu_items_with_restaur
 all_order_with_users = {(user, group) for user, group in Order.objects.values_list("fk_user__username", "fk_group__name")}
 users_orders = {(user, group) for group in groups for user in users}
 for user, group in users_orders - all_order_with_users:
-    Order.objects.create(fk_user=UserModel.objects.get(username=user), fk_group=Group.objects.get(name=group), finished_ordering=True)
+    Order.objects.create(fk_user=UserModel.objects.get(username=user), fk_group=OrderGroup.objects.get(name=group), finished_ordering=True)
 
 
 # Create Order Items

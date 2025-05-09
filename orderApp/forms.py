@@ -1,7 +1,7 @@
 from django.forms import ModelChoiceField, ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from .models import Group, MenuItem, Order, OrderItem, Restaurant
+from .models import MenuItem, Order, OrderGroup, OrderItem, Restaurant
 
 
 class OrderItemForm(ModelForm):
@@ -36,5 +36,5 @@ class RestaurantForm(ModelForm):
 
 class GroupForm(ModelForm):
     class Meta:
-        model = Group
+        model = OrderGroup
         fields = ["name", "room_number"]

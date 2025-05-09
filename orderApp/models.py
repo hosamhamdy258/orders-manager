@@ -16,7 +16,7 @@ class Client(models.Model):
     channel_name = models.CharField(_("channel name"), max_length=50)
 
 
-class Group(models.Model):
+class OrderGroup(models.Model):
     name = models.CharField(_("Group Name"), max_length=50, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Users"), blank=True)
     room_number = models.CharField(_("Room Number"), max_length=50)
@@ -31,7 +31,7 @@ class Group(models.Model):
 
 class GroupUser(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("Users"), on_delete=models.CASCADE)
-    fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
+    fk_group = models.ForeignKey(OrderGroup, verbose_name=_("Group"), on_delete=models.CASCADE)
     joined = models.DateTimeField(_("Created"), default=timezone.now)
 
     def get_time_left(self):
@@ -69,7 +69,7 @@ def archive_time():
 
 class Order(models.Model):
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
-    fk_group = models.ForeignKey(Group, verbose_name=_("Group"), on_delete=models.CASCADE)
+    fk_group = models.ForeignKey(OrderGroup, verbose_name=_("Group"), on_delete=models.CASCADE)
     created = models.DateTimeField(_("Created"), default=timezone.now)
     finished_ordering = models.BooleanField(_("Finished Ordering"), default=False)
     delete_timer = models.DateTimeField(_("Created"), default=archive_time)

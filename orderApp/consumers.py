@@ -16,7 +16,7 @@ from orderApp.groupContext import (
     group_details_section,
     group_list_section,
 )
-from orderApp.models import Client, Group, MenuItem, OrderItem, Restaurant
+from orderApp.models import Client, MenuItem, OrderGroup, OrderItem, Restaurant
 from orderApp.orderContext import (
     check_disable_form,
     create_order,
@@ -197,7 +197,7 @@ class OrderConsumer(BaseConsumer):
         return f"group_{self.room_name}"
 
     def add_user_to_group(self):
-        self.group = Group.objects.get(room_number=self.get_room_name())
+        self.group = OrderGroup.objects.get(room_number=self.get_room_name())
         self.group.m2m_users.add(self.get_user())
 
     def remove_user_from_group(self):

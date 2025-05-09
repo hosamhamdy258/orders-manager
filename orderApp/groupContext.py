@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ViewContextKeys as VC
-from orderApp.models import Group
+from orderApp.models import OrderGroup
 
 UserModel = get_user_model()
 
@@ -33,7 +33,7 @@ def group_list_section(view=CV.GROUP_VIEW, add_view=False):
         VC.LIST_SECTION_ID: "group_list",
         VC.LIST_SECTION_TITLE: _("Group List"),
         VC.LIST_MESSAGE_TYPE: "showGroupMembers",
-        VC.LIST_SECTION_DATA: Group.objects.all().order_by("-id"),
+        VC.LIST_SECTION_DATA: OrderGroup.objects.all().order_by("-id"),
         VC.LIST_TABLE_HEADERS: [_("Room Name"), _("Connected Users")],
         **(get_current_view(view=view) if add_view else {}),
     }

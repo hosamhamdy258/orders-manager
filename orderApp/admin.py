@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from orderApp.models import Client, Group, MenuItem, Order, OrderItem, Restaurant
+from orderApp.models import Client, MenuItem, Order, OrderGroup, OrderItem, Restaurant
 
 
 class OrderItemInlineAdmin(admin.TabularInline):
@@ -22,4 +22,4 @@ admin.site.register(MenuItem)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Client)
-admin.site.register(Group, GroupAdmin)
+admin.site.register(OrderGroup, GroupAdmin)

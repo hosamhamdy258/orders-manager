@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.groupContext import group_context
-from orderApp.models import Client, Group, MenuItem
+from orderApp.models import Client, MenuItem, OrderGroup
 from orderApp.orderContext import order_context
 from orderApp.restaurantContext import restaurant_context
 
@@ -56,7 +56,7 @@ class OrderView(BaseView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.group = Group.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
+            self.group = OrderGroup.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
         except ObjectDoesNotExist:
             return redirect("index")
         return super().dispatch(request, *args, **kwargs)
