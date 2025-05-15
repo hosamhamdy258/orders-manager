@@ -28,7 +28,7 @@ def order_selection_title_section(group=None, time_left=0):
         VC.MAIN_TITLE: _("Orders"),
         VC.TITLE_ACTION: _("Add Restaurant"),
         VC.NEXT: CV.RESTAURANT,
-        GC.GROUP_NAME: group.name,
+        GC.GROUP_NUMBER: group.name,
         OC.TIME_LEFT: time_left,
     }
 

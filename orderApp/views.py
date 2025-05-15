@@ -1,16 +1,22 @@
+from ast import literal_eval
+
 from channels.layers import get_channel_layer
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages import get_messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
-from orderApp.models import Client, MenuItem, OrderRoom
+from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom
 from orderApp.orderContext import order_selection_context
+from orderApp.orderGroupContext import order_group_context
 from orderApp.orderRoomContext import order_room_context
 from orderApp.restaurantContext import restaurant_context
 
@@ -22,14 +28,19 @@ class BaseView(LoginRequiredMixin, TemplateView):
     view_type = None
     ws_url = None
     extra_context = {}
+    user = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        self.user = self.request.user
         group = getattr(self, "group", None)
-        ctx = get_context(user=self.user, view=self.view_type, group=group)
+        ctx = get_context(user=self.get_user(), view=self.view_type, group=group)
         context.update({GC.WS_URL: self.get_ws_url(), **ctx, **self.get_extra_context()})
         return context
+
+    def get_user(self):
+        if self.user is None:
+            self.user = self.request.user
+        return self.user
 
     def get_view_type(self):
         if self.view_type is None:
@@ -56,13 +67,27 @@ class OrderRoomView(BaseView):
     view_type = CV.ORDER_ROOM
     ws_url = "/ws/index/"
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
+        except ObjectDoesNotExist:
+            messages.error(request, {"code": 404})
+            return redirect("redirect")
+
+        print(self.group.can_join_room(self.get_user()))
+        if not self.group.can_join_room(self.get_user()):
+            messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
+            return redirect("redirect")
+
+        return super().dispatch(request, *args, **kwargs)
+
 
 class OrderSelectionView(BaseView):
     view_type = CV.ORDER_SELECTION
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.group = OrderRoom.objects.get(room_number=kwargs.get(GC.GROUP_NAME))
+            self.group = OrderRoom.objects.get(room_number=kwargs.get(GC.GROUP_NUMBER))
         except ObjectDoesNotExist:
             return redirect("index")
         return super().dispatch(request, *args, **kwargs)
@@ -71,7 +96,7 @@ class OrderSelectionView(BaseView):
         return f"/ws/order/{self.group.room_number}/"
 
     def get_extra_context(self):
-        return {GC.GROUP_NAME: self.group.name, **super().get_extra_context()}
+        return {GC.GROUP_NUMBER: self.group.name, **super().get_extra_context()}
 
 
 class RestaurantView(BaseView):
@@ -79,7 +104,7 @@ class RestaurantView(BaseView):
     ws_url = "/ws/restaurant/"
 
 
-def get_context(user, view=CV.ORDER_SELECTION, group=None):
+def get_context(user, view=CV.ORDER_GROUP, group=None):
     match view:
         case CV.ORDER_SELECTION:
             return order_selection_context(user=user, group=group)
@@ -87,6 +112,8 @@ def get_context(user, view=CV.ORDER_SELECTION, group=None):
             return restaurant_context(view=view)
         case CV.ORDER_ROOM:
             return order_room_context(view=view)
+        case CV.ORDER_GROUP:
+            return order_group_context(user=user, view=view)
         case __:
             raise NotImplementedError(f"Unknown view: {view}")
 
@@ -109,3 +136,14 @@ def announcement(request):
     #     async_to_sync(channel_layer.send)(channel.channel_name, {"type": "sendNotification","type2x": "sendNotification", "message": {"message_type": "sendNotification"}})
 
     return render(request, "order/bottomSection/form/menuItems.html")
+
+
+def redirect_page(request):
+
+    messages = [literal_eval(message.message) for message in get_messages(request)]
+    message = messages[0] if len(messages) == 1 else {}
+    context = {
+        "code": message.get("code", "404"),
+        "message": message.get("message", _("We don't know how you ended up here but you have discovered a secret place")),
+    }
+    return render(request, "base/helpers/redirect_page.html", context)

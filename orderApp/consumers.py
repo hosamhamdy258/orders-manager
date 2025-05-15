@@ -10,7 +10,13 @@ from django.utils.translation import gettext_lazy as _
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ErrorMessage as EM
-from orderApp.forms import GroupForm, MenuItemForm, OrderItemForm, RestaurantForm
+from orderApp.forms import (
+    MenuItemForm,
+    OrderGroupForm,
+    OrderItemForm,
+    OrderRoomForm,
+    RestaurantForm,
+)
 from orderApp.models import Client, MenuItem, OrderItem, OrderRoom, Restaurant
 from orderApp.orderContext import (
     check_disable_form,
@@ -21,6 +27,11 @@ from orderApp.orderContext import (
     order_selection_details_section,
     order_selection_form_section,
     order_selection_list_section,
+)
+from orderApp.orderGroupContext import (
+    order_group_context,
+    order_group_details_section,
+    order_group_list_section,
 )
 from orderApp.orderRoomContext import (
     order_room_context,
@@ -36,8 +47,9 @@ from orderApp.utils import calculate_totals, group_nested_data, templates_joiner
 from orderApp.views import get_context
 
 UserModel = get_user_model()
-HOME_ROOM_NAME = "home_room"
-HOME_GROUP_NAME = f"group_{HOME_ROOM_NAME}"
+ORDER_GROUP_ROOM = "order_group_room"
+ORDER_GROUP_ROOM_GROUP = f"group_{ORDER_GROUP_ROOM}"
+
 RESTAURANT_ROOM_NAME = "restaurant_room"
 RESTAURANT_GROUP_NAME = f"group_{RESTAURANT_ROOM_NAME}"
 
@@ -125,9 +137,59 @@ class BaseConsumer(JsonWebsocketConsumer):
         self.send(text_data=response)
 
 
-class GroupConsumer(BaseConsumer):
-    room_name = HOME_ROOM_NAME
-    room_group_name = HOME_GROUP_NAME
+class OrderGroupConsumer(BaseConsumer):
+    room_name = ORDER_GROUP_ROOM
+    room_group_name = ORDER_GROUP_ROOM_GROUP
+    view = CV.ORDER_GROUP
+    body_template = "orderGroup/body.html"
+
+    # @group_message
+    def updateGroupsList(self, event, templates=[], context={}):
+
+        context.update(**order_group_list_section(add_view=True, user=self.get_user()))
+        templates.append("orderGroup/bodySection/listSection.html")
+
+        self.response_builder(templates, context)
+
+    def showGroupMembers(self, event, templates=[], context={}):
+
+        context.update({**order_group_details_section(group=event[self.message].get("item_id"), add_view=True)})
+        context.update({"remove_errors": True})
+
+        templates.append("orderGroup/bodySection/detailsSection.html")
+
+        self.response_builder(templates, context)
+
+    def addGroup(self, event, templates=[], context={}):
+
+        event[self.message].update({"group_number": f"g{time.time_ns()}"})
+        event[self.message].update({"fk_owner": self.get_user()})
+        form = OrderGroupForm(event[self.message])
+        if form.is_valid():
+            instance = form.save(True)
+            instance.add_user_to_group()
+            context.update(**order_group_list_section(user=self.get_user()))
+            context.update(**order_group_context(user=self.get_user(), group=instance.id))
+            self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
+
+        else:
+            context.update({"form": form})
+
+        templates.append("orderGroup/bottomSection/form/formGroupItem.html")
+
+        self.response_builder(templates, context)
+
+    def updateConnectedUsers(self, event, templates=[], context={}):
+
+        context.update(event[self.message]["ctx"])
+        templates.append("orderGroup/bodySection/connectedUsers.html")
+
+        self.response_builder(templates, context)
+
+
+class OrderRoomConsumer(BaseConsumer):
+    room_name = ORDER_GROUP_ROOM
+    room_group_name = ORDER_GROUP_ROOM_GROUP
     view = CV.ORDER_ROOM
     body_template = "group/body.html"
 
@@ -151,7 +213,7 @@ class GroupConsumer(BaseConsumer):
     def addGroup(self, event, templates=[], context={}):
 
         event[self.message].update({"room_number": f"g{time.time_ns()}"})
-        form = GroupForm(event[self.message])
+        form = OrderRoomForm(event[self.message])
         if form.is_valid():
             instance = form.save(True)
             context.update(**order_room_list_section())
@@ -181,7 +243,7 @@ class GroupConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
 
-class OrderConsumer(BaseConsumer):
+class OrderSelectionConsumer(BaseConsumer):
     view = CV.ORDER_SELECTION
     body_template = "order/body.html"
 
@@ -441,7 +503,7 @@ class OrderConsumer(BaseConsumer):
 
     def updateUsersConnectedCount(self):
         async_to_sync(self.channel_layer.group_send)(
-            HOME_GROUP_NAME,
+            ORDER_GROUP_ROOM_GROUP,
             {
                 "type": "updateConnectedUsers",
                 "message": {

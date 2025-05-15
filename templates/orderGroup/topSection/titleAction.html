@@ -1,0 +1,8 @@
+{% extends "base/topSection/titleActionBase.html" %}
+
+{% block title_action %}
+<i class="bi bi-arrow-clockwise"></i> {{ block.super }}
+{% endblock title_action %}
+{% block inputs %}
+<input type="hidden" name="message_type" value="updateGroupsList">
+{% endblock inputs %}

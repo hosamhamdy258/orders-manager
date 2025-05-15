@@ -1,0 +1,20 @@
+{% extends "base/body.html" %}
+
+{% block top_section_body %}
+{{ block.super }}
+{% include "orderGroup/topSection/titleAction.html" %}
+{% endblock top_section_body %}
+
+{% block details_section %}
+{% include "orderGroup/bodySection/detailsSection.html" %}
+{% endblock details_section %}
+
+{% block list_section %}
+{% include "orderGroup/bodySection/listSection.html" %}
+{% endblock list_section %}
+
+{% block bottom_form %}
+
+{% include "orderGroup/bottomSection/form/formGroupItem.html" %}
+
+{% endblock bottom_form %}

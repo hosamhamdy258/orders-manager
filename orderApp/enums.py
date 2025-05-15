@@ -4,8 +4,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class GeneralContextKeys(EnumMeta):
-    GROUP_NAME = "group_name"
+    GROUP_NUMBER = "group_number"
+    ROOM_NUMBER = "room_number"
     WS_URL = "ws_url"
+
+    ACTION_JOIN_BUTTON = "join"
+    ACTION_SHOW_BUTTON = "show"
 
 
 class CurrentViews(EnumMeta):

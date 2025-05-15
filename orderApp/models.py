@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -30,12 +30,22 @@ class OrderGroup(models.Model):
     name = models.CharField(_("Group Name"), max_length=SMALL_NAME_LENGTH, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Group Members"), blank=True, related_name="group_members")
     fk_owner = models.ForeignKey(UserModel, on_delete=models.CASCADE, verbose_name=_("Group Owner"))
+    group_number = models.CharField(_("Group Number"), max_length=SMALL_NAME_LENGTH)  # ! add default value
+
+    def get_group_members_count(self):
+        return len(self.m2m_users.all())
+
+    def add_user_to_group(self):
+        return self.m2m_users.add(self.fk_owner)
+
+    def can_join_room(self, user):
+        return self.__class__.objects.filter(Q(m2m_users=user) | Q(fk_owner=user), pk=self.pk).exists()
 
 
 class OrderRoom(models.Model):
     name = models.CharField(_("Group Name"), max_length=SMALL_NAME_LENGTH, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Order Members"), blank=True, related_name="order_members")
-    room_number = models.CharField(_("Room Number"), max_length=SMALL_NAME_LENGTH)
+    room_number = models.CharField(_("Room Number"), max_length=SMALL_NAME_LENGTH)  # ! add default value
     fk_order_group = models.ForeignKey(OrderGroup, verbose_name=_("Group"), on_delete=models.CASCADE)
 
     def __str__(self):
@@ -44,6 +54,9 @@ class OrderRoom(models.Model):
 
     def connected_users(self):
         return len(self.m2m_users.all())
+
+    def is_member(self, user):
+        return self.fk_order_group.objects.filter(Q(m2m_users=user) | Q(fk_owner=user)).exists()
 
 
 class OrderRoomUser(models.Model):

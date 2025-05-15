@@ -1,0 +1,16 @@
+{% load i18n%}
+<form id="add_group" ws-send hx-swap="innerHTML">
+    <input type="hidden" name="message_type" value="addGroup">
+    <div class="row g-2">
+        <div class="col">
+            <input type="text" class="form-control" id="group" name="name" placeholder='{% translate "Group Name" %}' value="{{form.name.value}}" required autocomplete="off">
+            {% for error in form.name.errors %}
+            {% include "base/helpers/error.html" %}
+            {% endfor %}
+        </div>
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-success"><i class="bi bi-plus-lg"></i> {% translate "Add Group" %}</button>
+        </div>
+    </div>
+</form>
