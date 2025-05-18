@@ -7,7 +7,7 @@
 {{ block.super }}
 {% endblock table_headers %}
 
-{% block table_body %}
+{% block table_body_data %}
 
 {% for restaurant, orderItems in orderTotalSummaryGrouped.items %}
 {% include "orderSelection/summarySection/nestHeader.html" with data=restaurant %}
@@ -16,4 +16,4 @@
 {% include "orderSelection/summarySection/spacer.html" %}
 {% endfor %}
 {% include "orderSelection/summarySection/grandTotal.html" %}
-{% endblock table_body %}
+{% endblock table_body_data %}

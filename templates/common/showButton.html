@@ -4,7 +4,7 @@
     <input type="hidden" name="item_id" value="{{item.id}}">
     <button type="submit" class="btn btn-outline-primary btn-sm">
         {% block submit_text %}
-        <i class="{{show.icon|default_if_none:'bi bi-eye-fill'}}"></i> {{show.name}}
+        <i class="{{show.icon|default:'bi bi-eye-fill'}}"></i> {{show.name}}
         {% endblock submit_text %}
     </button>
 </form>

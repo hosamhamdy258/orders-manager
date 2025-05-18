@@ -1,6 +1,6 @@
 {% load i18n %}
 <form action="{% url 'order_room' item.group_number %}" method="get">
     <button type="submit" class="btn btn-outline-success btn-sm">
-        <i class="{{show.icon|default_if_none:'bi bi-box-arrow-in-right'}}"></i> {{join.name}}
+        <i class="{{join.icon|default:'bi bi-box-arrow-in-right'}}"></i> {{join.name}}
     </button>
 </form>

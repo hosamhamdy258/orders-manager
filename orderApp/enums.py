@@ -11,6 +11,8 @@ class GeneralContextKeys(EnumMeta):
     ACTION_JOIN_BUTTON = "join"
     ACTION_SHOW_BUTTON = "show"
 
+    NAVIGATION_BUTTONS = "navigation_buttons"
+
 
 class CurrentViews(EnumMeta):
     ORDER_SELECTION = "order_selection_view"
@@ -29,6 +31,7 @@ class ViewContextKeys(EnumMeta):
     LIST_SECTION_TITLE = "list_section_title"
     LIST_SECTION_DATA = "list_section_data"
     LIST_MESSAGE_TYPE = "list_message_type"
+    LIST_TABLE_BODY_ID = "list_table_body_id"
     LIST_TABLE_HEADERS = "list_table_headers"
 
     DETAILS_SECTION_ID = "details_section_id"

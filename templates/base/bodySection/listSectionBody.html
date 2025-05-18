@@ -7,12 +7,9 @@
         {% endfor %}
         {% endblock table_headers %}
     </thead>
-    <tbody>
-        {% for item in list_section_data %}
+    <tbody id="{{list_table_body_id}}">
         {% block table_body %}
-        {% block common_button %}<td>{% include "common/showButton.html" %}</td>{% endblock common_button %}
-        {% block extra_actions %}{% endblock extra_actions %}
+        {% include "base/bodySection/listSectionTableBody.html" %}
         {% endblock table_body %}
-        {% endfor %}
     </tbody>
 </table>

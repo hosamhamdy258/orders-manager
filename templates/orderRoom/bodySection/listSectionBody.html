@@ -5,7 +5,7 @@
 {{ block.super }}
 {% endblock table_headers %}
 
-{% block table_body %}
+{% block table_body_data %}
 <tr>
     {% include "orderRoom/bodySection/connectedUsers.html" %}
     {% block common_button %}
@@ -18,4 +18,4 @@
         {% endblock extra_actions %}
     </td>
 </tr>
-{% endblock table_body %}
+{% endblock table_body_data %}

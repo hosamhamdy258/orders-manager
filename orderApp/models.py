@@ -1,6 +1,8 @@
+import time
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models import F, Q, Sum
 from django.utils import timezone
@@ -12,6 +14,10 @@ from orderApp.utils import PositiveValueValidator
 SMALL_NAME_LENGTH = 50
 
 UserModel = get_user_model()
+
+
+def generate_group_number():
+    return time.time_ns()
 
 
 class Client(models.Model):
@@ -30,7 +36,8 @@ class OrderGroup(models.Model):
     name = models.CharField(_("Group Name"), max_length=SMALL_NAME_LENGTH, unique=True)
     m2m_users = models.ManyToManyField(UserModel, verbose_name=_("Group Members"), blank=True, related_name="group_members")
     fk_owner = models.ForeignKey(UserModel, on_delete=models.CASCADE, verbose_name=_("Group Owner"))
-    group_number = models.CharField(_("Group Number"), max_length=SMALL_NAME_LENGTH)  # ! add default value
+    group_number = models.CharField(_("Group Number"), max_length=SMALL_NAME_LENGTH, default=generate_group_number)  # ! add default value
+    pin = models.PositiveSmallIntegerField(_("PIN"), default=0000, validators=[MaxValueValidator(9999)])  # ! hash the value
 
     def get_group_members_count(self):
         return len(self.m2m_users.all())

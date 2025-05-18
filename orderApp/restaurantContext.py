@@ -1,7 +1,9 @@
 from django.utils.translation import gettext_lazy as _
 
+from orderApp.commonContext import NAVIGATION_BUTTONS
 from orderApp.context import get_current_view
 from orderApp.enums import CurrentViews as CV
+from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import RestaurantContextKeys as RC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import Restaurant
@@ -17,6 +19,7 @@ def restaurant_context(view=CV.RESTAURANT, restaurant=None):
         **restaurant_list_section(),
         **restaurant_details_section(restaurant),
         RC.FORM_MENU_ITEM_DISABLE: True,
+        GC.NAVIGATION_BUTTONS: NAVIGATION_BUTTONS,
     }
 
 

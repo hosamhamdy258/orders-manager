@@ -4,7 +4,7 @@
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
-{% block table_body %}
+{% block table_body_data %}
 <tr>
     <td>{{item.name}}</td>
     <td>{{item.price}}</td>
@@ -16,4 +16,4 @@
         </form>
     </td>
 </tr>
-{% endblock table_body %}
+{% endblock table_body_data %}

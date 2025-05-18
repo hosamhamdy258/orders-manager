@@ -16,7 +16,7 @@ from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom
 from orderApp.orderContext import order_selection_context
-from orderApp.orderGroupContext import order_group_context
+from orderApp.orderGroupContext import OrderGroupContext
 from orderApp.orderRoomContext import order_room_context
 from orderApp.restaurantContext import restaurant_context
 
@@ -65,7 +65,7 @@ class IndexView(BaseView):
 @method_decorator(decorators, name="dispatch")
 class OrderRoomView(BaseView):
     view_type = CV.ORDER_ROOM
-    ws_url = "/ws/index/"
+    ws_url = "/ws/room/"
 
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -74,7 +74,6 @@ class OrderRoomView(BaseView):
             messages.error(request, {"code": 404})
             return redirect("redirect")
 
-        print(self.group.can_join_room(self.get_user()))
         if not self.group.can_join_room(self.get_user()):
             messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
             return redirect("redirect")
@@ -113,7 +112,7 @@ def get_context(user, view=CV.ORDER_GROUP, group=None):
         case CV.ORDER_ROOM:
             return order_room_context(view=view)
         case CV.ORDER_GROUP:
-            return order_group_context(user=user, view=view)
+            return OrderGroupContext(user=user).get_full_context()
         case __:
             raise NotImplementedError(f"Unknown view: {view}")
 

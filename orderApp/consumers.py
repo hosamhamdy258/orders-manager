@@ -17,7 +17,7 @@ from orderApp.forms import (
     OrderRoomForm,
     RestaurantForm,
 )
-from orderApp.models import Client, MenuItem, OrderItem, OrderRoom, Restaurant
+from orderApp.models import MenuItem, OrderItem, OrderRoom, Restaurant
 from orderApp.orderContext import (
     check_disable_form,
     create_order,
@@ -28,11 +28,7 @@ from orderApp.orderContext import (
     order_selection_form_section,
     order_selection_list_section,
 )
-from orderApp.orderGroupContext import (
-    order_group_context,
-    order_group_details_section,
-    order_group_list_section,
-)
+from orderApp.orderGroupContext import OrderGroupContext
 from orderApp.orderRoomContext import (
     order_room_context,
     order_room_details_section,
@@ -73,6 +69,8 @@ class BaseConsumer(JsonWebsocketConsumer):
     view = None
     group = None
     body_template = None
+    context_class = None
+    context = None
 
     def get_user(self):
         if self.user is None:
@@ -87,6 +85,7 @@ class BaseConsumer(JsonWebsocketConsumer):
 
     def after_connect(self):
         self.updatePageBody()
+        self.context = self.get_context_class()(user=self.get_user())
 
     def after_disconnect(self):
         pass
@@ -99,6 +98,11 @@ class BaseConsumer(JsonWebsocketConsumer):
         if self.room_name is None:
             raise NotImplementedError("Subclasses must define room_name or implement get_room_name()")
         return self.room_name
+
+    def get_context_class(self):
+        if self.context_class is None:
+            raise NotImplementedError("Subclasses must define context_class or implement get_context_class()")
+        return self.context_class
 
     def get_room_group_name(self):
         if self.room_group_name is None:
@@ -125,7 +129,8 @@ class BaseConsumer(JsonWebsocketConsumer):
             self.get_room_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
         )
 
-    def updatePageBody(self, templates=[], context={}):
+    def updatePageBody(self):
+        templates, context = [], {}
 
         context.update({"user": self.get_user(), **get_context(user=self.get_user(), view=self.view, group=self.group)})
         templates.append(self.body_template)
@@ -142,48 +147,41 @@ class OrderGroupConsumer(BaseConsumer):
     room_group_name = ORDER_GROUP_ROOM_GROUP
     view = CV.ORDER_GROUP
     body_template = "orderGroup/body.html"
+    context_class = OrderGroupContext
 
     # @group_message
-    def updateGroupsList(self, event, templates=[], context={}):
-
-        context.update(**order_group_list_section(add_view=True, user=self.get_user()))
+    def updateGroupsList(self, event):
+        templates, context = [], {}
+        context.update({**self.context.get_list_context()})
         templates.append("orderGroup/bodySection/listSection.html")
-
         self.response_builder(templates, context)
 
-    def showGroupMembers(self, event, templates=[], context={}):
-
-        context.update({**order_group_details_section(group=event[self.message].get("item_id"), add_view=True)})
+    def showGroupMembers(self, event):
+        templates, context = [], {}
+        context.update({**self.context.get_details_context(instance=event[self.message].get("item_id"))})
         context.update({"remove_errors": True})
-
         templates.append("orderGroup/bodySection/detailsSection.html")
-
         self.response_builder(templates, context)
 
-    def addGroup(self, event, templates=[], context={}):
-
-        event[self.message].update({"group_number": f"g{time.time_ns()}"})
+    def addGroup(self, event):
+        templates, context = [], {}
         event[self.message].update({"fk_owner": self.get_user()})
         form = OrderGroupForm(event[self.message])
         if form.is_valid():
             instance = form.save(True)
             instance.add_user_to_group()
-            context.update(**order_group_list_section(user=self.get_user()))
-            context.update(**order_group_context(user=self.get_user(), group=instance.id))
-            self.updateGroupsList({"message": {"message_type": "updateGroupsList"}})
-
+            context.update(**self.context.get_list_context(instance=instance))
+            templates.append("orderGroup/bodySection/listSectionBodyTable.html")
+            context.update({"htmx": True})
         else:
             context.update({"form": form})
-
         templates.append("orderGroup/bottomSection/form/formGroupItem.html")
-
         self.response_builder(templates, context)
 
-    def updateConnectedUsers(self, event, templates=[], context={}):
-
+    def updateConnectedUsers(self, event):
+        templates, context = [], {}
         context.update(event[self.message]["ctx"])
         templates.append("orderGroup/bodySection/connectedUsers.html")
-
         self.response_builder(templates, context)
 
 
@@ -191,17 +189,19 @@ class OrderRoomConsumer(BaseConsumer):
     room_name = ORDER_GROUP_ROOM
     room_group_name = ORDER_GROUP_ROOM_GROUP
     view = CV.ORDER_ROOM
-    body_template = "group/body.html"
+    body_template = "orderRoom/body.html"
 
     @group_message
-    def updateGroupsList(self, event, templates=[], context={}):
+    def updateGroupsList(self, event):
+        templates, context = [], {}
 
         context.update(**order_room_list_section(add_view=True))
         templates.append("group/bodySection/listSection.html")
 
         self.response_builder(templates, context)
 
-    def showGroupMembers(self, event, templates=[], context={}):
+    def showGroupMembers(self, event):
+        templates, context = [], {}
 
         context.update({**order_room_details_section(group=event[self.message].get("item_id"), add_view=True)})
         context.update({"remove_errors": True})
@@ -210,7 +210,8 @@ class OrderRoomConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addGroup(self, event, templates=[], context={}):
+    def addGroup(self, event):
+        templates, context = [], {}
 
         event[self.message].update({"room_number": f"g{time.time_ns()}"})
         form = OrderRoomForm(event[self.message])
@@ -229,13 +230,15 @@ class OrderRoomConsumer(BaseConsumer):
 
     # ! for testing
     @group_message
-    def sendNotification(self, event, templates=[], context={}):
+    def sendNotification(self, event):
+        templates, context = [], {}
 
         templates.append("base/helpers/notification.html")
 
         self.response_builder(templates, context)
 
-    def updateConnectedUsers(self, event, templates=[], context={}):
+    def updateConnectedUsers(self, event):
+        templates, context = [], {}
 
         context.update(event[self.message]["ctx"])
         templates.append("group/bodySection/connectedUsers.html")
@@ -270,7 +273,8 @@ class OrderSelectionConsumer(BaseConsumer):
         self.remove_user_from_group()
         self.updateUsersConnectedCount()
 
-    def addOrderItem(self, event, templates=[], context={}):
+    def addOrderItem(self, event):
+        templates, context = [], {}
 
         context.update({"user": self.get_user()})
 
@@ -310,7 +314,8 @@ class OrderSelectionConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def finishOrder(self, event, templates=[], context={}):
+    def finishOrder(self, event):
+        templates, context = [], {}
 
         form_state = check_disable_form(group=self.group, user=self.get_user())
         if form_state["force_disable"]:
@@ -340,13 +345,15 @@ class OrderSelectionConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
     @group_message
-    def membersOrders(self, event, templates=[], context={}):
+    def membersOrders(self, event):
+        templates, context = [], {}
 
         context.update(**order_selection_list_section(group=self.group))
         templates.append("order/bodySection/listSection.html")
         self.response_builder(templates, context)
 
-    def OrdersList(self, event, templates=[], context={}):
+    def OrdersList(self, event):
+        templates, context = [], {}
 
         all_orders = event[self.message].get("all_orders")
 
@@ -362,7 +369,8 @@ class OrderSelectionConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def deleteOrderItem(self, event, templates=[], context={}):
+    def deleteOrderItem(self, event):
+        templates, context = [], {}
 
         context.update({"user": self.get_user()})
 
@@ -378,7 +386,8 @@ class OrderSelectionConsumer(BaseConsumer):
         orderItemObj.delete()
         self.response_builder(templates, context)
 
-    def showMemberItemOrders(self, event, templates=[], context={}):
+    def showMemberItemOrders(self, event):
+        templates, context = [], {}
 
         context.update({"user": self.get_user()})
 
@@ -387,7 +396,8 @@ class OrderSelectionConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def groupOrderSummary(self, event, templates=[], context={}):
+    def groupOrderSummary(self, event):
+        templates, context = [], {}
 
         UserModel = get_user_model()
 
@@ -483,7 +493,8 @@ class OrderSelectionConsumer(BaseConsumer):
             )
         self.response_builder(templates, context)
 
-    def switchView(self, event, templates=[], context={}):
+    def switchView(self, event):
+        templates, context = [], {}
 
         context.update({"user": self.get_user()})
 
@@ -495,7 +506,8 @@ class OrderSelectionConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
     @group_message
-    def sendNotification(self, event, templates=[], context={}):
+    def sendNotification(self, event):
+        templates, context = [], {}
 
         templates.append("base/helpers/notification.html")
 
@@ -526,7 +538,8 @@ class RestaurantConsumer(BaseConsumer):
     view = CV.RESTAURANT
     body_template = "restaurant/body.html"
 
-    def showRestaurantItems(self, event, templates=[], context={}):
+    def showRestaurantItems(self, event):
+        templates, context = [], {}
 
         context.update({**restaurant_details_section(restaurant=event[self.message].get("item_id"), add_view=True)})
         context.update({"remove_errors": True})
@@ -536,7 +549,8 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addRestaurant(self, event, templates=[], context={}):
+    def addRestaurant(self, event):
+        templates, context = [], {}
 
         form = RestaurantForm(event[self.message])
         if form.is_valid():
@@ -553,7 +567,8 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def deleteMenuItem(self, event, templates=[], context={}):
+    def deleteMenuItem(self, event):
+        templates, context = [], {}
 
         MenuItemObj = MenuItem.objects.get(pk=event[self.message].get("item_id"))
 
@@ -567,7 +582,8 @@ class RestaurantConsumer(BaseConsumer):
 
         self.response_builder(templates, context)
 
-    def addMenuItem(self, event, templates=[], context={}):
+    def addMenuItem(self, event):
+        templates, context = [], {}
 
         form = MenuItemForm(event[self.message])
         if form.is_valid():

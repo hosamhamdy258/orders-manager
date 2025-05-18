@@ -1,0 +1,18 @@
+{% extends "base/bodySection/listSectionTableBody.html" %}
+{% block table_body_data %}
+{% if htmx %}<template hx-swap-oob="afterbegin:#{{list_table_body_id}}">{% endif %}
+    <tr>
+        {% include "orderGroup/bodySection/connectedUsers.html" %}
+        {% block common_button %}
+        {{ block.super }}
+        {% endblock common_button %}
+        <td>
+            {% block extra_actions %}
+            {{ block.super }}
+            {% include "orderGroup/bodySection/joinAction.html" %}
+            {% endblock extra_actions %}
+        </td>
+    </tr>
+    {% if htmx %}
+</template>{% endif %}
+{% endblock table_body_data %}

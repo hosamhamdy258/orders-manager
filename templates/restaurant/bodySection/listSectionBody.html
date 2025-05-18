@@ -3,11 +3,11 @@
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
-{% block table_body %}
+{% block table_body_data %}
 <tr>
     <td>{{item}}</td>
     {% block common_button %}
     {{ block.super }}
     {% endblock common_button %}
 </tr>
-{% endblock table_body %}
+{% endblock table_body_data %}

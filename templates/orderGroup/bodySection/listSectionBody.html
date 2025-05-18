@@ -1,21 +1,12 @@
 {% extends "base/bodySection/listSectionBody.html" %}
 {% load i18n %}
 
+
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
 
+
 {% block table_body %}
-<tr>
-    {% include "orderGroup/bodySection/connectedUsers.html" %}
-    {% block common_button %}
-    {{ block.super }}
-    {% endblock common_button %}
-    <td>
-        {% block extra_actions %}
-        {{ block.super }}
-        {% include "orderGroup/bodySection/joinAction.html" %}
-        {% endblock extra_actions %}
-    </td>
-</tr>
+{% include "orderGroup/bodySection/listSectionBodyTable.html" %}
 {% endblock table_body %}

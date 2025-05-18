@@ -43,4 +43,4 @@ class OrderRoomForm(ModelForm):
 class OrderGroupForm(ModelForm):
     class Meta:
         model = OrderGroup
-        fields = ["name", "group_number", "fk_owner"]
+        fields = ["name", "fk_owner"]

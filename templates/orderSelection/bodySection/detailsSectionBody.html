@@ -4,7 +4,7 @@
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
-{% block table_body %}
+{% block table_body_data %}
 
 <tr>
     <td>{{item.fk_menu_item.name}}</td>
@@ -24,4 +24,4 @@
     {% endif %}
 </tr>
 
-{% endblock table_body %}
+{% endblock table_body_data %}
