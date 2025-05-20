@@ -41,7 +41,8 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Application definition
-
+# ! add apps that needs migrations in apps.txt
+# TODO  get all apps into apps.txt automatically
 INSTALLED_APPS = [
     # Default
     "daphne",

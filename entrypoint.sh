@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Default DJANGO_DEVELOPMENT to False if not set
 DJANGO_DEVELOPMENT="${DJANGO_DEVELOPMENT:-False}"
 
@@ -51,6 +53,26 @@ if [ "$DJANGO_DEVELOPMENT" = "False" ]; then
 		touch "$MARKER_FILE"
 	# else
 	#   echo "Skipping collectstatic (either already run or DJANGO_DEVELOPMENT is True)."
+	fi
+	# ===========================================
+
+	# ===========================================
+	# Migrations Files Generation in Production
+	# ===========================================
+
+	# Define the marker file location inside the container
+	MARKER_FILE="/run/.migrations_done"
+	APPS_FILE="apps.txt"
+
+	if [ ! -f "$MARKER_FILE" ] && [ -f "$APPS_FILE" ]; then
+    	echo "Running migrations as marker not found and apps list present."
+		APPS=$(grep -vE '^\s*(#|$)' "$APPS_FILE" | tr '\n' ' ')
+		echo "Making migrations for apps: $APPS"
+		python manage.py makemigrations "$APPS"
+		python manage.py migrate
+		mkdir -p "$(dirname "$MARKER_FILE")"
+		touch "$MARKER_FILE"
+		echo "Migrations complete; marker file created at $MARKER_FILE."
 	fi
 	# ===========================================
 
