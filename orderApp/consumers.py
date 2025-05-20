@@ -39,7 +39,7 @@ from orderApp.restaurantContext import (
     restaurant_details_section,
     restaurant_list_section,
 )
-from orderApp.utils import calculate_totals, group_nested_data, templates_joiner
+from orderApp.utils import calculate_totals, group_nested_data, templates_builder
 from orderApp.views import get_context
 
 UserModel = get_user_model()
@@ -138,8 +138,9 @@ class BaseConsumer(JsonWebsocketConsumer):
         self.response_builder(templates, context)
 
     def response_builder(self, templates, context):
-        response = templates_joiner(context, templates)
-        self.send(text_data=response)
+        response = templates_builder(context, templates)
+        for part in response:
+            self.send(text_data=part)
 
 
 class OrderGroupConsumer(BaseConsumer):
@@ -172,7 +173,6 @@ class OrderGroupConsumer(BaseConsumer):
             instance.add_user_to_group()
             context.update(**self.context.get_list_context(instance=instance))
             templates.append("orderGroup/bodySection/listSectionBodyTable.html")
-            context.update({"htmx": True})
         else:
             context.update({"form": form})
         templates.append("orderGroup/bottomSection/form/formGroupItem.html")

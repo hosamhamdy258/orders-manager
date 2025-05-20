@@ -16,9 +16,12 @@ class PositiveValueValidator(BaseValidator):
         return a <= b
 
 
-def templates_joiner(context, templates):
-    response = "".join([render_to_string(template, context=context) for template in templates])
-    return response
+def templates_builder(context, templates, chunks=True):
+    rendered_templates = [render_to_string(template, context=context) for template in templates]
+    if chunks:
+        return rendered_templates
+    else:
+        return ["".join(rendered_templates)]
 
 
 def group_nested_data(data, group_keys):

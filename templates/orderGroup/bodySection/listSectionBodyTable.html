@@ -1,6 +1,7 @@
 {% extends "base/bodySection/listSectionTableBody.html" %}
 {% block table_body_data %}
-{% if htmx %}<template hx-swap-oob="afterbegin:#{{list_table_body_id}}">{% endif %}
+{% with wrap=wrapper|default:"True" %}
+    {% if wrap == "True" %}<tbody id="{{list_table_body_id}}" hx-swap-oob="afterbegin:#{{list_table_body_id}}">{% endif %}
     <tr>
         {% include "orderGroup/bodySection/connectedUsers.html" %}
         {% block common_button %}
@@ -13,6 +14,6 @@
             {% endblock extra_actions %}
         </td>
     </tr>
-    {% if htmx %}
-</template>{% endif %}
+    {% if wrap == "True" %}</tbody>{% endif %}
+{% endwith %}
 {% endblock table_body_data %}

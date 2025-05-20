@@ -47,7 +47,7 @@ class OrderGroupContext(BaseContext):
         }
 
     def get_user_order_groups(self, user):
-        return OrderGroup.objects.all()  # ! for testing
+        return OrderGroup.objects.all().order_by("-id")  # ! for testing
         # return OrderGroup.objects.filter(Q(m2m_users=user) | Q(fk_owner=user)).order_by("-id").distinct()
 
     def get_order_group_members(self, group):
