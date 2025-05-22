@@ -60,20 +60,26 @@ if [ "$DJANGO_DEVELOPMENT" = "False" ]; then
 	# Migrations Files Generation in Production
 	# ===========================================
 
-	# Define the marker file location inside the container
 	MARKER_FILE="/run/.migrations_done"
 	APPS_FILE="apps.txt"
 
-	if [ ! -f "$MARKER_FILE" ] && [ -f "$APPS_FILE" ]; then
-    	echo "Running migrations as marker not found and apps list present."
-		APPS=$(grep -vE '^\s*(#|$)' "$APPS_FILE" | tr '\n' ' ')
-		echo "Making migrations for apps: $APPS"
-		python manage.py makemigrations "$APPS"
+	if [ -f "$APPS_FILE" ] && [ ! -f "$MARKER_FILE" ]; then
+		echo "Running migrations as marker not found and apps list present."
+		mapfile -t APPS < <(grep -vE '^\s*(#|$)' "$APPS_FILE")
+
+		if [ ${#APPS[@]} -eq 0 ]; then
+			echo "No apps found in $APPS_FILE; skipping makemigrations."
+		else
+			printf 'Making migrations for apps: %s\n' "${APPS[*]}"
+			python manage.py makemigrations "${APPS[@]}"
+		fi
+
 		python manage.py migrate
 		mkdir -p "$(dirname "$MARKER_FILE")"
 		touch "$MARKER_FILE"
 		echo "Migrations complete; marker file created at $MARKER_FILE."
 	fi
+
 	# ===========================================
 
 	# ===========================================
