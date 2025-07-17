@@ -1,6 +1,6 @@
 {% for item in list_section_data %}
 {% block table_body_data %}
-{% block common_button %}<td>{% include "common/showButton.html" %}</td>{% endblock common_button %}
+{% block common_button %}<td>{% include "common/showButton.html" with disabled=disabled %}</td>{% endblock common_button %}
 {% block extra_actions %}{% endblock extra_actions %}
 {% endblock table_body_data %}
 {% endfor %}

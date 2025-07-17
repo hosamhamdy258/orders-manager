@@ -1,46 +1,54 @@
 from django.utils.translation import gettext_lazy as _
 
 from orderApp.commonContext import NAVIGATION_BUTTONS
-from orderApp.context import get_current_view
+from orderApp.context import BaseContext, get_current_view
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import RestaurantContextKeys as RC
 from orderApp.enums import ViewContextKeys as VC
-from orderApp.models import Restaurant
-from orderApp.orderContext import get_restaurant_menu_items
+from orderApp.models import MenuItem, Restaurant
+
+# from orderApp.orderSelectionContext import get_restaurant_menu_items
 
 
-def restaurant_context(view=CV.RESTAURANT, restaurant=None):
-    return {
-        **get_current_view(view=view),
-        VC.MAIN_TITLE: _("Restaurants"),
-        VC.TITLE_ACTION: _("Add Order"),
-        VC.NEXT: CV.ORDER_SELECTION,
-        **restaurant_list_section(),
-        **restaurant_details_section(restaurant),
-        RC.FORM_MENU_ITEM_DISABLE: True,
-        GC.NAVIGATION_BUTTONS: NAVIGATION_BUTTONS,
-    }
+class RestaurantContext(BaseContext):
+    view_type = CV.RESTAURANT
 
+    def get_base_context(self):
+        ctx = super().get_base_context()
+        ctx.update(
+            {
+                VC.MAIN_TITLE: _("Restaurants"),
+                VC.TITLE_ACTION: _("Add Order"),
+            }
+        )
+        return ctx
 
-def restaurant_details_section(restaurant, view=CV.RESTAURANT, add_view=False):
-    return {
-        VC.DETAILS_SECTION_ID: "menu_items",
-        VC.DETAILS_SECTION_TITLE: _("Menu Items"),
-        VC.DETAILS_MESSAGE_TYPE: "deleteMenuItem",
-        VC.DETAILS_SECTION_DATA: get_restaurant_menu_items(restaurant),
-        VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
-        VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=restaurant) if restaurant else None,
-        **(get_current_view(view=view) if add_view else {}),
-    }
+    def get_list_context(self, instance=None):
+        ctx = super().get_list_context()
+        ctx.update(
+            {
+                VC.LIST_SECTION_ID: "restaurant_list",
+                VC.LIST_TABLE_BODY_ID: "group_table_body",
+                VC.LIST_SECTION_TITLE: _("Restaurant List"),
+                VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
+                VC.LIST_SECTION_DATA: [instance] if instance else Restaurant.objects.all().order_by("-id"),
+                VC.LIST_TABLE_HEADERS: [_("Restaurant Name")],
+            }
+        )
+        return ctx
 
-
-def restaurant_list_section(view=CV.RESTAURANT, add_view=False):
-    return {
-        VC.LIST_SECTION_ID: "restaurant_list",
-        VC.LIST_SECTION_TITLE: _("Restaurant List"),
-        VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
-        VC.LIST_SECTION_DATA: Restaurant.objects.all().order_by("-id"),
-        VC.LIST_TABLE_HEADERS: [_("Restaurant Name")],
-        **(get_current_view(view=view) if add_view else {}),
-    }
+    def get_details_context(self, instance=None, menu_item=None):
+        ctx = super().get_details_context()
+        ctx.update(
+            {
+                VC.DETAILS_SECTION_ID: "menu_items",
+                VC.DETAILS_TABLE_BODY_ID: "details_table_body",
+                VC.DETAILS_SECTION_TITLE: _("Menu Items"),
+                VC.DETAILS_MESSAGE_TYPE: "deleteMenuItem",
+                VC.DETAILS_SECTION_DATA: MenuItem.get_restaurant_menu_items(restaurant=instance) if instance else [menu_item] if menu_item else None,
+                VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
+                VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=instance) if instance else None,
+            }
+        )
+        return ctx

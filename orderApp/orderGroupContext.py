@@ -26,29 +26,39 @@ class OrderGroupContext(BaseContext):
         return ctx
 
     def get_list_context(self, instance=None):
-        return {
-            **self.current_view(),
-            VC.LIST_SECTION_ID: "group_list",
-            VC.LIST_TABLE_BODY_ID: "group_table_body",
-            VC.LIST_SECTION_TITLE: _("Groups List"),
-            VC.LIST_MESSAGE_TYPE: "showGroupMembers",
-            VC.LIST_SECTION_DATA: [instance] if instance else self.get_user_order_groups(self.get_user()),
-            VC.LIST_TABLE_HEADERS: [_("Group"), _("Members")],
-            GC.ACTION_JOIN_BUTTON: {"name": _("Open")},
-            GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
-        }
+        ctx = super().get_list_context()
+        ctx.update(
+            {
+                VC.LIST_SECTION_ID: "group_list",
+                VC.LIST_TABLE_ID: "group_table_id",
+                VC.LIST_TABLE_BODY_ID: "group_table_body",
+                VC.LIST_SECTION_TITLE: _("Groups List"),
+                VC.LIST_MESSAGE_TYPE: "showGroupMembers",
+                VC.LIST_OPEN_ACTION_MESSAGE_TYPE: "enterGroup",
+                VC.LIST_SECTION_DATA: [instance] if instance else self.get_user_order_groups(self.get_user()),
+                VC.LIST_TABLE_HEADERS: [_("Group"), _("Members")],
+                GC.ACTION_JOIN_BUTTON: {"name": _("Open")},
+                GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
+            }
+        )
+        return ctx
 
     def get_details_context(self, instance=None):
-        return {
-            **self.current_view(),
-            VC.DETAILS_SECTION_ID: "group_members",
-            VC.DETAILS_SECTION_TITLE: _("Group Members"),
-            VC.DETAILS_SECTION_DATA: self.get_order_group_members(instance) if instance else None,
-        }
+        ctx = super().get_details_context()
+        ctx.update(
+            {
+                VC.DETAILS_SECTION_ID: "group_members",
+                VC.DETAILS_TABLE_BODY_ID: "details_table_body",
+                VC.DETAILS_SECTION_TITLE: _("Group Members"),
+                VC.DETAILS_SECTION_DATA: self.get_order_group_members(instance) if instance else None,
+                VC.DETAILS_TABLE_HEADERS: [_("Name")],
+            }
+        )
+        return ctx
 
     def get_user_order_groups(self, user):
         return OrderGroup.objects.all().order_by("-id")  # ! for testing
-        # return OrderGroup.objects.filter(Q(m2m_users=user) | Q(fk_owner=user)).order_by("-id").distinct()
+        # return OrderGroup.objects.filter(Q(m2m_users=user) | Q(fk_owner=user)).order_by("-id").distinct() # TODO when invitation system ready
 
     def get_order_group_members(self, group):
         return UserModel.objects.filter(group_members=group)

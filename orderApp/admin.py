@@ -2,11 +2,13 @@ from django.contrib import admin
 
 from orderApp.models import (
     Client,
+    GroupRetries,
     MenuItem,
     Order,
     OrderGroup,
     OrderItem,
     OrderRoom,
+    OrderRoomUser,
     Restaurant,
 )
 
@@ -34,5 +36,7 @@ admin.site.register(MenuItem)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Client)
+admin.site.register(OrderRoomUser)
 admin.site.register(OrderRoom, OrderRoomAdmin)
 admin.site.register(OrderGroup, OrderGroupAdmin)
+admin.site.register(GroupRetries)

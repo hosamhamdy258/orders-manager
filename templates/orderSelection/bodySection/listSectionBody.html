@@ -5,11 +5,7 @@
 {{ block.super }}
 {% endblock table_headers %}
 
-{% block table_body_data %}
-<tr>
-    {% include "orderSelection/bodySection/orderName.html" %}
-    {% block common_button %}
-    {{ block.super }}
-    {% endblock common_button %}
-</tr>
-{% endblock table_body_data %}
+
+{% block table_body %}
+{% include "orderSelection/bodySection/listSectionBodyTable.html" with wrapper="False" %}
+{% endblock table_body %}

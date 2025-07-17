@@ -25,7 +25,8 @@ def get_current_view(view):
 
 class BaseContext:
     view_type = None
-    group = None
+    order_group = None
+    # TODO finish required keys
     base_required_keys = [VC.MAIN_TITLE, VC.TITLE_ACTION]
     list_required_keys = [
         VC.LIST_SECTION_ID,
@@ -44,6 +45,11 @@ class BaseContext:
             raise NotImplementedError("Subclasses must define user or implement get_user()")
         return self.user
 
+    def get_order_group(self):
+        if self.order_group is None:
+            raise NotImplementedError("Subclasses must define order_group or implement get_group()")
+        return self.order_group
+
     def get_view_type(self):
         if self.view_type is None:
             raise NotImplementedError("Subclasses must define view_type or implement get_view_type()")
@@ -54,6 +60,8 @@ class BaseContext:
             **self.get_base_context(),
             **self.get_list_context(),
             **self.get_details_context(),
+            **self.get_form_context(),
+            **self.get_extra_context(),
         }
         self.validate_keys(self.base_required_keys, ctx)
         self.validate_keys(self.list_required_keys, ctx)
@@ -64,14 +72,23 @@ class BaseContext:
     def current_view(self):
         return {VC.CURRENT: self.get_view_type()}
 
+    def current_user(self):
+        return {VC.USER: self.get_user()}
+
     def get_base_context(self):
         return {GC.NAVIGATION_BUTTONS: NAVIGATION_BUTTONS, **self.current_view()}
 
-    def get_list_context(self, instance=None):
-        return dict()
+    def get_list_context(self):
+        return {**self.current_user(), **self.current_view()}
 
-    def get_details_context(self, instance=None):
-        return dict()
+    def get_details_context(self):
+        return {**self.current_user(), **self.current_view()}
+
+    def get_form_context(self):
+        return {**self.current_user(), **self.current_view()}
+
+    def get_extra_context(self):
+        return {}
 
     def validate_keys(self, keys_list, ctx):
         missing_list = [k for k in keys_list if k not in ctx]

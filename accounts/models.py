@@ -10,10 +10,11 @@ class User(AbstractUser):
 
 class Configuration(SingletonModel):
     site_name = models.CharField(max_length=255, default="Site Name")
-    maintenance_mode = models.BooleanField(default=False)
     order_limit = models.IntegerField(_("Order Limit"), default=1)
     order_archive_delay = models.IntegerField(_("Order Archive Delay Hours"), default=1)
     order_time_limit = models.IntegerField(_("Order Time Limit"), default=15)
+    lock_time_limit = models.IntegerField(_("Lock Time Limit"), default=60)
+    join_retry_limit = models.IntegerField(_("Group Join Retry Limit"), default=3)
 
     def __str__(self):
         return "Site Configuration"

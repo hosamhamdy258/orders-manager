@@ -8,9 +8,18 @@
             {% include "base/helpers/error.html" %}
             {% endfor %}
         </div>
+        <div class="col">
+            <input type="password" class="form-control" id="pin" name="pin" placeholder='{% translate "Group Pin" %}' value="{{form.pin.value}}" required autocomplete="off" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]*" title="{% translate 'Enter 4 Numbers' %}">
+            {% for error in form.pin.errors %}
+            {% include "base/helpers/error.html" %}
+            {% endfor %}
+        </div>
 
         <div class="col-auto">
             <button type="submit" class="btn btn-outline-success"><i class="bi bi-plus-lg"></i> {% translate "Add Group" %}</button>
         </div>
     </div>
+    {% for error in form.non_field_errors %}
+    {% include "base/helpers/error.html" %}
+    {% endfor %}
 </form>

@@ -1,1 +1,1 @@
-<input id="restaurant_id" type="hidden" name="fk_restaurant" value="{{details_current_selection.id}}" hx-swap-oob="true">
+<input id="restaurant_id" type="hidden" name="fk_restaurant" value="{% if form.fk_restaurant.value %}{{form.fk_restaurant.value}}{% else %}{{details_current_selection.id}}{% endif %}" hx-swap-oob="true">

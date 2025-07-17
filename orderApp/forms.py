@@ -37,10 +37,10 @@ class RestaurantForm(ModelForm):
 class OrderRoomForm(ModelForm):
     class Meta:
         model = OrderRoom
-        fields = ["name", "room_number"]
+        fields = ["name", "fk_order_group"]
 
 
 class OrderGroupForm(ModelForm):
     class Meta:
         model = OrderGroup
-        fields = ["name", "fk_owner"]
+        fields = ["name", "fk_owner", "pin"]

@@ -1,5 +1,5 @@
 {% load i18n %}
-<form action="{% url 'order' item.room_number %}" method="get">
+<form action="{% url 'order_selection' item.fk_order_group.group_number item.room_number %}" method="get">
     <button type="submit" class="btn btn-outline-success btn-sm">
         <i class="bi bi-box-arrow-in-right"></i> {% translate "Join" %}
     </button>

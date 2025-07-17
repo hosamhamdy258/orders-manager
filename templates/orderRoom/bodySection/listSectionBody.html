@@ -5,17 +5,7 @@
 {{ block.super }}
 {% endblock table_headers %}
 
-{% block table_body_data %}
-<tr>
-    {% include "orderRoom/bodySection/connectedUsers.html" %}
-    {% block common_button %}
-    {{ block.super }}
-    {% endblock common_button %}
-    <td>
-        {% block extra_actions %}
-        {{ block.super }}
-        {% include "orderRoom/bodySection/joinAction.html" %}
-        {% endblock extra_actions %}
-    </td>
-</tr>
-{% endblock table_body_data %}
+
+{% block table_body %}
+{% include "orderRoom/bodySection/listSectionBodyTable.html" with wrapper="False" %}
+{% endblock table_body %}

@@ -1,9 +1,4 @@
 {% extends "base/helpers/temp.html" %}
-{% block temp_script %}
-<script>
-    time_locker()
-</script>
-{% endblock temp_script %}
 
 {% block temp_element %}
 {% include "base/helpers/error.html" with error=time_up_error hx_swap_oob="afterbegin:#bottom_card" %}

@@ -1,4 +1,4 @@
-<div id='{% block error_id %}{{error_id}}{% endblock error_id %}' class="alert alert-danger m-2 error" hx-swap-oob='{% block hx-swap-oob %}{{hx_swap_oob}}{% endblock hx-swap-oob %}'>
+<div class="alert alert-danger m-2 error text-nowrap" hx-swap-oob='{% block hx-swap-oob %}{{hx_swap_oob}}{% endblock hx-swap-oob %}'>
     {% block error %}
     {% if hx_swap_oob %}
     <div class="alert alert-danger m-2 error">

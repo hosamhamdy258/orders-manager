@@ -14,11 +14,11 @@ from django.views.generic import TemplateView
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
-from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom
-from orderApp.orderContext import order_selection_context
+from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom, OrderRoomUser
 from orderApp.orderGroupContext import OrderGroupContext
-from orderApp.orderRoomContext import order_room_context
-from orderApp.restaurantContext import restaurant_context
+from orderApp.orderRoomContext import OrderRoomContext
+from orderApp.orderSelectionContext import OrderSelectionContext
+from orderApp.restaurantContext import RestaurantContext
 
 decorators = [never_cache]
 
@@ -33,7 +33,8 @@ class BaseView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         group = getattr(self, "group", None)
-        ctx = get_context(user=self.get_user(), view=self.view_type, group=group)
+        room = getattr(self, "room", None)
+        ctx = get_context(user=self.get_user(), view=self.view_type, order_group=group, order_room=room)
         context.update({GC.WS_URL: self.get_ws_url(), **ctx, **self.get_extra_context()})
         return context
 
@@ -74,28 +75,43 @@ class OrderRoomView(BaseView):
             messages.error(request, {"code": 404})
             return redirect("redirect")
 
-        if not self.group.can_join_room(self.get_user()):
+        if not self.group.can_join_group(self.get_user()):
             messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
             return redirect("redirect")
 
         return super().dispatch(request, *args, **kwargs)
 
+    def get_ws_url(self):
+        return f"{self.ws_url}{self.group.group_number}/"
+
 
 class OrderSelectionView(BaseView):
     view_type = CV.ORDER_SELECTION
+    ws_url = "/ws/order/"
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.group = OrderRoom.objects.get(room_number=kwargs.get(GC.GROUP_NUMBER))
+            self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
+            self.room = OrderRoom.objects.get(room_number=kwargs.get(GC.ROOM_NUMBER))
         except ObjectDoesNotExist:
-            return redirect("index")
+            messages.error(request, {"code": 404})
+            return redirect("redirect")
+
+        if not self.group.can_join_group(self.get_user()):
+            messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
+            return redirect("redirect")
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_ws_url(self):
-        return f"/ws/order/{self.group.room_number}/"
+        return f"{self.ws_url}{self.group.group_number}/{self.room.room_number}/"
 
     def get_extra_context(self):
-        return {GC.GROUP_NUMBER: self.group.name, **super().get_extra_context()}
+        return {GC.ROOM_NUMBER: self.room.name, **super().get_extra_context()}
+
+    def get(self, request, *args, **kwargs):
+        self.room.add_user_to_room(self.get_user())
+        return super().get(request, *args, **kwargs)
 
 
 class RestaurantView(BaseView):
@@ -103,14 +119,14 @@ class RestaurantView(BaseView):
     ws_url = "/ws/restaurant/"
 
 
-def get_context(user, view=CV.ORDER_GROUP, group=None):
+def get_context(user, view=CV.ORDER_GROUP, order_group=None, order_room=None):
     match view:
         case CV.ORDER_SELECTION:
-            return order_selection_context(user=user, group=group)
+            return OrderSelectionContext(user=user, order_group=order_group, order_room=order_room).get_full_context()
         case CV.RESTAURANT:
-            return restaurant_context(view=view)
+            return RestaurantContext(user=user).get_full_context()
         case CV.ORDER_ROOM:
-            return order_room_context(view=view)
+            return OrderRoomContext(user=user, order_group=order_group).get_full_context()
         case CV.ORDER_GROUP:
             return OrderGroupContext(user=user).get_full_context()
         case __:
@@ -119,8 +135,8 @@ def get_context(user, view=CV.ORDER_GROUP, group=None):
 
 def menuitems(request):
     restaurant = request.GET.get("fk_restaurant")
-    menuItems = MenuItem.objects.filter(fk_restaurant=restaurant)
-    return render(request, "order/bottomSection/form/menuItems.html", {"menuItems": menuItems})
+    menuItems = MenuItem.get_restaurant_menu_items(restaurant)
+    return render(request, "orderSelection/bottomSection/form/menuItems.html", {"menuItems": menuItems})
 
 
 def announcement(request):
@@ -138,7 +154,6 @@ def announcement(request):
 
 
 def redirect_page(request):
-
     messages = [literal_eval(message.message) for message in get_messages(request)]
     message = messages[0] if len(messages) == 1 else {}
     context = {

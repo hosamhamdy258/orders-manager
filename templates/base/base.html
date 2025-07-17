@@ -25,6 +25,30 @@
     {% include "base/helpers/temp.html" %}
     <script type="module" src="{% static '/bootstrap/bootstrap.min.js' %}"></script>
     <script type="module" src="{% static '/server_date/serverDate.js' %}"></script>
+
+
+    <script>
+        function toggle_enter_form(groupId) {
+            const mainRow = document.querySelector(`.row-${groupId}.row-main`);
+            const formRow = document.querySelector(`.row-${groupId}.row-form`);
+
+            if (!mainRow || !formRow) return;
+
+            const isShowingForm = formRow.classList.contains("d-none");
+
+            mainRow.classList.toggle("d-none", isShowingForm);
+            formRow.classList.toggle("d-none", !isShowingForm);
+
+            if (isShowingForm) {
+                const colCount = mainRow.querySelectorAll("td").length;
+                formRow.querySelector("td").setAttribute("colspan", colCount);
+            }
+        }
+    </script>
+
+    {% include "common/time_lock.html" %}
+
+
 </body>
 
 </html>

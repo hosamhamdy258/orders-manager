@@ -1,0 +1,15 @@
+{% load i18n %}
+<form id="form_{{ item.group_number }}" ws-send class="d-flex gap-3 align-items-center" hx-swap-oob="outerHTML">
+    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggle_enter_form('{{ item.group_number }}')">
+        {% translate "Cancel" %}
+    </button>
+    <input type="hidden" name="message_type" value="{{list_open_action_message_type}}">
+    <input type="hidden" name="item_id" value="{{item.id}}">
+    <input type="password" name="pin" id="pin" class="form-control" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]*" placeholder="{% translate 'Group Pin' %}" title="{% translate 'Enter 4 Numbers' %}" autocomplete="off">
+    <button type="submit" class="btn btn-outline-success btn-sm">
+        {% translate "Join" %}
+    </button>
+    {% if join_form_error %}
+    {% include "base/helpers/error.html" with error=join_form_error %}
+    {% endif %}
+</form>

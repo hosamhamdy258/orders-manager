@@ -1,0 +1,20 @@
+{% comment %}
+<script>
+    (() => {
+        let elements = document.getElementsByClassName("time_lock");
+        for (let element of elements) {
+            element.setAttribute("disabled", true);
+        }
+    })();
+</script>
+{% endcomment %}
+
+
+<script>
+    const time_locker = () => {
+        let elements = document.getElementsByClassName("time_lock");
+        for (let element of elements) {
+            element.setAttribute("disabled", true);
+        }
+    }
+</script>

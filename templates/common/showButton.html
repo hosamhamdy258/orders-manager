@@ -2,7 +2,7 @@
 <form ws-send>
     <input type="hidden" name="message_type" value="{{list_message_type}}">
     <input type="hidden" name="item_id" value="{{item.id}}">
-    <button type="submit" class="btn btn-outline-primary btn-sm">
+    <button type="submit" class="btn btn-outline-primary btn-sm" {% if disabled %}disabled{% endif %}>
         {% block submit_text %}
         <i class="{{show.icon|default:'bi bi-eye-fill'}}"></i> {{show.name}}
         {% endblock submit_text %}

@@ -1,0 +1,16 @@
+{% extends "base/helpers/temp.html" %}
+{% load i18n %}
+{% block temp_script %}
+<script>
+    document.getElementById("modal_button").click() 
+</script>
+{% endblock temp_script %}
+
+{% block temp_element %}
+<div id="modal-body" hx_swap_oob="innerHtml">
+    {% include "orderSelection/bodySection/detailsSectionBody.html" %}
+</div>
+<div id="modal-title" hx_swap_oob="innerHtml">
+    {{ user }} {% translate "order details" %}
+</div>
+{% endblock temp_element %}

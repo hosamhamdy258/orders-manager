@@ -1,0 +1,19 @@
+{% extends "base/bodySection/listSectionTableBody.html" %}
+{% block table_body_data %}
+{% with wrap=wrapper|default:"True" %}
+    {% if wrap == "True" %}<tbody id="{{list_table_body_id}}" hx-swap-oob="afterbegin:#{{list_table_body_id}}">{% endif %}
+    <tr>
+        {% include "orderRoom/bodySection/connectedUsers.html" %}
+        {% block common_button %}
+        {{ block.super }}
+        {% endblock common_button %}
+        <td>
+            {% block extra_actions %}
+            {{ block.super }}
+            {% include "orderRoom/bodySection/joinAction.html" %}
+            {% endblock extra_actions %}
+        </td>
+    </tr>
+    {% if wrap == "True" %}</tbody>{% endif %}
+{% endwith %}
+{% endblock table_body_data %}

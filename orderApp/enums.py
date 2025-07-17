@@ -26,19 +26,23 @@ class ViewContextKeys(EnumMeta):
     TITLE_ACTION = "title_action"
     NEXT = "next_view"
     CURRENT = "current_view"
+    USER = "user"
 
     LIST_SECTION_ID = "list_section_id"
     LIST_SECTION_TITLE = "list_section_title"
     LIST_SECTION_DATA = "list_section_data"
     LIST_MESSAGE_TYPE = "list_message_type"
+    LIST_TABLE_ID = "list_table_id"
     LIST_TABLE_BODY_ID = "list_table_body_id"
     LIST_TABLE_HEADERS = "list_table_headers"
+    LIST_OPEN_ACTION_MESSAGE_TYPE = "list_open_action_message_type"
 
     DETAILS_SECTION_ID = "details_section_id"
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
     DETAILS_SECTION_DATA = "details_section_data"
     DETAILS_CURRENT_SELECTION = "details_current_selection"
+    DETAILS_TABLE_BODY_ID = "details_table_body_id"
     DETAILS_TABLE_HEADERS = "details_table_headers"
 
 

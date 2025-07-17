@@ -1,27 +1,9 @@
 {% extends "base/bodySection/detailsSectionBody.html" %}
-{% load i18n %}
 
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
-{% block table_body_data %}
 
-<tr>
-    <td>{{item.fk_menu_item.name}}</td>
-    <td>{{item.quantity}}</td>
-    <td>{{item.fk_menu_item.price}}</td>
-    <td>{{item.total_order_item}}</td>
-    {% if not disable_remove_button %}
-    {% if item.fk_order.fk_user == request.user or item.fk_order.fk_user == user %}
-    <td class="remove_button" hx-swap-oob="outerHTML:.remove_button">
-        <form ws-send>
-            <input type="hidden" name="message_type" value="{{details_message_type}}">
-            <input type="hidden" name="item_id" value="{{item.id}}">
-            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle-fill"></i></button>
-        </form>
-    </td>
-    {% endif %}
-    {% endif %}
-</tr>
-
-{% endblock table_body_data %}
+{% block table_body %}
+{% include "orderSelection/bodySection/detailsSectionBodyTable.html" with wrapper="False" %}
+{% endblock table_body %}

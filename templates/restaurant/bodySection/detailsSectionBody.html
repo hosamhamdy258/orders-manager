@@ -1,19 +1,11 @@
 {% extends "base/bodySection/detailsSectionBody.html" %}
 
-{% load i18n %}
 {% block table_headers %}
 {{ block.super }}
 {% endblock table_headers %}
+
 {% block table_body_data %}
-<tr>
-    <td>{{item.name}}</td>
-    <td>{{item.price}}</td>
-    <td>
-        <form ws-send>
-            <input type="hidden" name="message_type" value="{{details_message_type}}">
-            <input type="hidden" name="item_id" value="{{item.id}}">
-            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle-fill"></i></button>
-        </form>
-    </td>
-</tr>
+
+{% include "restaurant/bodySection/detailsSectionBodyTable.html" with wrapper="False" %}
+
 {% endblock table_body_data %}

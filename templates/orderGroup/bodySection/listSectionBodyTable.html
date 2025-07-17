@@ -1,12 +1,21 @@
 {% extends "base/bodySection/listSectionTableBody.html" %}
+{% load i18n %}
 {% block table_body_data %}
 {% with wrap=wrapper|default:"True" %}
-    {% if wrap == "True" %}<tbody id="{{list_table_body_id}}" hx-swap-oob="afterbegin:#{{list_table_body_id}}">{% endif %}
-    <tr>
+{% if wrap == "True" %}<tbody id="{{list_table_body_id}}" hx-swap-oob="{{swap_method|default:'innerHTML'}}:#{{list_table_body_id}}">{% endif %}
+    <tr class="row-{{ item.group_number }} row-main">
         {% include "orderGroup/bodySection/connectedUsers.html" %}
         {% block common_button %}
+        {% if user == item.fk_owner %}
+        {% with disabled=False %}
         {{ block.super }}
-        {% endblock common_button %}
+        {% endwith %}
+        {% else %}
+        {% with disabled=True %}
+        {{ block.super }}
+        {% endwith %}
+        {% endif %}
+        {% endblock %}
         <td>
             {% block extra_actions %}
             {{ block.super }}
@@ -14,6 +23,12 @@
             {% endblock extra_actions %}
         </td>
     </tr>
-    {% if wrap == "True" %}</tbody>{% endif %}
+    <tr class="row-{{ item.group_number }} row-form d-none">
+        <td>
+            {% include "orderGroup/bodySection/joinForm.html" %}
+        </td>
+    </tr>
+    {% if wrap == "True" %}
+</tbody>{% endif %}
 {% endwith %}
 {% endblock table_body_data %}

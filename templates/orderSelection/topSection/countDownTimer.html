@@ -18,6 +18,7 @@
                 if (ts.value >= 0) {
                     timerElement.innerHTML = `{% translate "Time's up !" %}`;
                     clearTimer()
+                    time_locker()
                     return;
                 }
                 timerElement.innerHTML = `${ts.minutes.toString().padStart(2, '0')}:${ts.seconds.toString().padStart(2, '0')}`;
