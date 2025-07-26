@@ -1,8 +1,7 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import configuration
-from orderApp.context import BaseContext, get_current_view
+from orderApp.context import BaseContext
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
@@ -15,10 +14,8 @@ class OrderSelectionContext(BaseContext):
     room_user = None
     restaurant = None
 
-    def __init__(self, user, order_group, order_room):
-        super().__init__(user)
-        self.order_group = order_group
-        self.order_room = order_room
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.get_room_user()
 
     def get_order_room(self):
@@ -52,8 +49,6 @@ class OrderSelectionContext(BaseContext):
         ctx = super().get_list_context()
         ctx.update(
             {
-                VC.LIST_SECTION_ID: "members_orders",
-                VC.LIST_TABLE_ID: "group_table_id",
                 VC.LIST_TABLE_BODY_ID: "group_table_body",
                 VC.LIST_SECTION_TITLE: _("Members Orders"),
                 VC.LIST_MESSAGE_TYPE: "showMemberItemOrders",
@@ -75,8 +70,6 @@ class OrderSelectionContext(BaseContext):
         ctx = super().get_details_context()
         ctx.update(
             {
-                VC.DETAILS_SECTION_ID: "order_items",
-                VC.DETAILS_TABLE_BODY_ID: "details_table_body",
                 VC.DETAILS_SECTION_TITLE: _("Order Items"),
                 VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
                 OC.DISABLE_REMOVE_BUTTON: disable_remove_button,

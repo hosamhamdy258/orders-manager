@@ -1,9 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from orderApp.commonContext import NAVIGATION_BUTTONS
-from orderApp.context import BaseContext, get_current_view
+from orderApp.context import BaseContext
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import ViewContextKeys as VC
@@ -29,9 +27,6 @@ class OrderGroupContext(BaseContext):
         ctx = super().get_list_context()
         ctx.update(
             {
-                VC.LIST_SECTION_ID: "group_list",
-                VC.LIST_TABLE_ID: "group_table_id",
-                VC.LIST_TABLE_BODY_ID: "group_table_body",
                 VC.LIST_SECTION_TITLE: _("Groups List"),
                 VC.LIST_MESSAGE_TYPE: "showGroupMembers",
                 VC.LIST_OPEN_ACTION_MESSAGE_TYPE: "enterGroup",
@@ -47,8 +42,6 @@ class OrderGroupContext(BaseContext):
         ctx = super().get_details_context()
         ctx.update(
             {
-                VC.DETAILS_SECTION_ID: "group_members",
-                VC.DETAILS_TABLE_BODY_ID: "details_table_body",
                 VC.DETAILS_SECTION_TITLE: _("Group Members"),
                 VC.DETAILS_SECTION_DATA: self.get_order_group_members(instance) if instance else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Name")],

@@ -1,10 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 
-from orderApp.commonContext import NAVIGATION_BUTTONS
-from orderApp.context import BaseContext, get_current_view
+from orderApp.context import BaseContext
 from orderApp.enums import CurrentViews as CV
-from orderApp.enums import GeneralContextKeys as GC
-from orderApp.enums import RestaurantContextKeys as RC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import MenuItem, Restaurant
 
@@ -28,8 +25,6 @@ class RestaurantContext(BaseContext):
         ctx = super().get_list_context()
         ctx.update(
             {
-                VC.LIST_SECTION_ID: "restaurant_list",
-                VC.LIST_TABLE_BODY_ID: "group_table_body",
                 VC.LIST_SECTION_TITLE: _("Restaurant List"),
                 VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
                 VC.LIST_SECTION_DATA: [instance] if instance else Restaurant.objects.all().order_by("-id"),
@@ -42,8 +37,6 @@ class RestaurantContext(BaseContext):
         ctx = super().get_details_context()
         ctx.update(
             {
-                VC.DETAILS_SECTION_ID: "menu_items",
-                VC.DETAILS_TABLE_BODY_ID: "details_table_body",
                 VC.DETAILS_SECTION_TITLE: _("Menu Items"),
                 VC.DETAILS_MESSAGE_TYPE: "deleteMenuItem",
                 VC.DETAILS_SECTION_DATA: MenuItem.get_restaurant_menu_items(restaurant=instance) if instance else [menu_item] if menu_item else None,

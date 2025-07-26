@@ -63,11 +63,7 @@ class IndexView(BaseView):
     ws_url = "/ws/index/"
 
 
-@method_decorator(decorators, name="dispatch")
-class OrderRoomView(BaseView):
-    view_type = CV.ORDER_ROOM
-    ws_url = "/ws/room/"
-
+class GroupAccessMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
@@ -81,26 +77,26 @@ class OrderRoomView(BaseView):
 
         return super().dispatch(request, *args, **kwargs)
 
+
+@method_decorator(decorators, name="dispatch")
+class OrderRoomView(GroupAccessMixin, BaseView):
+    view_type = CV.ORDER_ROOM
+    ws_url = "/ws/room/"
+
     def get_ws_url(self):
         return f"{self.ws_url}{self.group.group_number}/"
 
 
-class OrderSelectionView(BaseView):
+class OrderSelectionView(GroupAccessMixin, BaseView):
     view_type = CV.ORDER_SELECTION
     ws_url = "/ws/order/"
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
             self.room = OrderRoom.objects.get(room_number=kwargs.get(GC.ROOM_NUMBER))
         except ObjectDoesNotExist:
             messages.error(request, {"code": 404})
             return redirect("redirect")
-
-        if not self.group.can_join_group(self.get_user()):
-            messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
-            return redirect("redirect")
-
         return super().dispatch(request, *args, **kwargs)
 
     def get_ws_url(self):
@@ -120,15 +116,20 @@ class RestaurantView(BaseView):
 
 
 def get_context(user, view=CV.ORDER_GROUP, order_group=None, order_room=None):
+    kwargs = {
+        "user": user,
+        "order_group": order_group,
+        "order_room": order_room,
+    }
     match view:
         case CV.ORDER_SELECTION:
-            return OrderSelectionContext(user=user, order_group=order_group, order_room=order_room).get_full_context()
+            return OrderSelectionContext(**kwargs).get_full_context()
         case CV.RESTAURANT:
-            return RestaurantContext(user=user).get_full_context()
+            return RestaurantContext(**kwargs).get_full_context()
         case CV.ORDER_ROOM:
-            return OrderRoomContext(user=user, order_group=order_group).get_full_context()
+            return OrderRoomContext(**kwargs).get_full_context()
         case CV.ORDER_GROUP:
-            return OrderGroupContext(user=user).get_full_context()
+            return OrderGroupContext(**kwargs).get_full_context()
         case __:
             raise NotImplementedError(f"Unknown view: {view}")
 

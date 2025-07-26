@@ -25,7 +25,6 @@ def get_current_view(view):
 
 class BaseContext:
     view_type = None
-    order_group = None
     # TODO finish required keys
     base_required_keys = [VC.MAIN_TITLE, VC.TITLE_ACTION]
     list_required_keys = [
@@ -37,17 +36,18 @@ class BaseContext:
     ]
     details_required_keys = [VC.DETAILS_SECTION_ID, VC.DETAILS_SECTION_TITLE, VC.DETAILS_SECTION_DATA]
 
-    def __init__(self, user):
-        self.user = user
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def get_user(self):
-        if self.user is None:
-            raise NotImplementedError("Subclasses must define user or implement get_user()")
+        if not hasattr(self, "user") or self.user is None:
+            raise NotImplementedError("Context must be initialized with a 'user' keyword argument.")
         return self.user
 
     def get_order_group(self):
-        if self.order_group is None:
-            raise NotImplementedError("Subclasses must define order_group or implement get_group()")
+        if not hasattr(self, "order_group") or self.order_group is None:
+            raise NotImplementedError("Context must be initialized with an 'order_group' keyword argument.")
         return self.order_group
 
     def get_view_type(self):
@@ -69,23 +69,29 @@ class BaseContext:
 
         return ctx
 
-    def current_view(self):
-        return {VC.CURRENT: self.get_view_type()}
-
-    def current_user(self):
-        return {VC.USER: self.get_user()}
+    def _get_common_context(self):
+        return {VC.USER: self.get_user(), VC.CURRENT: self.get_view_type()}
 
     def get_base_context(self):
-        return {GC.NAVIGATION_BUTTONS: NAVIGATION_BUTTONS, **self.current_view()}
+        return {GC.NAVIGATION_BUTTONS: NAVIGATION_BUTTONS, VC.CURRENT: self.get_view_type()}
 
     def get_list_context(self):
-        return {**self.current_user(), **self.current_view()}
+        return {
+            **self._get_common_context(),
+            VC.LIST_SECTION_ID: VC.LIST_SECTION_ID,
+            VC.LIST_TABLE_ID: VC.LIST_TABLE_ID,
+            VC.LIST_TABLE_BODY_ID: VC.LIST_TABLE_BODY_ID,
+        }
 
     def get_details_context(self):
-        return {**self.current_user(), **self.current_view()}
+        return {
+            **self._get_common_context(),
+            VC.DETAILS_SECTION_ID: VC.DETAILS_SECTION_ID,
+            VC.DETAILS_TABLE_BODY_ID: VC.DETAILS_TABLE_BODY_ID,
+        }
 
     def get_form_context(self):
-        return {**self.current_user(), **self.current_view()}
+        return self._get_common_context()
 
     def get_extra_context(self):
         return {}

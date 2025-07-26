@@ -251,7 +251,14 @@ class OrderGroupConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
 
-class OrderRoomConsumer(BaseConsumer):
+class GroupConsumerMixin:
+    def get_order_group(self):
+        # TODO user has attr for check instead of None
+        self.order_group = OrderGroup.objects.get(group_number=self.scope["url_route"]["kwargs"]["group_name"])
+        return self.order_group
+
+
+class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
     channel_name = ORDER_ROOM_CHANNEL
     channel_group_name = ORDER_ROOM_CHANNEL_GROUP
     view = CV.ORDER_ROOM
@@ -285,11 +292,6 @@ class OrderRoomConsumer(BaseConsumer):
         templates.append("orderRoom/bottomSection/form/formGroupItem.html")
         self.response_builder(templates, context)
 
-    def get_order_group(self):
-        # TODO user has attr for check instead of None
-        self.order_group = OrderGroup.objects.get(group_number=self.scope["url_route"]["kwargs"]["group_name"])
-        return self.order_group
-
     def get_context_builder_kwargs(self):
         kwargs = super().get_context_builder_kwargs()
         kwargs.update({"order_group": self.get_order_group()})
@@ -303,7 +305,7 @@ class OrderRoomConsumer(BaseConsumer):
         self.response_builder(templates, context)
 
 
-class OrderSelectionConsumer(BaseConsumer):
+class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
     channel_name = ORDER_SELECTION_CHANNEL
     channel_group_name = ORDER_SELECTION_CHANNEL_GROUP
     view = CV.ORDER_SELECTION
@@ -319,11 +321,6 @@ class OrderSelectionConsumer(BaseConsumer):
         kwargs = super().get_context_builder_kwargs()
         kwargs.update({"order_group": self.get_order_group(), "order_room": self.get_order_room()})
         return kwargs
-
-    def get_order_group(self):
-        # TODO use has attr for check instead of None
-        self.order_group = OrderGroup.objects.get(group_number=self.scope["url_route"]["kwargs"]["group_name"])
-        return self.order_group
 
     def get_order_room(self):
         # TODO use has attr for check instead of None
