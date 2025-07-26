@@ -29,6 +29,7 @@ class RestaurantContext(BaseContext):
                 VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
                 VC.LIST_SECTION_DATA: [instance] if instance else Restaurant.objects.all().order_by("-id"),
                 VC.LIST_TABLE_HEADERS: [_("Restaurant Name")],
+                VC.LIST_SECTION_TEMPLATE: "restaurant/bodySection/listSection.html",
             }
         )
         return ctx
@@ -42,6 +43,17 @@ class RestaurantContext(BaseContext):
                 VC.DETAILS_SECTION_DATA: MenuItem.get_restaurant_menu_items(restaurant=instance) if instance else [menu_item] if menu_item else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
                 VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=instance) if instance else None,
+                VC.DETAILS_SECTION_TEMPLATE: "restaurant/bodySection/detailsSection.html",
+            }
+        )
+        return ctx
+
+    def get_form_context(self):
+        ctx = super().get_form_context()
+        ctx.update(
+            {
+                VC.FORM_SECTION_TEMPLATE: "restaurant/bottomSection/form/formRestaurant.html",
+                VC.EXTRA_FORM_SECTION_TEMPLATE: "restaurant/bottomSection/form/formMenuItem.html",
             }
         )
         return ctx

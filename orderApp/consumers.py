@@ -36,7 +36,6 @@ from orderApp.orderSelectionContext import (
 )
 from orderApp.restaurantContext import RestaurantContext
 from orderApp.utils import calculate_totals, group_nested_data, templates_builder
-from orderApp.views import get_context
 
 UserModel = get_user_model()
 ORDER_GROUP_CHANNEL = "orderGroup"
@@ -161,7 +160,7 @@ class OrderGroupConsumer(BaseConsumer):
     channel_name = ORDER_GROUP_CHANNEL
     channel_group_name = ORDER_GROUP_CHANNEL_GROUP
     view = CV.ORDER_GROUP
-    body_template = "orderGroup/body.html"
+    body_template = "common/body.html"
     context_class = OrderGroupContext
 
     @group_message
@@ -262,7 +261,7 @@ class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
     channel_name = ORDER_ROOM_CHANNEL
     channel_group_name = ORDER_ROOM_CHANNEL_GROUP
     view = CV.ORDER_ROOM
-    body_template = "orderRoom/body.html"
+    body_template = "common/body.html"
     context_class = OrderRoomContext
 
     @group_message
@@ -455,7 +454,6 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
         context.update(
             {**self.get_context_builder().get_details_context(order_instance=event[self.message].get("item_id"), disable_remove_button=True)}
         )
-        templates.append("orderSelection/bodySection/order_items_modal.html")
 
         self.response_builder(templates, context)
 
@@ -463,100 +461,12 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
     def groupOrderSummary(self, event):
         templates, context = [], {}
 
-        UserModel = get_user_model()
-
         if self.get_context_builder().get_all_orders(order_room=self.get_order_room()).count() == 0:
             templates.append("orderSelection/bottomSection/actions/orderSummary.html")
             context.update(EM.ORDER_SUMMARY)
         else:
-            orderTotalSummary = (
-                Restaurant.objects.filter(
-                    menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
-                )
-                .values(
-                    restaurant=F("name"),
-                    item=F("menuitem__name"),
-                    price=F("menuitem__price"),
-                    # user=F("menuitem__orderitem__fk_order__fk_user__username"),
-                )
-                .annotate(
-                    quantity=Sum("menuitem__orderitem__quantity"),
-                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
-                )
-                .distinct()
-            )
-            orderTotalSummary2 = (
-                Restaurant.objects.filter(
-                    menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
-                )
-                .values(
-                    restaurant=F("name"),
-                    item=F("menuitem__name"),
-                    price=F("menuitem__price"),
-                    user=F("menuitem__orderitem__fk_order__fk_user__username"),
-                )
-                .annotate(
-                    quantity=Sum("menuitem__orderitem__quantity"),
-                    total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
-                )
-                .distinct()
-            )
-
-            grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
-
-            orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
-
-            totals_orderTotalSummary = {
-                restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
-            }
-
-            orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
-
-            totals_orderUsersTotalSummaryGrouped = {
-                restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
-                for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
-            }
-
-            orderUsersSummary = (
-                UserModel.objects.filter(
-                    order__created__date=timezone.now(), order__finished_ordering=True, order__fk_order_room=self.get_order_room()
-                )
-                .values(
-                    user=F("username"),
-                    restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
-                    item=F("order__orderitem__fk_menu_item__name"),
-                    price=F("order__orderitem__fk_menu_item__price"),
-                )
-                .annotate(
-                    quantity=Sum("order__orderitem__quantity"),
-                    total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
-                )
-                .distinct()
-            )
-
-            orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
-
-            orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
-
-            totals_orderUsersSummaryGrouped = {
-                user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()
-            }
-
+            context.update(**self.get_context_builder().groupOrderSummary())
             templates.append("orderSelection/bottomSection/actions/summaryTables.html")
-
-            context.update(
-                {
-                    "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
-                    "totals_orderTotalSummary": totals_orderTotalSummary,
-                    "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
-                    "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
-                    "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
-                    "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
-                    "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
-                    "showTables": True,
-                    "table_headers": ["#", _("Item"), _("Price"), _("Quantity"), _("Total")],
-                }
-            )
         self.response_builder(templates, context)
 
     def updateUsersConnectedCount(self):
@@ -573,7 +483,7 @@ class RestaurantConsumer(BaseConsumer):
     channel_name = RESTAURANT_ROOM_CHANNEL
     channel_group_name = RESTAURANT_ROOM_CHANNEL_GROUP
     view = CV.RESTAURANT
-    body_template = "restaurant/body.html"
+    body_template = "common/body.html"
     context_class = RestaurantContext
 
     def showRestaurantItems(self, event):

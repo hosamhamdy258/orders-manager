@@ -15,10 +15,7 @@ class OrderRoomContext(BaseContext):
     def get_base_context(self):
         ctx = super().get_base_context()
         ctx.update(
-            {
-                VC.MAIN_TITLE: _("Rooms"),
-                VC.TITLE_ACTION: _("Refresh"),
-            }
+            {VC.MAIN_TITLE: _("Rooms"), VC.TITLE_ACTION: _("Refresh"), VC.TOP_SECTION_TEMPLATE: "orderRoom/topSection/titleAction.html"},
         )
         return ctx
 
@@ -32,6 +29,7 @@ class OrderRoomContext(BaseContext):
                 VC.LIST_TABLE_HEADERS: [_("Room Name"), _("Connected Users")],
                 # GC.ACTION_JOIN_BUTTON: {"name": _("Join")},
                 # GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
+                VC.LIST_SECTION_TEMPLATE: "orderRoom/bodySection/listSection.html",
             }
         )
         return ctx
@@ -43,8 +41,14 @@ class OrderRoomContext(BaseContext):
                 VC.DETAILS_SECTION_TITLE: _("Room Members"),
                 VC.DETAILS_SECTION_DATA: self.get_order_room_members(instance) if instance else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Name")],
+                VC.DETAILS_SECTION_TEMPLATE: "orderRoom/bodySection/detailsSection.html",
             }
         )
+        return ctx
+
+    def get_form_context(self):
+        ctx = super().get_form_context()
+        ctx.update({VC.FORM_SECTION_TEMPLATE: "orderRoom/bottomSection/form/formGroupItem.html"})
         return ctx
 
     def get_order_group_rooms(self, group):

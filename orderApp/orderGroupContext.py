@@ -16,10 +16,7 @@ class OrderGroupContext(BaseContext):
     def get_base_context(self):
         ctx = super().get_base_context()
         ctx.update(
-            {
-                VC.MAIN_TITLE: _("Groups"),
-                VC.TITLE_ACTION: _("Refresh"),
-            }
+            {VC.MAIN_TITLE: _("Groups"), VC.TITLE_ACTION: _("Refresh"), VC.TOP_SECTION_TEMPLATE: "orderGroup/topSection/titleAction.html"},
         )
         return ctx
 
@@ -34,6 +31,7 @@ class OrderGroupContext(BaseContext):
                 VC.LIST_TABLE_HEADERS: [_("Group"), _("Members")],
                 GC.ACTION_JOIN_BUTTON: {"name": _("Open")},
                 GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
+                VC.LIST_SECTION_TEMPLATE: "orderGroup/bodySection/listSection.html",
             }
         )
         return ctx
@@ -45,8 +43,14 @@ class OrderGroupContext(BaseContext):
                 VC.DETAILS_SECTION_TITLE: _("Group Members"),
                 VC.DETAILS_SECTION_DATA: self.get_order_group_members(instance) if instance else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Name")],
+                VC.DETAILS_SECTION_TEMPLATE: "orderGroup/bodySection/detailsSection.html",
             }
         )
+        return ctx
+
+    def get_form_context(self):
+        ctx = super().get_form_context()
+        ctx.update({VC.FORM_SECTION_TEMPLATE: "orderGroup/bottomSection/form/formGroupItem.html"})
         return ctx
 
     def get_user_order_groups(self, user):

@@ -27,7 +27,10 @@ class ViewContextKeys(EnumMeta):
     NEXT = "next_view"
     CURRENT = "current_view"
     USER = "user"
+    TOP_SECTION_TEMPLATE = "top_section_template"
+    TOP_SECTION_INFO = "top_section_info"
 
+    LIST_SECTION_TEMPLATE = "list_section_template"
     LIST_SECTION_ID = "list_section_id"
     LIST_SECTION_TITLE = "list_section_title"
     LIST_SECTION_DATA = "list_section_data"
@@ -37,6 +40,7 @@ class ViewContextKeys(EnumMeta):
     LIST_TABLE_HEADERS = "list_table_headers"
     LIST_OPEN_ACTION_MESSAGE_TYPE = "list_open_action_message_type"
 
+    DETAILS_SECTION_TEMPLATE = "details_section_template"
     DETAILS_SECTION_ID = "details_section_id"
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
@@ -44,6 +48,11 @@ class ViewContextKeys(EnumMeta):
     DETAILS_CURRENT_SELECTION = "details_current_selection"
     DETAILS_TABLE_BODY_ID = "details_table_body_id"
     DETAILS_TABLE_HEADERS = "details_table_headers"
+
+    FORM_SECTION_TEMPLATE = "form_section_template"
+    EXTRA_FORM_SECTION_TEMPLATE = "extra_form_section_template"
+
+    SUMMARY_SECTION_TEMPLATE = "summary_section_template"
 
 
 class OrderContextKeys(EnumMeta):

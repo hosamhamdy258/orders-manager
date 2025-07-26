@@ -1,12 +1,18 @@
+from django.contrib.auth import get_user_model
+from django.db.models import DecimalField, F, Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from orderApp.context import BaseContext
 from orderApp.enums import CurrentViews as CV
+from orderApp.enums import ErrorMessage as EM
 from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import MenuItem, Order, OrderItem, OrderRoomUser, Restaurant
+from orderApp.utils import calculate_totals, group_nested_data
+
+UserModel = get_user_model()
 
 
 class OrderSelectionContext(BaseContext):
@@ -41,6 +47,7 @@ class OrderSelectionContext(BaseContext):
                 VC.TITLE_ACTION: _("Add Restaurant"),
                 GC.ROOM_NUMBER: self.get_order_room().name,
                 OC.TIME_LEFT: self.get_room_user().get_time_left(),
+                VC.TOP_SECTION_INFO: "orderSelection/topSection/middleTitle.html",
             }
         )
         return ctx
@@ -62,6 +69,7 @@ class OrderSelectionContext(BaseContext):
                     )
                 ),
                 VC.LIST_TABLE_HEADERS: [_("User"), _("Total")],
+                VC.LIST_SECTION_TEMPLATE: "orderSelection/bodySection/listSection.html",
             }
         )
         return ctx
@@ -77,6 +85,7 @@ class OrderSelectionContext(BaseContext):
                     [instance] if instance else self.get_last_order_items() if not order_instance else self.get_order_items(order_instance)
                 ),
                 VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
+                VC.DETAILS_SECTION_TEMPLATE: "orderSelection/bodySection/detailsSection.html",
             }
         )
         return ctx
@@ -100,6 +109,8 @@ class OrderSelectionContext(BaseContext):
                 OC.DISABLE_ORDER_ITEM_FORM: disable,
                 OC.ORDER: order,
                 OC.FORM_ORDER_ID: OC.FORM_ORDER_ID,
+                VC.FORM_SECTION_TEMPLATE: "orderSelection/bottomSection/form/formOrderItem.html",
+                VC.EXTRA_FORM_SECTION_TEMPLATE: "orderSelection/bottomSection/actions/orderActions.html",
             }
         )
         return ctx
@@ -140,6 +151,89 @@ class OrderSelectionContext(BaseContext):
 
     def get_restaurant_list(self):
         return Restaurant.objects.all()
+
+    def groupOrderSummary(self):
+
+        orderTotalSummary = (
+            Restaurant.objects.filter(
+                menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
+            )
+            .values(
+                restaurant=F("name"),
+                item=F("menuitem__name"),
+                price=F("menuitem__price"),
+                # user=F("menuitem__orderitem__fk_order__fk_user__username"),
+            )
+            .annotate(
+                quantity=Sum("menuitem__orderitem__quantity"),
+                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+            )
+            .distinct()
+        )
+        orderTotalSummary2 = (
+            Restaurant.objects.filter(
+                menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
+            )
+            .values(
+                restaurant=F("name"),
+                item=F("menuitem__name"),
+                price=F("menuitem__price"),
+                user=F("menuitem__orderitem__fk_order__fk_user__username"),
+            )
+            .annotate(
+                quantity=Sum("menuitem__orderitem__quantity"),
+                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+            )
+            .distinct()
+        )
+
+        grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
+
+        orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
+
+        totals_orderTotalSummary = {
+            restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
+        }
+
+        orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
+
+        totals_orderUsersTotalSummaryGrouped = {
+            restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
+            for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
+        }
+
+        orderUsersSummary = (
+            UserModel.objects.filter(order__created__date=timezone.now(), order__finished_ordering=True, order__fk_order_room=self.get_order_room())
+            .values(
+                user=F("username"),
+                restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
+                item=F("order__orderitem__fk_menu_item__name"),
+                price=F("order__orderitem__fk_menu_item__price"),
+            )
+            .annotate(
+                quantity=Sum("order__orderitem__quantity"),
+                total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
+            )
+            .distinct()
+        )
+
+        orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
+
+        orderUsersSummaryGrouped = group_nested_data(orderUsersSummary, ["user"])
+
+        totals_orderUsersSummaryGrouped = {user: calculate_totals(items, ["quantity", "total"]) for user, items in orderUsersSummaryGrouped.items()}
+
+        return {
+            "orderTotalSummaryGrouped": orderTotalSummaryGrouped,
+            "totals_orderTotalSummary": totals_orderTotalSummary,
+            "grand_totals_orderTotalSummary": grand_totals_orderTotalSummary,
+            "orderUsersTotalSummaryGrouped": orderUsersTotalSummaryGrouped,
+            "totals_orderUsersTotalSummaryGrouped": totals_orderUsersTotalSummaryGrouped,
+            "orderUsersRestaurantSummaryGrouped": orderUsersRestaurantSummaryGrouped,
+            "totals_orderUsersSummaryGrouped": totals_orderUsersSummaryGrouped,
+            "showTables": True,
+            "table_headers": ["#", _("Item"), _("Price"), _("Quantity"), _("Total")],
+        }
 
 
 def orders_query():

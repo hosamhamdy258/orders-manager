@@ -1,0 +1,19 @@
+{% extends "base/body.html" %}
+
+{% block top_section_body %}
+{{ block.super }}
+{% if top_section_template %}{% include top_section_template %}{% endif %}
+{% endblock top_section_body %}
+
+{% block details_section %}
+{% if details_section_template %}{% include details_section_template %}{% endif %}
+{% endblock details_section %}
+
+{% block list_section %}
+{% if list_section_template %}{% include list_section_template %}{% endif %}
+{% endblock list_section %}
+
+{% block bottom_form %}
+{% if form_section_template %}{% include form_section_template %}{% endif %}
+{% if extra_form_section_template %}{% include extra_form_section_template %}{% endif %}
+{% endblock bottom_form %}
