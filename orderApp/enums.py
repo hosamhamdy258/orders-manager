@@ -31,6 +31,8 @@ class ViewContextKeys(EnumMeta):
     TOP_SECTION_INFO = "top_section_info"
 
     LIST_SECTION_TEMPLATE = "list_section_template"
+    LIST_SECTION_BODY_TEMPLATE = "list_section_body_template"
+    LIST_SECTION_TABLE_BODY_TEMPLATE = "list_section_table_body_template"
     LIST_SECTION_ID = "list_section_id"
     LIST_SECTION_TITLE = "list_section_title"
     LIST_SECTION_DATA = "list_section_data"

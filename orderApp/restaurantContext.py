@@ -29,7 +29,9 @@ class RestaurantContext(BaseContext):
                 VC.LIST_MESSAGE_TYPE: "showRestaurantItems",
                 VC.LIST_SECTION_DATA: [instance] if instance else Restaurant.objects.all().order_by("-id"),
                 VC.LIST_TABLE_HEADERS: [_("Restaurant Name")],
-                VC.LIST_SECTION_TEMPLATE: "restaurant/bodySection/listSection.html",
+                VC.LIST_SECTION_TEMPLATE: "base/bodySection/listSection.html",
+                VC.LIST_SECTION_BODY_TEMPLATE: "base/bodySection/listSectionBody.html",
+                VC.LIST_SECTION_TABLE_BODY_TEMPLATE: "restaurant/bodySection/listSectionBodyTable.html",
             }
         )
         return ctx

@@ -29,7 +29,9 @@ class OrderRoomContext(BaseContext):
                 VC.LIST_TABLE_HEADERS: [_("Room Name"), _("Connected Users")],
                 # GC.ACTION_JOIN_BUTTON: {"name": _("Join")},
                 # GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
-                VC.LIST_SECTION_TEMPLATE: "orderRoom/bodySection/listSection.html",
+                VC.LIST_SECTION_TEMPLATE: "base/bodySection/listSection.html",
+                VC.LIST_SECTION_BODY_TEMPLATE: "base/bodySection/listSectionBody.html",
+                VC.LIST_SECTION_TABLE_BODY_TEMPLATE: "orderRoom/bodySection/listSectionBodyTable.html",
             }
         )
         return ctx

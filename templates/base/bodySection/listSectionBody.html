@@ -8,6 +8,7 @@
     </thead>
     <tbody id="{{list_table_body_id}}">
         {% block table_body %}
+        {% if list_section_table_body_template %}{% include list_section_table_body_template with wrapper="False" %}{% endif %}
         {% endblock table_body %}
     </tbody>
 </table>

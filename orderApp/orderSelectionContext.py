@@ -69,7 +69,9 @@ class OrderSelectionContext(BaseContext):
                     )
                 ),
                 VC.LIST_TABLE_HEADERS: [_("User"), _("Total")],
-                VC.LIST_SECTION_TEMPLATE: "orderSelection/bodySection/listSection.html",
+                VC.LIST_SECTION_TEMPLATE: "base/bodySection/listSection.html",
+                VC.LIST_SECTION_BODY_TEMPLATE: "base/bodySection/listSectionBody.html",
+                VC.LIST_SECTION_TABLE_BODY_TEMPLATE: "orderSelection/bodySection/listSectionBodyTable.html",
             }
         )
         return ctx

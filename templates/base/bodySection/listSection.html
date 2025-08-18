@@ -1,3 +1,6 @@
 {% extends "base/bodySection/base.html" %}
 {% block id %}{{list_section_id}}{% endblock id %}
 {% block title %}{{list_section_title}}{% endblock title %}
+{% block body %}
+{% if list_section_body_template %}{% include list_section_body_template %}{% endif %}
+{% endblock body %}

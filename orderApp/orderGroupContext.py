@@ -31,7 +31,9 @@ class OrderGroupContext(BaseContext):
                 VC.LIST_TABLE_HEADERS: [_("Group"), _("Members")],
                 GC.ACTION_JOIN_BUTTON: {"name": _("Open")},
                 GC.ACTION_SHOW_BUTTON: {"name": _("Manage"), "icon": "bi bi-gear-fill"},
-                VC.LIST_SECTION_TEMPLATE: "orderGroup/bodySection/listSection.html",
+                VC.LIST_SECTION_TEMPLATE: "base/bodySection/listSection.html",
+                VC.LIST_SECTION_BODY_TEMPLATE: "base/bodySection/listSectionBody.html",
+                VC.LIST_SECTION_TABLE_BODY_TEMPLATE: "orderGroup/bodySection/listSectionBodyTable.html",
             }
         )
         return ctx

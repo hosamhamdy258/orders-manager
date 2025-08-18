@@ -179,7 +179,7 @@ class OrderGroupConsumer(BaseConsumer):
             templates.append("orderGroup/bodySection/listSectionBodyTable.html")
         else:
             kwargs = {}
-            templates.append("orderGroup/bodySection/listSectionBody.html")
+            templates.append("base/bodySection/listSectionBody.html")
         context.update(**self.get_context_builder().get_list_context(**kwargs))
         self.response_builder(templates, context)
 
@@ -429,7 +429,7 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
             context.update(**self.get_context_builder().get_extra_context(all_orders=all_orders))
 
         # TODO make the update only on inner table
-        templates.append("orderSelection/bodySection/listSectionBody.html")
+        templates.append("base/bodySection/listSectionBody.html")
         templates.append("orderSelection/bottomSection/actions/getOrderList.html")
 
         self.response_builder(templates, context)
