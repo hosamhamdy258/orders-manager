@@ -366,6 +366,7 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
                 context.update(**self.get_context_builder().get_details_context(instance=instance))
                 # TODO refactor body tables sections as they're so similar
                 templates.append("orderSelection/bodySection/detailsSectionBodyTable.html")
+                context.update({"swap_method": "afterbegin"})
 
             else:
                 context.update({"form": form})
@@ -396,7 +397,7 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
                 templates.append("orderSelection/bottomSection/form/formOrderItem.html")
 
                 context.update(**self.get_context_builder().get_details_context())
-                templates.append("orderSelection/bodySection/detailsSection.html")
+                templates.append("base/bodySection/detailsSection.html")
 
                 self.membersOrders({"message": {"message_type": "membersOrders", "instance": order}})
 
@@ -455,6 +456,8 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
             {**self.get_context_builder().get_details_context(order_instance=event[self.message].get("item_id"), disable_remove_button=True)}
         )
 
+        templates.append("orderSelection/bodySection/order_items_modal.html")
+
         self.response_builder(templates, context)
 
     # ! did check this function yet
@@ -507,7 +510,7 @@ class RestaurantConsumer(BaseConsumer):
             context.update(**self.get_context_builder().get_list_context(instance=instance))
             templates.append("restaurant/bodySection/listSectionBodyTable.html")
 
-            templates.append("restaurant/bodySection/detailsSection.html")
+            templates.append("base/bodySection/detailsSection.html")
             templates.append("restaurant/bottomSection/form/formMenuItem.html")
         else:
             context.update({"form": form})

@@ -44,7 +44,8 @@ class RestaurantContext(BaseContext):
                 VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
                 VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=instance) if instance else None,
                 VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
-                VC.DETAILS_SECTION_BODY_TEMPLATE: "restaurant/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "base/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_TABLE_BODY_TEMPLATE: "restaurant/bodySection/detailsSectionBodyTable.html",
             }
         )
         return ctx

@@ -87,6 +87,7 @@ class BaseContext:
         return {
             **self._get_common_context(),
             VC.DETAILS_SECTION_ID: VC.DETAILS_SECTION_ID,
+            VC.DETAILS_TABLE_ID: VC.DETAILS_TABLE_ID,
             VC.DETAILS_TABLE_BODY_ID: VC.DETAILS_TABLE_BODY_ID,
         }
 

@@ -44,7 +44,8 @@ class OrderGroupContext(BaseContext):
                 VC.DETAILS_SECTION_DATA: self.get_order_group_members(instance) if instance else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Name")],
                 VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
-                VC.DETAILS_SECTION_BODY_TEMPLATE: "orderGroup/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "base/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_TABLE_BODY_TEMPLATE: "orderGroup/bodySection/detailsSectionBodyTable.html",
             }
         )
         return ctx

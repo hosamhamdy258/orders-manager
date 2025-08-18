@@ -42,11 +42,13 @@ class ViewContextKeys(EnumMeta):
 
     DETAILS_SECTION_TEMPLATE = "details_section_template"
     DETAILS_SECTION_BODY_TEMPLATE = "details_section_body_template"
+    DETAILS_SECTION_TABLE_BODY_TEMPLATE = "details_section_table_body_template"
     DETAILS_SECTION_ID = "details_section_id"
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
     DETAILS_SECTION_DATA = "details_section_data"
     DETAILS_CURRENT_SELECTION = "details_current_selection"
+    DETAILS_TABLE_ID = "details_table_id"
     DETAILS_TABLE_BODY_ID = "details_table_body_id"
     DETAILS_TABLE_HEADERS = "details_table_headers"
 

@@ -86,7 +86,8 @@ class OrderSelectionContext(BaseContext):
                 ),
                 VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
                 VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
-                VC.DETAILS_SECTION_BODY_TEMPLATE: "orderSelection/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "base/bodySection/detailsSectionBody.html",
+                VC.DETAILS_SECTION_TABLE_BODY_TEMPLATE: "orderSelection/bodySection/detailsSectionBodyTable.html",
             }
         )
         return ctx

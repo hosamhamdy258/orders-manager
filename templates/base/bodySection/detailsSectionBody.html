@@ -1,4 +1,4 @@
-<table class="table table-hover table-bordered text-center align-middle">
+<table id="{{details_table_id}}" class="table table-hover table-bordered text-center align-middle">
     <thead class="table-light">
         {% block table_headers %}
         {% for header in details_table_headers %}
@@ -8,6 +8,7 @@
     </thead>
     <tbody id="{{details_table_body_id}}">
         {% block table_body %}
+        {% if details_section_table_body_template %}{% include details_section_table_body_template with wrapper="False" %}{% endif %}
         {% endblock table_body %}
     </tbody>
 </table>
