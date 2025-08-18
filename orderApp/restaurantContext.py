@@ -43,7 +43,8 @@ class RestaurantContext(BaseContext):
                 VC.DETAILS_SECTION_DATA: MenuItem.get_restaurant_menu_items(restaurant=instance) if instance else [menu_item] if menu_item else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Item Name"), _("Price")],
                 VC.DETAILS_CURRENT_SELECTION: Restaurant.objects.get(pk=instance) if instance else None,
-                VC.DETAILS_SECTION_TEMPLATE: "restaurant/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "restaurant/bodySection/detailsSectionBody.html",
             }
         )
         return ctx

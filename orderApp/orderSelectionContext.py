@@ -85,7 +85,8 @@ class OrderSelectionContext(BaseContext):
                     [instance] if instance else self.get_last_order_items() if not order_instance else self.get_order_items(order_instance)
                 ),
                 VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
-                VC.DETAILS_SECTION_TEMPLATE: "orderSelection/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "orderSelection/bodySection/detailsSectionBody.html",
             }
         )
         return ctx

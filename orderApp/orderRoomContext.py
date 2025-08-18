@@ -41,7 +41,8 @@ class OrderRoomContext(BaseContext):
                 VC.DETAILS_SECTION_TITLE: _("Room Members"),
                 VC.DETAILS_SECTION_DATA: self.get_order_room_members(instance) if instance else None,
                 VC.DETAILS_TABLE_HEADERS: [_("Name")],
-                VC.DETAILS_SECTION_TEMPLATE: "orderRoom/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
+                VC.DETAILS_SECTION_BODY_TEMPLATE: "orderRoom/bodySection/detailsSectionBody.html",
             }
         )
         return ctx

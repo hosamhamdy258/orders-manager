@@ -41,6 +41,7 @@ class ViewContextKeys(EnumMeta):
     LIST_OPEN_ACTION_MESSAGE_TYPE = "list_open_action_message_type"
 
     DETAILS_SECTION_TEMPLATE = "details_section_template"
+    DETAILS_SECTION_BODY_TEMPLATE = "details_section_body_template"
     DETAILS_SECTION_ID = "details_section_id"
     DETAILS_SECTION_TITLE = "details_section_title"
     DETAILS_MESSAGE_TYPE = "details_message_type"
