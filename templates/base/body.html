@@ -19,13 +19,14 @@
         <!-- body section -->
         <div class="card-body">
             <!-- split body to 2 sections [right-left] -->
-            <div class="row g-3">
-                <!-- right section -->
-
-                {% block details_section %}{% endblock details_section %}
-
+            <div class="row">
                 <!-- left section -->
                 {% block list_section %}{% endblock list_section %}
+            </div>
+            <br>
+            <div class="row">
+                <!-- right section -->
+                {% block details_section %}{% endblock details_section %}
             </div>
         </div>
     </div>

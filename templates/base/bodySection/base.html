@@ -1,11 +1,11 @@
 {% load i18n%}
-<div id="{% block id %}{% endblock id %}" class="col-md-6" hx-swap-oob="innerHTML">
+<div id="{% block id %}{% endblock id %}" class="col" hx-swap-oob="innerHTML">
     <div class="card h-100">
         <div class="card-header text-center fw-bold">
             {% block title %}
             {% endblock title %}
         </div>
-        <div class="card-body table-responsive overflow-auto p-0" style="height: 25vh">
+        <div class="card-body table-responsive overflow-auto p-0" style="height: 20vh">
             {% block body %}
             {% endblock body %}
         </div>

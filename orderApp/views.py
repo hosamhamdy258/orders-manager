@@ -63,23 +63,32 @@ class IndexView(BaseView):
     ws_url = "/ws/index/"
 
 
-class GroupAccessMixin:
+class HasAccessMixin:
     def dispatch(self, request, *args, **kwargs):
-        try:
-            self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
-        except ObjectDoesNotExist:
-            messages.error(request, {"code": 404})
-            return redirect("redirect")
+        if request.user.is_authenticated:
+            try:
+                if kwargs.get(GC.GROUP_NUMBER):
+                    self.group = OrderGroup.objects.get(group_number=kwargs.get(GC.GROUP_NUMBER))
+            except ObjectDoesNotExist:
+                messages.error(request, {"code": 404})
+                return redirect("redirect")
 
-        if not self.group.can_join_group(self.get_user()):
-            messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
-            return redirect("redirect")
+            if not self.group.can_join_group(self.get_user()):
+                messages.error(request, {"code": 403, "message": _("You are not allowed to enter here")})
+                return redirect("redirect")
+
+            try:
+                if kwargs.get(GC.ROOM_NUMBER):
+                    self.room = OrderRoom.objects.get(room_number=kwargs.get(GC.ROOM_NUMBER))
+            except ObjectDoesNotExist:
+                messages.error(request, {"code": 404})
+                return redirect("redirect")
 
         return super().dispatch(request, *args, **kwargs)
 
 
 @method_decorator(decorators, name="dispatch")
-class OrderRoomView(GroupAccessMixin, BaseView):
+class OrderRoomView(HasAccessMixin, BaseView):
     view_type = CV.ORDER_ROOM
     ws_url = "/ws/room/"
 
@@ -87,17 +96,9 @@ class OrderRoomView(GroupAccessMixin, BaseView):
         return f"{self.ws_url}{self.group.group_number}/"
 
 
-class OrderSelectionView(GroupAccessMixin, BaseView):
+class OrderSelectionView(HasAccessMixin, BaseView):
     view_type = CV.ORDER_SELECTION
     ws_url = "/ws/order/"
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            self.room = OrderRoom.objects.get(room_number=kwargs.get(GC.ROOM_NUMBER))
-        except ObjectDoesNotExist:
-            messages.error(request, {"code": 404})
-            return redirect("redirect")
-        return super().dispatch(request, *args, **kwargs)
 
     def get_ws_url(self):
         return f"{self.ws_url}{self.group.group_number}/{self.room.room_number}/"
