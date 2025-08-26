@@ -2,7 +2,9 @@ import math
 import time
 from datetime import timedelta
 
+from channels_presence.models import Room
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models import F, Q, Sum
@@ -12,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import configuration
+from orderApp.enums import ORDER_SELECTION_CHANNEL_GROUP
 from orderApp.utils import PositiveValueValidator
 
 SMALL_NAME_LENGTH = 50
@@ -127,7 +130,15 @@ class OrderRoom(models.Model):
         return generate_str(keys=keys)
 
     def connected_users(self):
-        return len(self.m2m_users.all())
+        try:
+            count = Room.objects.get(channel_name=f"{ORDER_SELECTION_CHANNEL_GROUP}{self.pk}").get_users().count()
+        except ObjectDoesNotExist:
+            count = 0
+        return count
+
+    # ! removed in favorite of django-channel-presence
+    # def connected_users(self):
+    #     return len(self.m2m_users.all())
 
     def is_member(self, user):
         return self.fk_order_group.objects.filter(Q(m2m_users=user) | Q(fk_owner=user)).exists()

@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "des",
     "solo",
+    "channels_presence",
     # Apps
     "accounts",
     "orderApp",

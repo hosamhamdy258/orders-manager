@@ -3,10 +3,11 @@
 {% block body %}
 <!-- main container -->
 <div class="container-fluid" hx-ext="ws" ws-connect={{ws_url}}>
+  <input type="hidden" name="message_type" value="heartbeat" ws-send hx-swap="none" hx-trigger="every 50s">
   <div class="bg-light p-4 rounded-4 shadow-lg mt-4">
     <!-- user management section -->
     {% include "userManagement/actions.html" %}
-        {% include "base/body.html" %}
+    {% include "base/body.html" %}
   </div>
 </div>
 {% endblock body %}

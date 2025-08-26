@@ -2,12 +2,17 @@ from functools import wraps
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
+from channels_presence.models import Presence, Room
 from django.contrib.auth import get_user_model
-from django.db.models import DecimalField, F, Sum
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from orderApp.enums import (
+    ORDER_GROUP_CHANNEL_GROUP,
+    ORDER_ROOM_CHANNEL_GROUP,
+    ORDER_SELECTION_CHANNEL_GROUP,
+    RESTAURANT_ROOM_CHANNEL_GROUP,
+)
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import ErrorMessage as EM
 from orderApp.forms import (
@@ -17,14 +22,7 @@ from orderApp.forms import (
     OrderRoomForm,
     RestaurantForm,
 )
-from orderApp.models import (
-    GroupRetries,
-    MenuItem,
-    OrderGroup,
-    OrderItem,
-    OrderRoom,
-    Restaurant,
-)
+from orderApp.models import GroupRetries, MenuItem, OrderGroup, OrderItem, OrderRoom
 from orderApp.orderGroupContext import OrderGroupContext
 from orderApp.orderRoomContext import OrderRoomContext
 from orderApp.orderSelectionContext import (
@@ -33,22 +31,12 @@ from orderApp.orderSelectionContext import (
     finish_order,
     get_last_order,
     get_order,
+    get_user_order,
 )
 from orderApp.restaurantContext import RestaurantContext
-from orderApp.utils import calculate_totals, group_nested_data, templates_builder
+from orderApp.utils import templates_builder
 
 UserModel = get_user_model()
-ORDER_GROUP_CHANNEL = "orderGroup"
-ORDER_GROUP_CHANNEL_GROUP = f"GROUP_{ORDER_GROUP_CHANNEL}"
-
-ORDER_ROOM_CHANNEL = "orderRoom"
-ORDER_ROOM_CHANNEL_GROUP = f"GROUP_{ORDER_ROOM_CHANNEL}"
-
-ORDER_SELECTION_CHANNEL = "orderSelection"
-ORDER_SELECTION_CHANNEL_GROUP = f"GROUP_{ORDER_SELECTION_CHANNEL}"
-
-RESTAURANT_ROOM_CHANNEL = "restaurantRoom"
-RESTAURANT_ROOM_CHANNEL_GROUP = f"GROUP_{RESTAURANT_ROOM_CHANNEL}"
 
 
 def group_message(fn):
@@ -64,7 +52,6 @@ def group_message(fn):
 class BaseConsumer(JsonWebsocketConsumer):
     message_type = "message_type"
     message = "message"
-    channel_name = None
     channel_group_name = None
     user = None
     view = None
@@ -80,7 +67,9 @@ class BaseConsumer(JsonWebsocketConsumer):
 
     def connect(self):
         self.get_user()
-        async_to_sync(self.channel_layer.group_add)(self.get_channel_group_name(), self.get_channel_name())
+        # ! used django-channels-presence for handle connect/disconnect properly
+        # async_to_sync(self.channel_layer.group_add)(self.get_channel_group_name(), self.get_channel_name())
+        Room.objects.add(self.get_channel_group_name(), self.get_channel_name(), self.scope["user"])
         self.accept()
         self.after_connect()
 
@@ -92,7 +81,9 @@ class BaseConsumer(JsonWebsocketConsumer):
         pass
 
     def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(self.get_channel_group_name(), self.get_channel_name())
+        # ! used django-channels-presence for handle connect/disconnect properly
+        # async_to_sync(self.channel_layer.group_discard)(self.get_channel_group_name(), self.get_channel_name())
+        Room.objects.remove(self.get_channel_group_name(), self.get_channel_name())
         self.after_disconnect()
 
     def get_channel_name(self):
@@ -137,9 +128,7 @@ class BaseConsumer(JsonWebsocketConsumer):
         # ! from outside consumers
         # ?{"type": "sendNotification", "message": {"message_type": "sendNotification"}}
         try:
-            async_to_sync(self.channel_layer.group_send)(
-                self.get_channel_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False}
-            )
+            async_to_sync(self.channel_layer.group_send)(self.get_channel_group_name(), {"type": event[self.message][self.message_type], self.message: event[self.message], "group": False})
         except Exception as e:
             print(e)
 
@@ -155,9 +144,11 @@ class BaseConsumer(JsonWebsocketConsumer):
         for part in response:
             self.send(text_data=part)
 
+    def heartbeat(self, event):
+        Presence.objects.touch(self.get_channel_name())
+
 
 class OrderGroupConsumer(BaseConsumer):
-    channel_name = ORDER_GROUP_CHANNEL
     channel_group_name = ORDER_GROUP_CHANNEL_GROUP
     view = CV.ORDER_GROUP
     body_template = "common/body.html"
@@ -258,7 +249,6 @@ class GroupConsumerMixin:
 
 
 class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
-    channel_name = ORDER_ROOM_CHANNEL
     channel_group_name = ORDER_ROOM_CHANNEL_GROUP
     view = CV.ORDER_ROOM
     body_template = "common/body.html"
@@ -296,7 +286,6 @@ class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
         kwargs.update({"order_group": self.get_order_group()})
         return kwargs
 
-    @group_message
     def updateConnectedUsers(self, event):
         templates, context = [], {}
         context.update({"item": event[self.message]["instance"]})
@@ -305,14 +294,16 @@ class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
 
 
 class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
-    channel_name = ORDER_SELECTION_CHANNEL
     channel_group_name = ORDER_SELECTION_CHANNEL_GROUP
     view = CV.ORDER_SELECTION
     body_template = "orderSelection/body.html"
     context_class = OrderSelectionContext
 
+    def get_channel_group_name(self):
+        return f"{self.channel_group_name}{self.get_order_room().pk}"
+
     def after_connect(self):
-        self.add_user_to_room()
+        # self.add_user_to_room()
         self.updateUsersConnectedCount()
         super().after_connect()
 
@@ -326,15 +317,15 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
         self.order_room = OrderRoom.objects.get(room_number=self.scope["url_route"]["kwargs"]["room_name"])
         return self.order_room
 
-    def add_user_to_room(self):
-        self.get_order_room().add_user_to_room(self.get_user())
+    # def add_user_to_room(self):
+    #     self.get_order_room().add_user_to_room(self.get_user())
 
-    def remove_user_from_room(self):
-        self.get_order_room().remove_user_from_room(self.get_user())
+    # def remove_user_from_room(self):
+    #     self.get_order_room().remove_user_from_room(self.get_user())
 
     def after_disconnect(self):
         super().after_disconnect()
-        self.remove_user_from_room()
+        # self.remove_user_from_room()
         self.updateUsersConnectedCount()
 
     def addOrderItem(self, event):
@@ -424,7 +415,7 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
             context.update(**self.get_context_builder().get_list_context(all_orders=all_orders))
             context.update(**self.get_context_builder().get_extra_context(all_orders=all_orders))
         else:
-            order = get_last_order(user=self.get_user(), order_room=self.get_order_room(), finished=True)
+            order = get_user_order(user=self.get_user(), order_room=self.get_order_room(), finished=True)
             context.update(**self.get_context_builder().get_list_context(instance=order, all_orders=all_orders))
             context.update(**self.get_context_builder().get_extra_context(all_orders=all_orders))
 
@@ -452,9 +443,7 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
         templates, context = [], {}
         # TODO validate order_id in same room
 
-        context.update(
-            {**self.get_context_builder().get_details_context(order_instance=event[self.message].get("item_id"), disable_remove_button=True)}
-        )
+        context.update({**self.get_context_builder().get_details_context(order_instance=event[self.message].get("item_id"), disable_remove_button=True)})
 
         templates.append("orderSelection/bodySection/order_items_modal.html")
 
@@ -483,7 +472,6 @@ class OrderSelectionConsumer(GroupConsumerMixin, BaseConsumer):
 
 
 class RestaurantConsumer(BaseConsumer):
-    channel_name = RESTAURANT_ROOM_CHANNEL
     channel_group_name = RESTAURANT_ROOM_CHANNEL_GROUP
     view = CV.RESTAURANT
     body_template = "common/body.html"

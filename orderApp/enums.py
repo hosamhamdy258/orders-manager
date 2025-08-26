@@ -2,6 +2,18 @@ from enum import EnumMeta
 
 from django.utils.translation import gettext_lazy as _
 
+ORDER_GROUP_CHANNEL = "orderGroup"
+ORDER_GROUP_CHANNEL_GROUP = f"GROUP_{ORDER_GROUP_CHANNEL}"
+
+ORDER_ROOM_CHANNEL = "orderRoom"
+ORDER_ROOM_CHANNEL_GROUP = f"GROUP_{ORDER_ROOM_CHANNEL}"
+
+ORDER_SELECTION_CHANNEL = "orderSelection"
+ORDER_SELECTION_CHANNEL_GROUP = f"GROUP_{ORDER_SELECTION_CHANNEL}"
+
+RESTAURANT_ROOM_CHANNEL = "restaurantRoom"
+RESTAURANT_ROOM_CHANNEL_GROUP = f"GROUP_{RESTAURANT_ROOM_CHANNEL}"
+
 
 class GeneralContextKeys(EnumMeta):
     GROUP_NUMBER = "group_number"

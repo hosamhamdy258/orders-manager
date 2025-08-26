@@ -1,3 +1,4 @@
+from channels_presence.models import Presence, Room
 from django.contrib import admin
 
 from orderApp.models import (
@@ -40,3 +41,5 @@ admin.site.register(OrderRoomUser)
 admin.site.register(OrderRoom, OrderRoomAdmin)
 admin.site.register(OrderGroup, OrderGroupAdmin)
 admin.site.register(GroupRetries)
+admin.site.register(Room)
+admin.site.register(Presence)

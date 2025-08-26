@@ -54,20 +54,20 @@ class OrderSelectionContext(BaseContext):
 
     def get_list_context(self, instance=None, all_orders=True):
         ctx = super().get_list_context()
+
+        if instance:
+            LIST_SECTION_DATA = [instance]
+        elif all_orders:
+            LIST_SECTION_DATA = self.get_all_orders(order_room=self.get_order_room())
+        else:
+            LIST_SECTION_DATA = self.get_all_orders(user=self.get_user(), order_room=self.get_order_room())
+
         ctx.update(
             {
                 VC.LIST_TABLE_BODY_ID: "group_table_body",
                 VC.LIST_SECTION_TITLE: _("Members Orders"),
                 VC.LIST_MESSAGE_TYPE: "showMemberItemOrders",
-                VC.LIST_SECTION_DATA: (
-                    [instance]
-                    if instance
-                    else (
-                        self.get_all_orders(user=self.get_user(), order_room=self.get_order_room())
-                        if not all_orders
-                        else self.get_all_orders(order_room=self.get_order_room())
-                    )
-                ),
+                VC.LIST_SECTION_DATA: LIST_SECTION_DATA,
                 VC.LIST_TABLE_HEADERS: [_("User"), _("Total")],
                 VC.LIST_SECTION_TEMPLATE: "base/bodySection/listSection.html",
                 VC.LIST_SECTION_BODY_TEMPLATE: "base/bodySection/listSectionBody.html",
@@ -83,9 +83,7 @@ class OrderSelectionContext(BaseContext):
                 VC.DETAILS_SECTION_TITLE: _("Order Items"),
                 VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
                 OC.DISABLE_REMOVE_BUTTON: disable_remove_button,
-                VC.DETAILS_SECTION_DATA: (
-                    [instance] if instance else self.get_last_order_items() if not order_instance else self.get_order_items(order_instance)
-                ),
+                VC.DETAILS_SECTION_DATA: ([instance] if instance else self.get_last_order_items() if not order_instance else self.get_order_items(order_instance)),
                 VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
                 VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
                 VC.DETAILS_SECTION_BODY_TEMPLATE: "base/bodySection/detailsSectionBody.html",
@@ -157,11 +155,8 @@ class OrderSelectionContext(BaseContext):
         return Restaurant.objects.all()
 
     def groupOrderSummary(self):
-
         orderTotalSummary = (
-            Restaurant.objects.filter(
-                menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
-            )
+            Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
             .values(
                 restaurant=F("name"),
                 item=F("menuitem__name"),
@@ -175,9 +170,7 @@ class OrderSelectionContext(BaseContext):
             .distinct()
         )
         orderTotalSummary2 = (
-            Restaurant.objects.filter(
-                menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room()
-            )
+            Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
             .values(
                 restaurant=F("name"),
                 item=F("menuitem__name"),
@@ -195,15 +188,12 @@ class OrderSelectionContext(BaseContext):
 
         orderTotalSummaryGrouped = group_nested_data(orderTotalSummary, ["restaurant"])
 
-        totals_orderTotalSummary = {
-            restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()
-        }
+        totals_orderTotalSummary = {restaurant: calculate_totals(items, ["quantity", "total"]) for restaurant, items in orderTotalSummaryGrouped.items()}
 
         orderUsersTotalSummaryGrouped = group_nested_data(orderTotalSummary2, ["restaurant", "user"])
 
         totals_orderUsersTotalSummaryGrouped = {
-            restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()}
-            for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
+            restaurant: {user: calculate_totals(orders, ["quantity", "total"]) for user, orders in userItems.items()} for restaurant, userItems in orderUsersTotalSummaryGrouped.items()
         }
 
         orderUsersSummary = (
@@ -247,6 +237,10 @@ def orders_query():
 
 def get_last_order(user, order_room, finished=False):
     return orders_query().filter(fk_user=user, fk_order_room=order_room, finished_ordering=finished).last()
+
+
+def get_user_order(user, order_room, finished=False):
+    return orders_query().filter(fk_user=user, fk_order_room=order_room, finished_ordering=finished)
 
 
 def finish_order(order):
