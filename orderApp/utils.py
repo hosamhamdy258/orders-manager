@@ -77,3 +77,11 @@ def calculate_totals(data, keys):
                 totals[key] += value
 
     return totals
+
+
+def spacial_rounder(dict_in_iterable, fields, round_num):
+    # ! implemented to round output field as it's not supported in sqlite3
+    # https://docs.djangoproject.com/en/5.2/ref/databases/#decimal-handling
+    for item in dict_in_iterable:
+        for field in fields:
+            item[field] = round(item[field], round_num)

@@ -25,3 +25,7 @@ class Configuration(SingletonModel):
 
 def configuration():
     return Configuration.get_solo()
+
+
+def join_retry_limit():
+    return Configuration.get_solo().join_retry_limit

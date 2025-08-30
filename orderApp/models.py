@@ -9,11 +9,10 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models import F, Q, Sum
 from django.db.models.constraints import UniqueConstraint
-from django.db.models.functions import Lower
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import configuration
+from accounts.models import configuration, join_retry_limit
 from orderApp.enums import ORDER_SELECTION_CHANNEL_GROUP
 from orderApp.utils import PositiveValueValidator
 
@@ -72,7 +71,7 @@ class OrderGroup(models.Model):
 
 
 class GroupRetries(models.Model):
-    retry = models.PositiveSmallIntegerField(_("Retry"), default=configuration().join_retry_limit)
+    retry = models.PositiveSmallIntegerField(_("Retry"), default=join_retry_limit)
     fk_user = models.ForeignKey(UserModel, verbose_name=_("User"), on_delete=models.CASCADE)
     fk_order_group = models.ForeignKey(OrderGroup, verbose_name=_("Group"), on_delete=models.CASCADE)
     lock_time = models.DateTimeField(_("Lock Time"), blank=True, null=True)
@@ -225,7 +224,7 @@ class Order(models.Model):
         return self.fk_user.username
 
     def total_order(self):
-        return self.orderitem_set.aggregate(total=Sum(F("quantity") * F("fk_menu_item__price"), output_field=models.DecimalField()))["total"]
+        return round(self.orderitem_set.aggregate(total=Sum(F("quantity") * F("fk_menu_item__price"), output_field=models.DecimalField(max_digits=9, decimal_places=2)))["total"], 2)
 
     @classmethod
     def check_order_limit_per_room(cls, user, order_room):

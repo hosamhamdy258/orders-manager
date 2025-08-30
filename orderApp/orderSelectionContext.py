@@ -10,7 +10,7 @@ from orderApp.enums import GeneralContextKeys as GC
 from orderApp.enums import OrderContextKeys as OC
 from orderApp.enums import ViewContextKeys as VC
 from orderApp.models import MenuItem, Order, OrderItem, OrderRoomUser, Restaurant
-from orderApp.utils import calculate_totals, group_nested_data
+from orderApp.utils import calculate_totals, group_nested_data, spacial_rounder
 
 UserModel = get_user_model()
 
@@ -84,7 +84,7 @@ class OrderSelectionContext(BaseContext):
                 VC.DETAILS_MESSAGE_TYPE: "deleteOrderItem",
                 OC.DISABLE_REMOVE_BUTTON: disable_remove_button,
                 VC.DETAILS_SECTION_DATA: ([instance] if instance else self.get_last_order_items() if not order_instance else self.get_order_items(order_instance)),
-                VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Quantity"), _("Price"), _("Total")],
+                VC.DETAILS_TABLE_HEADERS: [_("Item"), _("Restaurant"), _("Quantity"), _("Price"), _("Total")],
                 VC.DETAILS_SECTION_TEMPLATE: "base/bodySection/detailsSection.html",
                 VC.DETAILS_SECTION_BODY_TEMPLATE: "base/bodySection/detailsSectionBody.html",
                 VC.DETAILS_SECTION_TABLE_BODY_TEMPLATE: "orderSelection/bodySection/detailsSectionBodyTable.html",
@@ -165,7 +165,7 @@ class OrderSelectionContext(BaseContext):
             )
             .annotate(
                 quantity=Sum("menuitem__orderitem__quantity"),
-                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField(max_digits=9, decimal_places=2)),
             )
             .distinct()
         )
@@ -179,10 +179,12 @@ class OrderSelectionContext(BaseContext):
             )
             .annotate(
                 quantity=Sum("menuitem__orderitem__quantity"),
-                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField()),
+                total=Sum(F("menuitem__orderitem__quantity") * F("menuitem__price"), output_field=DecimalField(max_digits=9, decimal_places=2)),
             )
             .distinct()
         )
+        spacial_rounder(orderTotalSummary, ["total", "price"], 2)
+        spacial_rounder(orderTotalSummary2, ["total", "price"], 2)
 
         grand_totals_orderTotalSummary = calculate_totals(orderTotalSummary, ["quantity", "total"])
 
@@ -206,10 +208,11 @@ class OrderSelectionContext(BaseContext):
             )
             .annotate(
                 quantity=Sum("order__orderitem__quantity"),
-                total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField()),
+                total=Sum(F("order__orderitem__quantity") * F("order__orderitem__fk_menu_item__price"), output_field=DecimalField(max_digits=9, decimal_places=2)),
             )
             .distinct()
         )
+        spacial_rounder(orderUsersSummary, ["total", "price"], 2)
 
         orderUsersRestaurantSummaryGrouped = group_nested_data(orderUsersSummary, ["user", "restaurant"])
 

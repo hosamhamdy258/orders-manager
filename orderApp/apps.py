@@ -8,5 +8,5 @@ class OrderappConfig(AppConfig):
     def ready(self):
         from cleaner import cleaner
 
-        cleaner()
+        # cleaner()
         return super().ready()
