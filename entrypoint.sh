@@ -78,6 +78,7 @@ if [ "$DJANGO_DEVELOPMENT" = "False" ]; then
 		mkdir -p "$(dirname "$MARKER_FILE")"
 		touch "$MARKER_FILE"
 		echo "Migrations complete; marker file created at $MARKER_FILE."
+		python fill_database.py
 	fi
 
 	# ===========================================
