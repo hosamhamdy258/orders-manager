@@ -1,0 +1,8 @@
+{% extends "orderGroup/bodySection/baseToggleAction.html" %}
+{% load i18n %}
+{% block targetToggleClass %}row-invite{% endblock targetToggleClass %}
+{% block message_type %}{{list_invite_action_message_type}}{% endblock message_type %}
+{% block action_button_title %}{% translate "Send Invite" %}{% endblock action_button_title %}
+{% block inputs %}
+<input type="email" name="email" id="email" class="form-control" placeholder="{% translate 'Email' %}" autocomplete="off">
+{% endblock inputs %}

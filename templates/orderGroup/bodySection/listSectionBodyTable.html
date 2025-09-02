@@ -17,15 +17,23 @@
         {% endif %}
         {% endblock %}
         <td>
+            {% include "orderGroup/bodySection/inviteAction.html" %}
+        </td>
+        <td>
             {% block extra_actions %}
             {{ block.super }}
             {% include "orderGroup/bodySection/joinAction.html" %}
             {% endblock extra_actions %}
         </td>
     </tr>
-    <tr class="row-{{ item.group_number }} row-form d-none">
+    <tr class="row-{{ item.group_number }} row-enter d-none">
         <td>
-            {% include "orderGroup/bodySection/joinForm.html" %}
+            {% include "orderGroup/bodySection/joinForm.html" with join_error=join_form_error %}
+        </td>
+    </tr>
+    <tr class="row-{{ item.group_number }} row-invite d-none">
+        <td>
+            {% include "orderGroup/bodySection/inviteForm.html" with join_error=invite_form_error %}
         </td>
     </tr>
     {% if wrap == "True" %}

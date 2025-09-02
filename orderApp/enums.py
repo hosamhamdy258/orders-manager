@@ -22,6 +22,7 @@ class GeneralContextKeys(EnumMeta):
 
     ACTION_JOIN_BUTTON = "join"
     ACTION_SHOW_BUTTON = "show"
+    ACTION_INVITE_BUTTON = "invite"
 
     NAVIGATION_BUTTONS = "navigation_buttons"
 
@@ -53,6 +54,7 @@ class ViewContextKeys(EnumMeta):
     LIST_TABLE_BODY_ID = "list_table_body_id"
     LIST_TABLE_HEADERS = "list_table_headers"
     LIST_OPEN_ACTION_MESSAGE_TYPE = "list_open_action_message_type"
+    LIST_INVITE_ACTION_MESSAGE_TYPE = "list_invite_action_message_type"
 
     DETAILS_SECTION_TEMPLATE = "details_section_template"
     DETAILS_SECTION_BODY_TEMPLATE = "details_section_body_template"

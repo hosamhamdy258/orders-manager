@@ -1,0 +1,4 @@
+{% load i18n %}
+<button type="button" class="btn btn-outline-success btn-sm" onclick="toggle_form('{{ item.group_number }}','row-invite')">
+    <i class="{{invite.icon|default:'bi bi-box-arrow-in-right'}}"></i> {{invite.name}}
+</button>
