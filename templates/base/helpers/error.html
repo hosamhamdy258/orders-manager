@@ -1,7 +1,7 @@
-<div class="alert alert-danger m-2 error text-nowrap" hx-swap-oob='{% block hx-swap-oob %}{{hx_swap_oob}}{% endblock hx-swap-oob %}'>
+<div class="alert {% if success %}alert-success{% else %}alert-danger{% endif %} m-2 error text-nowrap" hx-swap-oob='{% block hx-swap-oob %}{{hx_swap_oob}}{% endblock hx-swap-oob %}'>
     {% block error %}
     {% if hx_swap_oob %}
-    <div class="alert alert-danger m-2 error">
+    <div class="alert {% if success %}alert-success{% else %}alert-danger{% endif %} m-2 error">
         {{error}}
     </div>
     {% else %}

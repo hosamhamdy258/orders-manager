@@ -5,6 +5,7 @@ daphne==4.1.2
 django==4.2.20
 django-channels-presence-4.0==1.1.2
 django-des @ git+https://github.com/jamiecounsell/django-des@4d121c62ffd0cd7e6a7288a6f6aa14e82fb247e1
+django-invitations==2.1.0
 django-solo==2.3.0
 gunicorn==23.0.0
 pre-commit==4.3.0

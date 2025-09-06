@@ -12,7 +12,7 @@ from django.db.models.constraints import UniqueConstraint
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import configuration, join_retry_limit
+from configuration.models import configuration, join_retry_limit
 from orderApp.enums import ORDER_SELECTION_CHANNEL_GROUP
 from orderApp.utils import PositiveValueValidator
 

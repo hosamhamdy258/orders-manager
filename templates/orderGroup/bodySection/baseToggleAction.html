@@ -1,5 +1,5 @@
 {% load i18n %}
-<form id="form_{{ item.group_number }}" ws-send class="d-flex gap-3 align-items-center" hx-swap-oob="outerHTML">
+<form id="{% block id %}{% endblock id %}" {% block htmx %}ws-send{% endblock htmx %} class="d-flex gap-3 align-items-center" {% block swap %}hx-swap-oob="outerHTML"{% endblock swap %}>
     <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggle_form('{{ item.group_number }}','{% block targetToggleClass %}{% endblock targetToggleClass %}')">
         {% translate "Cancel" %}
     </button>
@@ -9,7 +9,6 @@
     <button type="submit" class="btn btn-outline-success btn-sm text-nowrap">
         {% block action_button_title %}{% endblock action_button_title %}
     </button>
-    {% if join_error %}
-    {% include "base/helpers/error.html" with error=join_error %}
-    {% endif %}
+    {% block errors %}
+    {% endblock errors %}
 </form>

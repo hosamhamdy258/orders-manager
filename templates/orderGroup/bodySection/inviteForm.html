@@ -1,8 +1,19 @@
 {% extends "orderGroup/bodySection/baseToggleAction.html" %}
 {% load i18n %}
+{% block id %}form_invite_{{ item.group_number }}{% endblock id %}
 {% block targetToggleClass %}row-invite{% endblock targetToggleClass %}
 {% block message_type %}{{list_invite_action_message_type}}{% endblock message_type %}
 {% block action_button_title %}{% translate "Send Invite" %}{% endblock action_button_title %}
 {% block inputs %}
-<input type="email" name="email" id="email" class="form-control" placeholder="{% translate 'Email' %}" autocomplete="off">
+<input type="email" name="email" id="email" class="form-control" placeholder="{% translate 'Email' %}" autocomplete="off" value="hosamhamdy258@gmail.com">
+<input type="hidden" name="fk_order_group" value="{{item.id}}">
 {% endblock inputs %}
+{% block errors %}
+{% for error in form.email.errors %}
+{% include "base/helpers/error.html" %}
+{% endfor %}
+
+{% if message %}
+{% include "base/helpers/error.html" with error=message success=True %}
+{% endif %}
+{% endblock errors %}

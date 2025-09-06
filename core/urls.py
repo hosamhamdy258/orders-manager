@@ -23,5 +23,6 @@ urlpatterns = [
     path("", include("orderApp.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    path("invitation/", include("invitation.urls", namespace="invitation")),
     re_path(r"^django-des/", include(des_urls)),
 ]

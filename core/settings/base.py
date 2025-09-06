@@ -55,8 +55,11 @@ INSTALLED_APPS = [
     "des",
     "solo",
     "channels_presence",
+    "invitations",
     # Apps
     "accounts",
+    "configuration",
+    "invitation",
     "orderApp",
 ]
 
@@ -181,3 +184,10 @@ async_logger.start_listener()
 EMAIL_BACKEND = "des.backends.ConfiguredEmailBackend"
 ADMINS = [("Hosam", "hosamhamdy258@gmail.com")]
 SERVER_EMAIL = "dev.hosamhamdy@gmail.com"
+
+INVITATIONS_SIGNUP_REDIRECT = "signup"
+INVITATIONS_LOGIN_REDIRECT = "login"
+
+INVITATIONS_INVITATION_MODEL = "invitation.CustomInvitation"
+INVITATIONS_CONFIRMATION_URL_NAME = "invitation:accept-invite"
+INVITATIONS_GONE_ON_ACCEPT_ERROR = False

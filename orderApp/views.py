@@ -14,7 +14,7 @@ from django.views.generic import TemplateView
 
 from orderApp.enums import CurrentViews as CV
 from orderApp.enums import GeneralContextKeys as GC
-from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom, OrderRoomUser
+from orderApp.models import Client, MenuItem, OrderGroup, OrderRoom
 from orderApp.orderGroupContext import OrderGroupContext
 from orderApp.orderRoomContext import OrderRoomContext
 from orderApp.orderSelectionContext import OrderSelectionContext

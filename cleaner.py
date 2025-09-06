@@ -3,7 +3,7 @@ from channels_presence.models import Room
 from django.db.utils import OperationalError
 from django.utils import timezone
 
-from accounts.models import configuration
+from configuration.models import configuration
 from orderApp.models import Order
 
 scheduler = BackgroundScheduler()

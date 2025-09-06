@@ -6,7 +6,9 @@ from channels_presence.models import Presence, Room
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from invitations.utils import get_invitation_model
 
+from invitation.forms import CustomInviteForm
 from orderApp.enums import (
     ORDER_GROUP_CHANNEL_GROUP,
     ORDER_ROOM_CHANNEL_GROUP,
@@ -202,6 +204,9 @@ class OrderGroupConsumer(BaseConsumer):
         templates, context = [], {}
         user = self.get_user()
 
+        # ! when join the room remove the enter pin as user registered in room or invited by email
+        # ! when enter the room rest te retries
+
         order_group = OrderGroup.objects.get(pk=event[self.message].get("item_id"))
         pin = event[self.message].get("pin")
         valid_pin = pin.isdigit()
@@ -210,8 +215,14 @@ class OrderGroupConsumer(BaseConsumer):
             return
         retry_instance, created = GroupRetries.objects.get_or_create(fk_user=user, fk_order_group=order_group)
         block_msg = lambda: f"You're Blocked Try Again after {retry_instance.get_lock_time_left()} Min"
+        kwargs = {
+            "templates": templates,
+            "context": context,
+            "order_group": order_group,
+            "template": "orderGroup/bodySection/joinForm.html",
+        }
         if not retry_instance.can_retry():
-            self.send_join_form(templates, context, order_group, error_msg=block_msg())
+            self.send_join_form(**kwargs, error_msg=block_msg())
         else:
             if order_group.pin == int(pin):
                 context.update({"url": reverse("order_room", args=[order_group.group_number])})
@@ -221,23 +232,53 @@ class OrderGroupConsumer(BaseConsumer):
             else:
                 retry_instance.failed_retry()
                 if retry_instance.can_retry():
-                    self.send_join_form(templates, context, order_group, error_msg=f"Invalid Pin Retries left {retry_instance.retry}")
+                    self.send_join_form(**kwargs, error_msg=f"Invalid Pin Retries left {retry_instance.retry}")
                 else:
-                    self.send_join_form(templates, context, order_group, error_msg=block_msg())
+                    self.send_join_form(**kwargs, error_msg=block_msg())
 
         self.response_builder(templates, context)
 
-    def send_join_form(self, templates, context, order_group, error_msg=""):
+    def send_join_form(self, templates, context, order_group, template, error_msg=""):
         context.update(**self.get_context_builder().get_list_context(instance=order_group))
         context.update({"item": order_group})
         context.update({"join_form_error": _(error_msg)})
-        templates.append("orderGroup/bodySection/joinForm.html")
+        templates.append(template)
 
     @group_message
     def updateConnectedUsers(self, event):
         templates, context = [], {}
         context.update({"item": event[self.message]["instance"]})
         templates.append("orderGroup/bodySection/connectedUsers.html")
+        self.response_builder(templates, context)
+
+    def sendInvite(self, event):
+        templates, context = [], {}
+        host = ""
+        for head in self.scope.get("headers"):
+            if head[0].decode() == "host":
+                host = head[1].decode()
+                break
+
+        order_group = OrderGroup.objects.get(pk=event[self.message].get("item_id"))
+        kwargs = {
+            "templates": templates,
+            "context": context,
+            "order_group": order_group,
+            "template": "orderGroup/bodySection/inviteForm.html",
+        }
+
+        Invitation = get_invitation_model()
+
+        form = CustomInviteForm(event[self.message])
+        if form.is_valid():
+            email = form.cleaned_data.get("email")
+            invitation = Invitation.create(email=email, group=order_group, inviter=self.get_user())
+            invitation.send_invitation(host)
+            context.update({"message": _("Email Send Successfully")})
+        else:
+            context.update({"form": form})
+
+        self.send_join_form(**kwargs)
         self.response_builder(templates, context)
 
 

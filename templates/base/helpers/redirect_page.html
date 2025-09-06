@@ -3,10 +3,12 @@
 {% block body %}
 <!-- main container -->
 <div class="container-fluid" hx-ext="ws" ws-connect={{ws_url}}>
+    {% if user.is_authenticated %}
     <div class="bg-light p-4 rounded-4 shadow-lg mt-4">
         <!-- user management section -->
         {% include "userManagement/actions.html" %}
     </div>
+    {% endif %}
     <div class="d-flex justify-content-center align-items-center w-100 min-vh-50 py-5 text-dark">
         <div class="d-flex flex-column align-items-center w-100 px-3 px-md-5 px-lg-4 gap-4">
             <h1 class="display-1 fw-bold text-center text-secondary">{{code}}</h1>

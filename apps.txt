@@ -1,5 +1,8 @@
-channels_presence
 des
 solo
+channels_presence
+invitations
 accounts
+configuration
+invitation
 orderApp
