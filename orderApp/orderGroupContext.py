@@ -27,6 +27,7 @@ class OrderGroupContext(BaseContext):
                 VC.LIST_SECTION_TITLE: _("Groups List"),
                 VC.LIST_MESSAGE_TYPE: "showGroupMembers",
                 VC.LIST_OPEN_ACTION_MESSAGE_TYPE: "enterGroup",
+                VC.LIST_OPEN_PIN_ACTION_MESSAGE_TYPE: "enterGroupPin",
                 VC.LIST_INVITE_ACTION_MESSAGE_TYPE: "sendInvite",
                 VC.LIST_SECTION_DATA: [instance] if instance else self.get_user_order_groups(self.get_user()),
                 VC.LIST_TABLE_HEADERS: [_("Group"), _("Members")],

@@ -2,13 +2,13 @@
 {% load i18n %}
 {% block id %}form_join_{{ item.group_number }}{% endblock id %}
 {% block targetToggleClass %}row-enter{% endblock targetToggleClass %}
-{% block message_type %}{{list_open_action_message_type}}{% endblock message_type %}
+{% block message_type %}{{list_open_pin_action_message_type}}{% endblock message_type %}
 {% block action_button_title %}{% translate "Join" %}{% endblock action_button_title %}
 {% block inputs %}
 <input type="password" name="pin" id="pin" class="form-control" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]*" placeholder="{% translate 'Group Pin' %}" title="{% translate 'Enter 4 Numbers' %}" autocomplete="off">
 {% endblock inputs %}
 {% block errors %}
-{% if join_error %}
-{% include "base/helpers/error.html" with error=join_error %}
+{% if join_form_error %}
+{% include "base/helpers/error.html" with error=join_form_error %}
 {% endif %}
 {% endblock errors %}

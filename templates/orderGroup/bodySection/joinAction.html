@@ -1,4 +1,8 @@
 {% load i18n %}
-<button type="button" class="btn btn-outline-success btn-sm" onclick="toggle_form('{{ item.group_number }}','row-enter')">
-    <i class="{{join.icon|default:'bi bi-box-arrow-in-right'}}"></i> {{join.name}}
-</button>
+<form id="action_join_{{ item.group_number }}" ws-send hx-swap-oob="none">
+    <input type="hidden" name="message_type" value="{{list_open_action_message_type}}">
+    <input type="hidden" name="item_id" value="{{item.id}}">
+    <button type="submit" class="btn btn-outline-success btn-sm">
+        <i class="{{join.icon|default:'bi bi-box-arrow-in-right'}}"></i> {{join.name}}
+    </button>
+</form>

@@ -30,7 +30,7 @@ def send_invite_email(to_email, context):
 
 class CustomInvitation(AbstractBaseInvitation):
     email = models.EmailField(verbose_name=_("email address"), max_length=app_settings.EMAIL_MAX_LENGTH)
-    created = models.DateTimeField(verbose_name=_("created"), default=timezone.now)
+    created_at = models.DateTimeField(_("Created at"), default=timezone.now)
     fk_order_group = models.ForeignKey(OrderGroup, verbose_name=_("Group"), on_delete=models.CASCADE)
 
     @classmethod

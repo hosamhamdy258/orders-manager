@@ -51,7 +51,7 @@ owner = UserModel.objects.get(username=owner_username)
 # 2) Create OrderGroups (each group will own one OrderRoom with the same name)
 existing_groups = set(OrderGroup.objects.values_list("name", flat=True))
 for group_name in groups - existing_groups:
-    OrderGroup.objects.create(name=group_name, fk_owner=owner, pin=0)  # pin default set to 0
+    OrderGroup.objects.create(name=group_name, fk_owner=owner, pin=1234)
 
 # 3) Create OrderRooms (each room tied to a group)
 existing_rooms = set(OrderRoom.objects.values_list("name", flat=True))

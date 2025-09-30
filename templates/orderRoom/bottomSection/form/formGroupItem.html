@@ -1,6 +1,6 @@
 {% load i18n%}
 <form id="add_group" ws-send hx-swap="innerHTML">
-    <input type="hidden" name="message_type" value="addGroup">
+    <input type="hidden" name="message_type" value="addRoom">
     <div class="row g-2">
         <div class="col">
             <input type="text" class="form-control" id="group" name="name" placeholder='{% translate "Room Name" %}' value="{{form.name.value}}" required autocomplete="off">

@@ -73,6 +73,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.ServerClock",
+    "core.sql_tracker.SqlTracker",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -191,3 +192,5 @@ INVITATIONS_LOGIN_REDIRECT = "login"
 INVITATIONS_INVITATION_MODEL = "invitation.CustomInvitation"
 INVITATIONS_CONFIRMATION_URL_NAME = "invitation:accept-invite"
 INVITATIONS_GONE_ON_ACCEPT_ERROR = False
+
+TRACK_SQL = False

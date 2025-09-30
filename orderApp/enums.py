@@ -54,6 +54,7 @@ class ViewContextKeys(EnumMeta):
     LIST_TABLE_BODY_ID = "list_table_body_id"
     LIST_TABLE_HEADERS = "list_table_headers"
     LIST_OPEN_ACTION_MESSAGE_TYPE = "list_open_action_message_type"
+    LIST_OPEN_PIN_ACTION_MESSAGE_TYPE = "list_open_pin_action_message_type"
     LIST_INVITE_ACTION_MESSAGE_TYPE = "list_invite_action_message_type"
 
     DETAILS_SECTION_TEMPLATE = "details_section_template"

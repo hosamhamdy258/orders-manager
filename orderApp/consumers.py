@@ -204,6 +204,22 @@ class OrderGroupConsumer(BaseConsumer):
         templates, context = [], {}
         user = self.get_user()
 
+        order_group = OrderGroup.objects.get(pk=event[self.message].get("item_id"))
+        can_join = order_group.can_join_group(user)
+        if can_join:
+            context.update({"url": reverse("order_room", args=[order_group.group_number])})
+            templates.append("base/helpers/redirector.html")
+        else:
+            context.update({"group_number": order_group.group_number})
+            templates.append("orderGroup/bodySection/show_join_form.html")
+
+        self.response_builder(templates, context)
+
+    def enterGroupPin(self, event):
+        # TODO enter valid pin will make pending join request to group
+        templates, context = [], {}
+        user = self.get_user()
+
         # ! when join the room remove the enter pin as user registered in room or invited by email
         # ! when enter the room rest te retries
 
@@ -224,7 +240,7 @@ class OrderGroupConsumer(BaseConsumer):
         if not retry_instance.can_retry():
             self.send_join_form(**kwargs, error_msg=block_msg())
         else:
-            if order_group.pin == int(pin):
+            if order_group.pin == pin:
                 context.update({"url": reverse("order_room", args=[order_group.group_number])})
                 templates.append("base/helpers/redirector.html")
                 order_group.add_user_to_group(self.get_user())
@@ -310,7 +326,7 @@ class OrderRoomConsumer(GroupConsumerMixin, BaseConsumer):
         context.update({"swap_method": "innerHTML"})
         self.response_builder(templates, context)
 
-    def addGroup(self, event):
+    def addRoom(self, event):
         templates, context = [], {}
         event[self.message].update({"fk_order_group": self.get_order_group()})
         form = OrderRoomForm(event[self.message])

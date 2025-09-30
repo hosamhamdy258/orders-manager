@@ -156,7 +156,7 @@ class OrderSelectionContext(BaseContext):
 
     def groupOrderSummary(self):
         orderTotalSummary = (
-            Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
+            Restaurant.objects.filter(menuitem__orderitem__fk_order__created_at__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
             .values(
                 restaurant=F("name"),
                 item=F("menuitem__name"),
@@ -170,7 +170,7 @@ class OrderSelectionContext(BaseContext):
             .distinct()
         )
         orderTotalSummary2 = (
-            Restaurant.objects.filter(menuitem__orderitem__fk_order__created__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
+            Restaurant.objects.filter(menuitem__orderitem__fk_order__created_at__date=timezone.now(), menuitem__orderitem__fk_order__fk_order_room=self.get_order_room())
             .values(
                 restaurant=F("name"),
                 item=F("menuitem__name"),
@@ -199,7 +199,7 @@ class OrderSelectionContext(BaseContext):
         }
 
         orderUsersSummary = (
-            UserModel.objects.filter(order__created__date=timezone.now(), order__finished_ordering=True, order__fk_order_room=self.get_order_room())
+            UserModel.objects.filter(order__created_at__date=timezone.now(), order__finished_ordering=True, order__fk_order_room=self.get_order_room())
             .values(
                 user=F("username"),
                 restaurant=F("order__orderitem__fk_menu_item__fk_restaurant__name"),
@@ -235,7 +235,7 @@ class OrderSelectionContext(BaseContext):
 
 def orders_query():
     # TODO check this date condition is it valid for orders around midnight
-    return Order.objects.filter(created__date=timezone.now())
+    return Order.objects.filter(created_at__date=timezone.now())
 
 
 def get_last_order(user, order_room, finished=False):

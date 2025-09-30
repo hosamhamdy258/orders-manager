@@ -16,15 +16,19 @@
         {% endwith %}
         {% endif %}
         {% endblock %}
+        {% if user == item.fk_owner %}
         <td>
             {% include "orderGroup/bodySection/inviteAction.html" %}
         </td>
+        {% endif %}
+        {% if user in item.m2m_users.all %}
         <td>
             {% block extra_actions %}
             {{ block.super }}
             {% include "orderGroup/bodySection/joinAction.html" %}
             {% endblock extra_actions %}
         </td>
+        {% endif %}
     </tr>
     <tr class="row-{{ item.group_number }} row-enter d-none">
         <td>

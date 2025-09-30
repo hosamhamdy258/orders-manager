@@ -16,6 +16,8 @@ Including another URLconf
 """
 
 from des import urls as des_urls
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
 
@@ -26,3 +28,6 @@ urlpatterns = [
     path("invitation/", include("invitation.urls", namespace="invitation")),
     re_path(r"^django-des/", include(des_urls)),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
